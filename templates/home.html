@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+    <meta charset="UTF-8">
+    <title>Latest News</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            font-family: 'Roboto', sans-serif; 
+            direction: rtl; 
+            background-color: #f5f5f5; 
+            margin: 0; 
+            padding: 20px;
+        }
+        .container { 
+            display: none; /* Hide the container initially */
+            flex-wrap: wrap; 
+            gap: 20px;
+        }
+        .column { 
+            flex: 1; 
+            min-width: 250px; 
+            background-color: #ffffff; 
+            padding: 20px; 
+            border-radius: 8px; 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .header { 
+            display: flex; 
+            align-items: center; 
+            margin-bottom: 20px;
+        }
+        .header img { 
+            width: 50px; 
+            height: auto; 
+            margin-left: 10px; 
+        }
+        .article { 
+            display: flex; 
+            align-items: center; 
+            margin-bottom: 20px; 
+        }
+        .article-details { 
+            flex: 1; 
+            padding: 10px; 
+            background-color: #f0f0f0; 
+            border-radius: 5px;
+        }
+        .article-details h3 { 
+            margin: 0; 
+            font-weight: bold; 
+            color: #333;
+        }
+        .article-details p { 
+            margin: 5px 0; 
+            color: #666;
+        }
+        .button { 
+            display: block; 
+            margin: 10px auto; 
+            padding: 10px 20px; 
+            background-color: #007bff; 
+            color: #fff; 
+            text-align: center; 
+            cursor: pointer; 
+            border: none; 
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .button:hover { 
+            background-color: #0056b3; 
+        }
+        .less-button {
+            display: none; /* Hide the 'Show Less' button initially */
+        }
+        /* Loading screen styles */
+        #loading-screen {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #f5f5f5;
+            z-index: 9999;
+        }
+        #loading-text {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+        /* New Section Styles */
+        .new-section {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            margin-top: 20px;
+        }
+        .grouped-articles {
+            margin-top: 40px;
+        }
+        .grouped-article {
+            margin-bottom: 20px;
+        }
+        .grouped-article-title {
+            font-weight: bold;
+        }
+        .grouped-article-links {
+            margin-left: 20px;
+        }
+        .grouped-article-links a {
+            display: block;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div id="loading-screen">
+        <div id="loading-text">טוען...</div>
+    </div>
+    <h1 style="text-align:center; margin-bottom:40px;">חדשות אחרונות</h1>
+    <div class="container">
+        <div class="column">
+            <div class="header">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f4/Ynet_website_logo.svg/195px-Ynet_website_logo.svg.png" alt="YNET Logo">
+                <h2 style="margin: 0;">YNET</h2>
+            </div>
+            <div id="ynet-articles">
+                {% for article in ynet_articles %}
+                <div class="article" style="{% if loop.index > 3 %}display:none{% endif %}">
+                    <div class="article-details">
+                        <h3><a href="{{ article.link }}" target="_blank">{{ article.title }}</a></h3>
+                        <p>{{ article.date }} | {{ article.author }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <button class="button more-button" id="more-ynet-button" data-start="3">הצג עוד כתבות</button>
+            <button class="button less-button" id="less-ynet-button">הצג פחות</button>
+        </div>
+        <div class="column">
+            <div class="header">
+                <img src="https://www.now14.co.il/wp-content/themes/14-child/assets/logo14/logo-hai.svg" alt="Now14 Logo">
+                <h2 style="margin: 0;">עכשיו 14</h2>
+            </div>
+            <div id="now14-articles">
+                {% for article in now14_articles %}
+                <div class="article" style="{% if loop.index > 3 %}display:none{% endif %}">
+                    <div class="article-details">
+                        <h3><a href="{{ article.link }}" target="_blank">{{ article.title }}</a></h3>
+                        <p>{{ article.date }} | {{ article.author }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <button class="button more-button" id="more-now14-button" data-start="3">הצג עוד כתבות</button>
+            <button class="button less-button" id="less-now14-button">הצג פחות</button>
+        </div>
+        <div class="column">
+            <div class="header">
+                <img src="https://play-lh.googleusercontent.com/myKsB7OkcpOxqrnv2X1pGi00PvN3Kcp4IRzNeVThsvrIMmKtYsT8rADvHEq23IO--A" alt="N12 Logo">
+                <h2 style="margin: 0;">N12</h2>
+            </div>
+            <div id="n12-articles">
+                {% for article in n12_articles %}
+                <div class="article" style="{% if loop.index > 3 %}display:none{% endif %}">
+                    <div class="article-details">
+                        <h3><a href="{{ article.link }}" target="_blank">{{ article.title }}</a></h3>
+                        <p>{{ article.date }} | {{ article.author }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <button class="button more-button" id="more-n12-button" data-start="3">הצג עוד כתבות</button>
+            <button class="button less-button" id="less-n12-button">הצג פחות</button>
+        </div>
+        <div class="column">
+            <div class="header">
+                <img src="https://kan-media.kan.org.il/media/lpadeq2p/%D7%9C%D7%95%D7%92%D7%95-%D7%9B%D7%90%D7%9F-%D7%A2%D7%9D-%D7%A1%D7%A8%D7%98-%D7%A6%D7%94%D7%95%D7%91.svg?rmode=pad&height=29&rnd=133624915040200000" alt="KAN11 Logo">
+                <h2 style="margin: 0;">KAN11</h2>
+            </div>
+            <div id="kan11-articles">
+                {% for article in kan11_articles %}
+                <div class="article" style="{% if loop.index > 3 %}display:none{% endif %}">
+                    <div class="article-details">
+                        <h3><a href="{{ article.link }}" target="_blank">{{ article.title }}</a></h3>
+                        <p>{{ article.date }} | {{ article.author }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <button class="button more-button" id="more-kan11-button" data-start="3">הצג עוד כתבות</button>
+            <button class="button less-button" id="less-kan11-button">הצג פחות</button>
+        </div>
+    </div>
+    <div class="new-section">
+        <h2>מאמרים מקובצים</h2>
+        <div class="grouped-articles">
+            {% for title, articles in grouped_articles.items() %}
+                <div class="grouped-article">
+                    <div class="grouped-article-title">{{ title }}</div>
+                    <div class="grouped-article-links">
+                        {% for article in articles %}
+                            <a href="{{ article.link }}" target="_blank">{{ article.source }}: {{ article.title }}</a>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    <script>
+        function fetchMoreArticles(button, url, containerId) {
+            const start = button.getAttribute('data-start');
+            fetch(url.replace('{start}', start))
+                .then(response => response.json())
+                .then(data => {
+                    if (data.length === 0) {
+                        button.disabled = true;
+                        button.textContent = 'אין עוד כתבות';
+                        return;
+                    }
+
+                    const container = document.getElementById(containerId);
+                    data.forEach(article => {
+                        const div = document.createElement('div');
+                        div.className = 'article';
+                        div.innerHTML = `
+                            <div class="article-details">
+                                <h3><a href="${article.link}" target="_blank">${article.title}</a></h3>
+                                <p>${article.date || ''} | ${article.author || 'No author found'}</p>
+                            </div>`;
+                        container.appendChild(div);
+                    });
+                    button.setAttribute('data-start', parseInt(start) + 5);
+                    
+                    // Show the 'Show Less' button
+                    button.nextElementSibling.style.display = 'block';
+                });
+        }
+
+        function showLessArticles(button, initialArticlesCount) {
+            const containerId = button.previousElementSibling.previousElementSibling.getAttribute('id');
+            const container = document.getElementById(containerId);
+            const articles = container.getElementsByClassName('article');
+
+            // Hide articles beyond the initial count
+            for (let i = initialArticlesCount; i < articles.length; i++) {
+                articles[i].style.display = 'none';
+            }
+
+            // Hide the 'Show Less' button
+            button.style.display = 'none';
+
+            // Enable the 'Show More' button
+            const moreButton = button.previousElementSibling;
+            moreButton.disabled = false;
+            moreButton.textContent = 'הצג עוד כתבות';
+        }
+
+        document.getElementById('more-ynet-button').addEventListener('click', function() {
+            fetchMoreArticles(this, '/more_ynet_articles/{start}', 'ynet-articles');
+        });
+
+        document.getElementById('less-ynet-button').addEventListener('click', function() {
+            showLessArticles(this, 3);
+        });
+
+        document.getElementById('more-now14-button').addEventListener('click', function() {
+            fetchMoreArticles(this, '/more_now14_articles/{start}', 'now14-articles');
+        });
+
+        document.getElementById('less-now14-button').addEventListener('click', function() {
+            showLessArticles(this, 3);
+        });
+
+        document.getElementById('more-n12-button').addEventListener('click', function() {
+            fetchMoreArticles(this, '/more_n12_articles/{start}', 'n12-articles');
+        });
+
+        document.getElementById('less-n12-button').addEventListener('click', function() {
+            showLessArticles(this, 3);
+        });
+
+        document.getElementById('more-kan11-button').addEventListener('click', function() {
+            fetchMoreArticles(this, '/more_kan11_articles/{start}', 'kan11-articles');
+        });
+
+        document.getElementById('less-kan11-button').addEventListener('click', function() {
+            showLessArticles(this, 3);
+        });
+
+        // Hide loading screen and show content when everything is loaded
+        window.addEventListener('load', function() {
+            console.log('Window loaded, hiding loading screen and showing content.');
+            document.getElementById('loading-screen').style.display = 'none';
+            document.querySelector('.container').style.display = 'flex';
+        });
+    </script>
+</body>
+</html>
