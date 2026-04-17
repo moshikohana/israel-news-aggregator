@@ -1,10 +1,14 @@
 import requests
 from bs4 import BeautifulSoup
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, jsonify, redirect, url_for
 from collections import defaultdict
 import difflib
 
+from kallner_agent import run_full_scan
+
 app = Flask(__name__)
+
+_kallner_cache = {"report": None, "ts": 0}
 
 seen_titles_ynet = set()
 seen_titles_n12 = set()
@@ -277,6 +281,32 @@ def more_kan11_articles(start):
 def more_now14_articles(start):
     articles = get_now14_articles(start=start, limit=5)
     return jsonify(articles)
+
+@app.route('/kallner')
+def kallner_dashboard():
+    import time
+    if not _kallner_cache["report"] or (time.time() - _kallner_cache["ts"]) > 1800:
+        _kallner_cache["report"] = run_full_scan()
+        _kallner_cache["ts"] = time.time()
+    return render_template('kallner.html', report=_kallner_cache["report"])
+
+
+@app.route('/kallner/scan', methods=['POST'])
+def kallner_rescan():
+    import time
+    _kallner_cache["report"] = run_full_scan()
+    _kallner_cache["ts"] = time.time()
+    return redirect(url_for('kallner_dashboard'))
+
+
+@app.route('/kallner/report.json')
+def kallner_report_json():
+    import time
+    if not _kallner_cache["report"]:
+        _kallner_cache["report"] = run_full_scan()
+        _kallner_cache["ts"] = time.time()
+    return jsonify(_kallner_cache["report"])
+
 
 if __name__ == '__main__':
     app.run(debug=True)

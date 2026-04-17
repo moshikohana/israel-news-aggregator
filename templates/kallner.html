@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+    <meta charset="UTF-8">
+    <title>ניטור ח"כ אריאל קלנר</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Roboto', sans-serif; direction: rtl; background:#f5f5f5; margin:0; padding:20px; }
+        h1 { margin-top:0; }
+        .summary { background:#fff; padding:16px; border-radius:8px; box-shadow:0 4px 8px rgba(0,0,0,.08); margin-bottom:20px; }
+        .summary .row { display:flex; gap:24px; flex-wrap:wrap; }
+        .stat { background:#f0f3f8; padding:10px 14px; border-radius:6px; min-width:120px; }
+        .stat .num { font-size:24px; font-weight:700; }
+        .stat .lbl { font-size:12px; color:#555; }
+        .section { background:#fff; padding:16px; border-radius:8px; box-shadow:0 4px 8px rgba(0,0,0,.08); margin-bottom:20px; }
+        .section h2 { margin:0 0 12px; font-size:18px; }
+        .mention { padding:10px; border-bottom:1px solid #eee; }
+        .mention:last-child { border-bottom:none; }
+        .mention .meta { font-size:12px; color:#777; margin-bottom:4px; }
+        .mention .title { font-weight:700; }
+        .mention .kw { margin-top:4px; }
+        .kw span { background:#ffe9b3; color:#7a5a00; font-size:11px; padding:2px 6px; border-radius:3px; margin-left:4px; }
+        .direct .kw span { background:#ffd2d2; color:#9a0000; }
+        .btn { background:#1a73e8; color:#fff; padding:8px 14px; border:none; border-radius:4px; cursor:pointer; font-size:14px; }
+        .muted { color:#888; font-size:12px; }
+        a { color:#1a73e8; text-decoration:none; }
+        a:hover { text-decoration:underline; }
+        .filter-bar { margin-bottom:12px; }
+        .filter-bar label { margin-left:12px; font-size:13px; }
+    </style>
+</head>
+<body>
+    <h1>ניטור חבר הכנסת אריאל קלנר</h1>
+    <p class="muted">מעקב אחר אזכורים ישירים ועקיפים באתרי חדשות, ערוצי טלגרם ציבוריים ורשתות חברתיות.</p>
+
+    <div class="summary">
+        <div class="row">
+            <div class="stat"><div class="num">{{ report.counts.total }}</div><div class="lbl">סה"כ אזכורים</div></div>
+            <div class="stat"><div class="num">{{ report.counts.direct }}</div><div class="lbl">אזכורים ישירים</div></div>
+            <div class="stat"><div class="num">{{ report.counts.indirect }}</div><div class="lbl">אזכורים עקיפים</div></div>
+            {% for src, cnt in report.counts.by_source.items() %}
+            <div class="stat"><div class="num">{{ cnt }}</div><div class="lbl">{{ src }}</div></div>
+            {% endfor %}
+        </div>
+        <p class="muted">נוצר: {{ report.generated_at }} | זמן סריקה: {{ report.elapsed_seconds }}s</p>
+        <form method="post" action="/kallner/scan" style="display:inline">
+            <button class="btn" type="submit">הרץ סריקה חדשה</button>
+        </form>
+        <a href="/kallner/report.json" class="muted" style="margin-right:10px">הורד JSON</a>
+    </div>
+
+    <div class="section">
+        <h2>אזכורים ישירים ({{ report.counts.direct }})</h2>
+        {% for m in report.direct_mentions %}
+        <div class="mention direct">
+            <div class="meta">[{{ m.source_type }}] {{ m.source }} {% if m.author %}· {{ m.author }}{% endif %} {% if m.date %}· {{ m.date }}{% endif %}</div>
+            <div class="title">{% if m.link %}<a href="{{ m.link }}" target="_blank">{{ m.title }}</a>{% else %}{{ m.title }}{% endif %}</div>
+            {% if m.text and m.text != m.title %}<div>{{ m.text[:300] }}{% if m.text|length > 300 %}...{% endif %}</div>{% endif %}
+            <div class="kw">{% for k in m.matched_keywords %}<span>{{ k }}</span>{% endfor %}</div>
+        </div>
+        {% else %}
+        <p class="muted">אין אזכורים ישירים בסריקה האחרונה.</p>
+        {% endfor %}
+    </div>
+
+    <div class="section">
+        <h2>אזכורים עקיפים ({{ report.counts.indirect }})</h2>
+        {% for m in report.indirect_mentions %}
+        <div class="mention">
+            <div class="meta">[{{ m.source_type }}] {{ m.source }} {% if m.author %}· {{ m.author }}{% endif %} {% if m.date %}· {{ m.date }}{% endif %}</div>
+            <div class="title">{% if m.link %}<a href="{{ m.link }}" target="_blank">{{ m.title }}</a>{% else %}{{ m.title }}{% endif %}</div>
+            {% if m.text and m.text != m.title %}<div>{{ m.text[:300] }}{% if m.text|length > 300 %}...{% endif %}</div>{% endif %}
+            <div class="kw">{% for k in m.matched_keywords %}<span>{{ k }}</span>{% endfor %}</div>
+        </div>
+        {% else %}
+        <p class="muted">אין אזכורים עקיפים בסריקה האחרונה.</p>
+        {% endfor %}
+    </div>
+</body>
+</html>
