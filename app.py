@@ -3,6 +3,10 @@ from bs4 import BeautifulSoup
 from flask import Flask, render_template, jsonify
 from collections import defaultdict
 import difflib
+import sys
+import os
+sys.path.insert(0, os.path.dirname(__file__))
+from data.polls_data import ELECTIONS, POLLS
 
 app = Flask(__name__)
 
@@ -277,6 +281,108 @@ def more_kan11_articles(start):
 def more_now14_articles(start):
     articles = get_now14_articles(start=start, limit=5)
     return jsonify(articles)
+
+def calculate_poll_mae(poll, election):
+    errors = []
+    results = election["results"]
+    all_parties = set(poll["predictions"]) | set(results)
+    for party in all_parties:
+        predicted = poll["predictions"].get(party, 0)
+        actual = results.get(party, 0)
+        errors.append(abs(predicted - actual))
+    return round(sum(errors) / len(errors), 2) if errors else 0
+
+
+def calculate_poll_bias(poll, election):
+    diffs = []
+    for party, predicted in poll["predictions"].items():
+        actual = election["results"].get(party, 0)
+        diffs.append(predicted - actual)
+    return round(sum(diffs) / len(diffs), 2) if diffs else 0
+
+
+def get_pollster_rankings():
+    pollster_data = defaultdict(lambda: {"maes": [], "elections": 0})
+    for poll in POLLS:
+        election = ELECTIONS.get(poll["election_id"])
+        if not election:
+            continue
+        mae = calculate_poll_mae(poll, election)
+        bias = calculate_poll_bias(poll, election)
+        p = pollster_data[poll["pollster"]]
+        p["maes"].append(mae)
+        p["elections"] += 1
+        p.setdefault("biases", []).append(bias)
+
+    rankings = []
+    for name, data in pollster_data.items():
+        avg_mae = round(sum(data["maes"]) / len(data["maes"]), 2)
+        avg_bias = round(sum(data["biases"]) / len(data["biases"]), 2)
+        rankings.append({
+            "name": name,
+            "elections": data["elections"],
+            "avg_mae": avg_mae,
+            "avg_bias": avg_bias,
+        })
+    rankings.sort(key=lambda x: x["avg_mae"])
+    for i, r in enumerate(rankings):
+        r["rank"] = i + 1
+    return rankings
+
+
+def get_elections_detail():
+    result = []
+    for eid, election in ELECTIONS.items():
+        election_polls = []
+        for poll in POLLS:
+            if poll["election_id"] != eid:
+                continue
+            e = ELECTIONS[eid]
+            mae = calculate_poll_mae(poll, e)
+            bias = calculate_poll_bias(poll, e)
+            party_rows = []
+            all_parties = sorted(
+                set(poll["predictions"]) | set(e["results"]),
+                key=lambda p: e["results"].get(p, 0),
+                reverse=True,
+            )
+            for party in all_parties:
+                predicted = poll["predictions"].get(party)
+                actual = e["results"].get(party, 0)
+                if predicted is None:
+                    continue
+                diff = predicted - actual
+                party_rows.append({
+                    "party": party,
+                    "predicted": predicted,
+                    "actual": actual,
+                    "diff": diff,
+                })
+            election_polls.append({
+                "pollster": poll["pollster"],
+                "poll_date": poll["poll_date"],
+                "mae": mae,
+                "bias": bias,
+                "parties": party_rows,
+            })
+        election_polls.sort(key=lambda x: x["mae"])
+        result.append({
+            "id": eid,
+            "name": election["name"],
+            "date": election["date"],
+            "results": election["results"],
+            "polls": election_polls,
+        })
+    result.sort(key=lambda x: x["date"], reverse=True)
+    return result
+
+
+@app.route('/skarim')
+def polls_tracker():
+    rankings = get_pollster_rankings()
+    elections = get_elections_detail()
+    return render_template('polls_tracker.html', rankings=rankings, elections=elections)
+
 
 if __name__ == '__main__':
     app.run(debug=True)
