@@ -477,7 +477,7 @@ def scan_site(site_name: str, search_queries: Iterable[str]) -> List[Dict]:
     Returns a list of article dicts; an empty list on any error or when the
     site produces no matches. A failing site never raises out of this call.
     """
-    cfg = SITE_CONFIG.get(site_name)
+    cfg = SITE_CONFIG.get(site_name) or SITE_CONFIG.get(site_name.upper()) or SITE_CONFIG.get(site_name.lower())
     if not cfg:
         logger.warning("Unknown site: %s", site_name)
         return []
