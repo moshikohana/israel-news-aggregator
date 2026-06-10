@@ -1,0 +1,34 @@
+{
+  "version": "7",
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1780606318071,
+      "tag": "0000_ordinary_lily_hollister",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1780606468085,
+      "tag": "0001_mixed_cloak",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1780637278247,
+      "tag": "0002_hot_scorpion",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1780778670530,
+      "tag": "0003_plain_ravenous",
+      "breakpoints": true
+    }
+  ]
+}
