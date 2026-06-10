@@ -2,6 +2,7 @@ import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc";
 import { formatAnswer, isSafeSelect, questionToSql } from "../ai";
 import { runReadonlyQuery } from "../db";
+import { findDuplicateGroups, type DuplicateGroup } from "../duplicates";
 
 export const chatRouter = router({
   ask: protectedProcedure
@@ -16,6 +17,7 @@ export const chatRouter = router({
           answer: "אירעה שגיאה בהבנת השאלה. נסה לנסח אותה מחדש.",
           sql: "",
           results: [] as any[],
+          duplicateGroups: [] as DuplicateGroup[],
         };
       }
 
@@ -25,6 +27,7 @@ export const chatRouter = router({
             'מצטער, יכולתי להמיר את השאלה רק לשאילתה שאינה בטוחה להרצה. נסה לנסח מחדש בשאלת מידע (לדוגמה: "מי חברי המרכז מירושלים?").',
           sql: sqlText,
           results: [] as any[],
+          duplicateGroups: [] as DuplicateGroup[],
         };
       }
 
@@ -36,6 +39,7 @@ export const chatRouter = router({
           answer: "אירעה שגיאה בהרצת השאילתה על הנתונים. נסה לנסח את השאלה אחרת.",
           sql: sqlText,
           results: [] as any[],
+          duplicateGroups: [] as DuplicateGroup[],
         };
       }
 
@@ -46,6 +50,6 @@ export const chatRouter = router({
         answer = "התקבלו נתונים אך אירעה שגיאה בניסוח התשובה.";
       }
 
-      return { answer, sql: sqlText, results };
+      return { answer, sql: sqlText, results, duplicateGroups: findDuplicateGroups(results) };
     }),
 });

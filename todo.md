@@ -183,11 +183,11 @@
 
 
 ## Smart chat: duplicate handling + more intuitive results
-- [ ] Backend: detect duplicate groups in chat results (same normalized name AND phone) vs same-name/diff-phone (not dup)
-- [ ] Backend: deleteMembersByIds db helper + admin/protected procedure (returns deleted count, audit log)
-- [ ] chat.ask returns structured rows + duplicateGroups metadata
-- [ ] Frontend: render results as rich member cards (name, phone, city, status, notes snippet)
-- [ ] Frontend: quick actions per card (call tel:, WhatsApp wa.me, open member page)
-- [ ] Frontend: duplicate-group block with "keep one / delete others" action and confirm dialog
-- [ ] Frontend: same-name different-phone shown as separate cards (no merge suggested)
-- [ ] Tests/typecheck pass + checkpoint
+- [x] Backend: detect duplicate groups in chat results (same normalized name AND phone) vs same-name/diff-phone (not dup)
+- [x] Backend: deleteMembersByIds db helper + protected procedure (returns deleted count, audit log)
+- [x] chat.ask returns structured rows + duplicateGroups metadata
+- [x] Frontend: render results as rich member cards (name, phone, city, status, notes snippet)
+- [x] Frontend: quick actions per card (call tel:, WhatsApp wa.me, open member page)
+- [x] Frontend: duplicate-group block with "keep one / delete others" action and confirm dialog
+- [x] Frontend: same-name different-phone shown as separate cards (no merge suggested)
+- [x] Tests/typecheck pass + checkpoint

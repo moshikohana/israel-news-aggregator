@@ -5,6 +5,7 @@ import {
   addContactLog,
   createMember,
   deleteMember,
+  deleteMembersByIds,
   getActivistOptions,
   getContactLog,
   getFilterOptions,
@@ -155,6 +156,23 @@ export const membersRouter = router({
         detail: `מחיקת חבר: ${existing?.fullName ?? input.id}`,
       });
       return { ok: true };
+    }),
+
+  // Bulk-delete a specific set of members by id (e.g. duplicate records found
+  // via the AI chat). Returns the number of members actually deleted.
+  removeMany: protectedProcedure
+    .input(z.object({ ids: z.array(z.number().int().positive()).min(1).max(50) }))
+    .mutation(async ({ input, ctx }) => {
+      const deleted = await deleteMembersByIds(input.ids);
+      await recordAudit({
+        actorOpenId: ctx.user.openId,
+        actorName: ctx.user.name,
+        action: "delete",
+        entity: "member",
+        entityId: input.ids.join(","),
+        detail: `מחיקת ${deleted} כפילויות מתוך הצ'אט (ids: ${input.ids.join(", ")})`,
+      });
+      return { deleted };
     }),
 
   setSupport: protectedProcedure

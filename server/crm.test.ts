@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { isSafeSelect } from "./ai";
 import { resolveUserRole } from "./db";
+import { findDuplicateGroups, normalizeName, normalizePhone } from "./duplicates";
 import { guessField, normalizeValue, toISODate } from "./fields";
 
 describe("isSafeSelect (AI SQL guard)", () => {
@@ -222,6 +223,52 @@ describe("duplicate-by-phone detection (import preview)", () => {
     }
     expect(dupExisting).toBe(1);
     expect(dupInFile).toBe(1);
+  });
+});
+
+describe("findDuplicateGroups (chat results)", () => {
+  it("normalizes names and phones for comparison", () => {
+    expect(normalizeName("  משה   כהן ")).toBe("משה כהן");
+    expect(normalizeName("Moshe  Cohen")).toBe("moshe cohen");
+    expect(normalizePhone("050-123-4567")).toBe("0501234567");
+    expect(normalizePhone(null)).toBe("");
+  });
+
+  it("groups rows with the same normalized name AND phone as duplicates", () => {
+    const rows = [
+      { id: 1, full_name: "משה כהן", phone: "050-1234567", city: "תל אביב" },
+      { id: 2, full_name: " משה   כהן", phone: "0501234567", city: "חיפה" },
+      { id: 3, full_name: "דנה לוי", phone: "0529998888" },
+    ];
+    const groups = findDuplicateGroups(rows);
+    expect(groups).toHaveLength(1);
+    expect(groups[0].ids.sort()).toEqual([1, 2]);
+    expect(groups[0].fullName).toBe("משה כהן");
+  });
+
+  it("does not group same-name rows with different phone numbers", () => {
+    const rows = [
+      { id: 1, full_name: "משה כהן", phone: "0501111111" },
+      { id: 2, full_name: "משה כהן", phone: "0502222222" },
+    ];
+    expect(findDuplicateGroups(rows)).toEqual([]);
+  });
+
+  it("ignores rows missing id, full_name or phone", () => {
+    const rows = [
+      { id: 1, full_name: "משה כהן" }, // no phone
+      { full_name: "דנה לוי", phone: "0501234567" }, // no id
+      { id: 2, full_name: "", phone: "0501234567" }, // no name
+    ];
+    expect(findDuplicateGroups(rows)).toEqual([]);
+  });
+
+  it("returns no groups when there are no duplicates", () => {
+    const rows = [
+      { id: 1, full_name: "משה כהן", phone: "0501111111" },
+      { id: 2, full_name: "דנה לוי", phone: "0502222222" },
+    ];
+    expect(findDuplicateGroups(rows)).toEqual([]);
   });
 });
 

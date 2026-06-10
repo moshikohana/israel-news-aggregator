@@ -510,6 +510,22 @@ export async function deleteMembersByBatch(batchId: number): Promise<number> {
   return ids.length;
 }
 
+// Delete a specific set of members (and their contact logs) by id. Used to
+// clean up duplicate records found via the AI chat. Returns the number of
+// members that actually existed and were deleted.
+export async function deleteMembersByIds(ids: number[]): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const validIds = Array.from(new Set(ids.filter((id) => Number.isInteger(id) && id > 0)));
+  if (validIds.length === 0) return 0;
+  const rows = await db.select({ id: members.id }).from(members).where(inArray(members.id, validIds));
+  const existingIds = rows.map((r) => r.id);
+  if (existingIds.length === 0) return 0;
+  await db.delete(contactLog).where(inArray(contactLog.memberId, existingIds));
+  await db.delete(members).where(inArray(members.id, existingIds));
+  return existingIds.length;
+}
+
 export async function updateFamilyEvents(id: number, events: FamilyEvent[]): Promise<FamilyEvent[]> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");

@@ -1,4 +1,5 @@
 import DashboardLayout from "@/components/DashboardLayout";
+import { DuplicateGroup, DuplicateGroupCard, MemberResultCard } from "@/components/ChatResultCards";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { trpc } from "@/lib/trpc";
@@ -20,6 +21,7 @@ type ChatMessage = {
   content: string;
   sql?: string;
   results?: any[];
+  duplicateGroups?: DuplicateGroup[];
 };
 
 const SAMPLE_QUESTIONS = [
@@ -76,7 +78,13 @@ function ChatView() {
         onSuccess: (data) => {
           setMessages((m) => [
             ...m,
-            { role: "assistant", content: data.answer, sql: data.sql, results: data.results },
+            {
+              role: "assistant",
+              content: data.answer,
+              sql: data.sql,
+              results: data.results,
+              duplicateGroups: data.duplicateGroups,
+            },
           ]);
         },
         onError: (err) => {
@@ -221,7 +229,16 @@ function MessageBubble({
 }) {
   const [showSql, setShowSql] = useState(false);
   const isUser = message.role === "user";
-  const names = !isUser ? extractNames(message.results) : [];
+
+  const memberRows = !isUser
+    ? (message.results ?? []).filter(
+        (r) => r && typeof r === "object" && Number.isInteger(Number(r.id)) && r.full_name,
+      )
+    : [];
+  const duplicateGroups = !isUser ? message.duplicateGroups ?? [] : [];
+  const duplicateIds = new Set(duplicateGroups.flatMap((g) => g.ids));
+  const singleRows = memberRows.filter((r) => !duplicateIds.has(Number(r.id)));
+  const names = memberRows.length === 0 && !isUser ? extractNames(message.results) : [];
 
   return (
     <div className={`flex gap-3 ${isUser ? "flex-row-reverse" : ""}`}>
@@ -247,7 +264,28 @@ function MessageBubble({
           )}
         </div>
 
-        {!isUser && names.length > 0 && (
+        {!isUser && duplicateGroups.length > 0 && (
+          <div className="w-full flex flex-col gap-2">
+            {duplicateGroups.map((g) => (
+              <DuplicateGroupCard
+                key={`${g.fullName}-${g.phone}`}
+                group={g}
+                rows={memberRows}
+                onOpen={onMemberClick}
+              />
+            ))}
+          </div>
+        )}
+
+        {!isUser && singleRows.length > 0 && (
+          <div className="w-full flex flex-col gap-2">
+            {singleRows.map((row) => (
+              <MemberResultCard key={row.id} row={row} onOpen={onMemberClick} />
+            ))}
+          </div>
+        )}
+
+        {!isUser && memberRows.length === 0 && names.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
             {names.map((n) => (
               <button
