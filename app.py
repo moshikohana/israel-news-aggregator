@@ -288,5 +288,42 @@ def more_now14_articles(start):
     articles = get_now14_articles(start=start, limit=5)
     return jsonify(articles)
 
+def _lan_ip():
+    """מוצא את כתובת ה-IP של המחשב ברשת המקומית (בלי לשלוח כלום החוצה)."""
+    import socket
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        sock.connect(('8.8.8.8', 80))
+        return sock.getsockname()[0]
+    except OSError:
+        return '127.0.0.1'
+    finally:
+        sock.close()
+
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    import argparse
+
+    parser = argparse.ArgumentParser(description='אגרגטור החדשות + פיצ\'ר ה-AR')
+    parser.add_argument('--phone', action='store_true',
+                        help='הרצה לטלפון: מאזין לכל הרשת המקומית עם HTTPS (נדרש למצלמה)')
+    parser.add_argument('--host', default='127.0.0.1')
+    parser.add_argument('--port', type=int, default=5000)
+    args = parser.parse_args()
+
+    if args.phone:
+        try:
+            import cryptography  # noqa: F401  (נדרש ל-ssl_context='adhoc')
+        except ImportError:
+            raise SystemExit('חסרה חבילה: הריצו  pip install cryptography')
+
+        url = f'https://{_lan_ip()}:{args.port}/ar'
+        print('\n' + '=' * 58)
+        print('  פתחו בטלפון (באותו Wi-Fi):')
+        print(f'  {url}')
+        print('\n  הדפדפן יזהיר שהתעודה לא מוכרת - זה תקין בפיתוח:')
+        print('  Chrome: Advanced → Proceed | Safari: Show Details → visit')
+        print('=' * 58 + '\n')
+        app.run(host='0.0.0.0', port=args.port, ssl_context='adhoc', debug=False)
+    else:
+        app.run(host=args.host, port=args.port, debug=True)

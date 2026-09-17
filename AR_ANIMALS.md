@@ -46,11 +46,22 @@ app.py                       נתיב /ar
 
 ```bash
 pip install flask requests beautifulsoup4
-python app.py
+python app.py                 # http://127.0.0.1:5000
 ```
 
-⚠️ **גישה למצלמה דורשת HTTPS.** בדפדפן `http://localhost` זה עובד,
-אבל מכתובת IP ברשת המקומית או בשרת אמיתי צריך תעודת SSL
-(למשל `flask run --cert=adhoc`, או פרוקסי עם HTTPS).
+### הרצה על הטלפון (מצלמה אמיתית)
+
+```bash
+pip install cryptography      # פעם אחת - נדרש ל-HTTPS
+python app.py --phone
+```
+
+הפקודה מדפיסה כתובת כמו `https://192.168.1.23:5000/ar` - פותחים אותה בטלפון
+שמחובר לאותו Wi-Fi. הדפדפן יזהיר שהתעודה לא מוכרת (תעודה זמנית שנוצרת
+בכל הרצה) - ממשיכים דרך Advanced → Proceed בכרום, או Show Details → visit
+this website בספארי.
+
+⚠️ **גישה למצלמה דורשת HTTPS** בכל כתובת שאינה `localhost` - זו הסיבה
+ל-`--phone`. אותו דבר תקף גם לפריסה בשרת אמיתי.
 
 הווידאו והעיבוד רצים כולם בדפדפן - שום פריים מהמצלמה לא נשלח לשרת.
