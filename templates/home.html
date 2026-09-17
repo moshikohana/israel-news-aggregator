@@ -70,6 +70,16 @@
         .button:hover { 
             background-color: #0056b3; 
         }
+        .ar-link {
+            display: inline-block;
+            padding: 10px 18px;
+            border-radius: 999px;
+            background: linear-gradient(135deg, #2fe0bd 0%, #0f7f6c 100%);
+            color: #04140f;
+            font-weight: 700;
+            text-decoration: none;
+        }
+        .ar-link:hover { filter: brightness(1.08); }
         .less-button {
             display: none; /* Hide the 'Show Less' button initially */
         }
@@ -121,7 +131,10 @@
     <div id="loading-screen">
         <div id="loading-text">טוען...</div>
     </div>
-    <h1 style="text-align:center; margin-bottom:40px;">חדשות אחרונות</h1>
+    <h1 style="text-align:center; margin-bottom:10px;">חדשות אחרונות</h1>
+    <p style="text-align:center; margin-bottom:40px;">
+        <a href="{{ url_for('ar_animals') }}" class="ar-link">🦒 חיות בגודל אמיתי במצלמה (AR)</a>
+    </p>
     <div class="container">
         <div class="column">
             <div class="header">

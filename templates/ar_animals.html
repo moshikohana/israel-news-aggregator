@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, user-scalable=no">
+    <meta name="theme-color" content="#080b10">
+    <meta name="description" content="חיות בגודל אמיתי במציאות רבודה - דרך המצלמה של הטלפון">
+    <title>AR חיות בגודל אמיתי</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦒</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/ar.css') }}">
+    <!-- three.js מוגש מקומית (ללא CDN) כדי שהפיצ'ר יעבוד גם ברשת סגורה -->
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "{{ url_for('static', filename='js/vendor/three.module.min.js') }}"
+        }
+    }
+    </script>
+</head>
+<body>
+    <div id="stage">
+        <video id="cam" playsinline muted autoplay></video>
+        <canvas id="gl"></canvas>
+    </div>
+
+    <!-- overlay משמש כ-dom-overlay של WebXR כדי שהכפתורים יישארו בתוך הסשן -->
+    <div id="overlay">
+        <!-- ------------------------------------------------ מסך פתיחה -->
+        <section id="start">
+            <div class="emoji-strip">🦒 🐘 🦁 🦖 🐧</div>
+            <h1>חיות בגודל אמיתי</h1>
+            <p class="sub">
+                מפעילים את המצלמה, והחיה מופיעה מולך בסלון - במידות האמיתיות שלה,
+                עד המילימטר. ג'ירפה בגובה 5.5 מטר, פיל של 6 טון, טי-רקס באורך 12 מטר.
+            </p>
+
+            <div class="cta">
+                <button id="btn-xr" class="primary hidden">🚀 הפעל AR עם זיהוי רצפה</button>
+                <button id="btn-cam" class="primary">📷 הפעל מצלמה</button>
+                <button id="btn-preview">👁️ תצוגה מקדימה בלי מצלמה</button>
+            </div>
+            <p id="xr-note">בודק תמיכה במכשיר…</p>
+
+            <div class="tips">
+                <div>📏 <b>גודל אמיתי:</b> יחידה אחת בסצנה = מטר אחד בעולם.</div>
+                <div>🚶 <b>התרחק/י:</b> לפיל צריך בערך 8 מטר כדי לראות אותו שלם.</div>
+                <div>🧍 <b>כפתור ההשוואה</b> מוסיף דמות אדם בגובה 1.75 מ'.</div>
+                <div>🔒 המצלמה רצה רק בדפדפן שלך - שום תמונה לא נשלחת לשרת.</div>
+            </div>
+
+            <a class="back-link" href="{{ url_for('home') }}">← חזרה לעמוד החדשות</a>
+        </section>
+
+        <!-- -------------------------------------------------------- HUD -->
+        <section id="hud" class="hidden">
+            <div id="status"></div>
+
+            <div class="toolbar">
+                <button id="btn-exit" class="tool ui" title="יציאה">✕</button>
+                <button id="btn-shot" class="tool ui" title="צילום מסך">📸</button>
+                <button id="btn-human" class="tool ui" title="השוואה לאדם">🧍</button>
+                <button id="btn-center" class="tool ui" title="מיקום מחדש">🎯</button>
+                <button id="btn-settings" class="tool ui" title="כיול">⚙️</button>
+            </div>
+
+            <div class="bottom">
+                <div class="info ui">
+                    <h2 id="info-name"></h2>
+                    <div id="info-dims"></div>
+                    <p id="info-ratio"></p>
+                    <p id="info-fact"></p>
+                </div>
+
+                <div class="slider-row ui">
+                    <span>מרחק</span>
+                    <input id="distance" type="range" min="1.2" max="60" step="0.1" value="6">
+                    <output id="distance-out">6 מ'</output>
+                </div>
+
+                <div class="row">
+                    <button id="btn-sheet" class="ui">🐾 בחר/י חיה</button>
+                    <button id="btn-walk" class="ui">🧍 עומד</button>
+                </div>
+            </div>
+
+            <div id="sheet" class="sheet ui">
+                <h3>בחר/י חיה - כל המידות אמיתיות</h3>
+                <div id="picker"></div>
+            </div>
+
+            <div id="settings" class="sheet ui">
+                <h3>כיול מצלמה</h3>
+                <div class="setting-row">
+                    <label for="fov">שדה ראייה (FOV)</label>
+                    <div class="setting-inline">
+                        <input id="fov" type="range" min="35" max="95" step="1" value="65">
+                        <output id="fov-out">65°</output>
+                    </div>
+                    <div class="hint">
+                        במצב מצלמה רגילה הדפדפן לא מדווח על זווית העדשה האמיתית.
+                        אם החיה נראית גדולה או קטנה מדי ביחס לחדר - הזיזו את המחוון
+                        עד שגודל החפצים בסצנה מתאים למציאות. (במצב AR מלא הכיול אוטומטי.)
+                    </div>
+                </div>
+                <div class="setting-row">
+                    <div class="hint">
+                        💡 טיפ: הפעילו את דמות ההשוואה (🧍) ועמדו לידה - כשהיא בגובה
+                        של אדם אמיתי בחדר, הכיול מדויק.
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script type="module" src="{{ url_for('static', filename='js/ar-animals.js') }}"></script>
+</body>
+</html>
