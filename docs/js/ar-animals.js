@@ -16,7 +16,7 @@ import { createModelAnimal, hasModel, measure } from './models.js';
 const EYE_HEIGHT = 1.6;          // גובה עין ממוצע במצב מצלמה (מטר)
 const DEFAULT_FOV = 65;          // ברירת מחדל לכיול שדה הראייה
 const STORAGE_KEY = 'ar-animals-settings';
-const APP_VERSION = '3';
+const APP_VERSION = '4';
 
 const state = {
     mode: 'idle',                // idle | xr | camera | preview
@@ -25,6 +25,7 @@ const state = {
     showHuman: false,
     distance: 6,
     pitch: 0,
+    orientedPlaced: false,       // האם החיה כבר מוקמה לפי כיוון המכשיר האמיתי
     yaw: Math.PI,                // כיוון החיה, נשמר בין מיקומים מחדש
     spin: false,                 // סיבוב אוטומטי לתצוגת 360 מעלות
     fov: DEFAULT_FOV,
@@ -316,6 +317,7 @@ async function startCamera() {
         document.body.classList.add('has-camera');
         scene.background = null;
         state.mode = 'camera';
+        state.orientedPlaced = false;
         grid.visible = false;
         await orientationPromise;
         if (!animalGroup) await spawnAnimal(false);
@@ -525,7 +527,17 @@ function render(timestamp, frame) {
         reticle.visible = false;
     }
 
-    if ((state.mode === 'camera') && orientation.active) applyDeviceOrientation();
+    if (state.mode === 'camera' && orientation.active) {
+        applyDeviceOrientation();
+        // החיה מוצבת כשהמצלמה נפתחת, עוד לפני שהגיעה קריאה מהחיישנים.
+        // ברגע שהיא מגיעה, כיוון המצלמה קופץ לכיוון המצפן האמיתי של המכשיר -
+        // ובלי המיקום מחדש כאן, החיה נשארת בכיוון אקראי, לרוב מאחורי המשתמש.
+        if (!state.orientedPlaced && animalGroup) {
+            camera.updateMatrixWorld(true);
+            placeInFront(state.distance, true);
+            state.orientedPlaced = true;
+        }
+    }
 
     if (animalGroup) {
         const model = animalGroup.userData.model;
@@ -912,5 +924,14 @@ window.__info = () => {
     };
 };
 window.__look = (angle) => { camera.rotation.order = 'YXZ'; camera.rotation.y = angle; };
+window.__inFrame = () => {
+    if (!animalGroup) return false;
+    const spec = getAnimal(state.animalId);
+    const p = new THREE.Vector3();
+    animalGroup.getWorldPosition(p);
+    p.y += spec.heightM * 0.5;
+    p.project(camera);
+    return p.z < 1 && Math.abs(p.x) <= 1 && Math.abs(p.y) <= 1;
+};
 window.__yaw = () => (animalGroup ? animalGroup.rotation.y : 0);
 window.__face = (angle) => { if (animalGroup) animalGroup.rotation.y = angle; };

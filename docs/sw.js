@@ -3,7 +3,7 @@
  * קוד האפליקציה נשמר במטמון בהתקנה; מודלי ה-GLB (כמה מגהבייט)
  * נשמרים לפי דרישה, בפעם הראשונה שצופים בחיה.
  */
-const VERSION = 'ar-animals-v3';
+const VERSION = 'ar-animals-v4';
 const ASSETS = [
     './',
     './index.html',
