@@ -586,6 +586,56 @@ function applyFov(v) {
     saveSettings();
 }
 
+/* ------------------------------------------------------- התקנה כאפליקציה */
+
+let installPrompt = null;
+
+function setupInstall() {
+    const btn = el('btn-install');
+    const standalone = window.matchMedia('(display-mode: standalone)').matches
+        || window.navigator.standalone === true;
+
+    // כשהאפליקציה כבר מותקנת - אין מה להציע
+    if (standalone) {
+        el('back-link').classList.add('hidden');
+        return;
+    }
+
+    // כרום באנדרואיד: האירוע מגיע כשהאתר עומד בתנאי ההתקנה
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        installPrompt = e;
+        btn.classList.remove('hidden');
+    });
+
+    btn.addEventListener('click', async () => {
+        if (!installPrompt) {
+            // ספארי ודפדפנים אחרים - התקנה ידנית מתפריט השיתוף
+            setStatus('בתפריט הדפדפן: שיתוף ← הוסף למסך הבית');
+            return;
+        }
+        installPrompt.prompt();
+        const { outcome } = await installPrompt.userChoice;
+        installPrompt = null;
+        if (outcome === 'accepted') btn.classList.add('hidden');
+    });
+
+    window.addEventListener('appinstalled', () => {
+        btn.classList.add('hidden');
+        setStatus('האפליקציה הותקנה 🎉 אפשר לפתוח אותה ממסך הבית');
+    });
+
+    // הקישור לעמוד החדשות רלוונטי רק כשרצים מתוך שרת ה-Flask
+    if (!/\/ar\/?$/.test(location.pathname)) el('back-link').classList.add('hidden');
+}
+
+function registerServiceWorker() {
+    if (!('serviceWorker' in navigator)) return;
+    // דורש הקשר מאובטח (https או localhost) - בלעדיו פשוט מדלגים
+    if (!window.isSecureContext) return;
+    navigator.serviceWorker.register('sw.js').catch((err) => console.warn('SW failed', err));
+}
+
 /* ------------------------------------------------------------------ הפעלה */
 
 async function boot() {
@@ -595,6 +645,9 @@ async function boot() {
         infoRatio: el('info-ratio'), distance: el('distance'), distanceOut: el('distance-out'),
         fov: el('fov'), fovOut: el('fov-out'),
     });
+
+    setupInstall();
+    registerServiceWorker();
 
     loadSettings();
     initScene();

@@ -1,10 +1,15 @@
+import os
 import requests
 from bs4 import BeautifulSoup
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, jsonify, send_from_directory
 from collections import defaultdict
 import difflib
 
 app = Flask(__name__)
+
+# אפליקציית ה-AR היא אתר סטטי עצמאי שיושב ב-docs/, כדי שאותם קבצים
+# ישמשו גם את השרת המקומי וגם אירוח ב-GitHub Pages (התקנה כאפליקציה).
+AR_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'docs')
 
 seen_titles_ynet = set()
 seen_titles_n12 = set()
@@ -258,15 +263,20 @@ def home():
     grouped_articles = get_all_articles()
     return render_template('home.html', ynet_articles=ynet_articles, n12_articles=n12_articles, kan11_articles=kan11_articles, now14_articles=now14_articles, grouped_articles=grouped_articles)
 
-@app.route('/ar')
+@app.route('/ar/')
 def ar_animals():
     """פיצ'ר AR: חיות תלת ממד בגודל אמיתי דרך מצלמת המכשיר.
 
     כל הלוגיקה רצה בדפדפן (WebXR / getUserMedia + three.js) - השרת רק
-    מגיש את העמוד, ושום פריים מהמצלמה לא נשלח לכאן.
+    מגיש קבצים סטטיים, ושום פריים מהמצלמה לא נשלח לכאן.
     שימו לב: גישה למצלמה דורשת HTTPS (או localhost).
     """
-    return render_template('ar_animals.html')
+    return send_from_directory(AR_DIR, 'index.html')
+
+
+@app.route('/ar/<path:filename>')
+def ar_asset(filename):
+    return send_from_directory(AR_DIR, filename)
 
 @app.route('/more_ynet_articles/<int:start>')
 def more_ynet_articles(start):

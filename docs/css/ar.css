@@ -17,7 +17,7 @@ html, body {
     overflow: hidden;
     background: var(--bg);
     color: var(--text);
-    font-family: 'Heebo', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    font-family: system-ui, -apple-system, 'Segoe UI', 'Noto Sans Hebrew', 'Arial Hebrew', sans-serif;
     direction: rtl;
     overscroll-behavior: none;
 }

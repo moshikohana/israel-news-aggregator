@@ -6,14 +6,19 @@
     <meta name="theme-color" content="#080b10">
     <meta name="description" content="חיות בגודל אמיתי במציאות רבודה - דרך המצלמה של הטלפון">
     <title>AR חיות בגודל אמיתי</title>
+    <link rel="manifest" href="manifest.webmanifest">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="AR חיות">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦒</text></svg>">
-    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/ar.css') }}">
+    <link rel="stylesheet" href="css/ar.css">
     <!-- three.js מוגש מקומית (ללא CDN) כדי שהפיצ'ר יעבוד גם ברשת סגורה -->
     <script type="importmap">
     {
         "imports": {
-            "three": "{{ url_for('static', filename='js/vendor/three.module.min.js') }}"
+            "three": "./vendor/three.module.min.js"
         }
     }
     </script>
@@ -39,6 +44,7 @@
                 <button id="btn-xr" class="primary hidden">🚀 הפעל AR עם זיהוי רצפה</button>
                 <button id="btn-cam" class="primary">📷 הפעל מצלמה</button>
                 <button id="btn-preview">👁️ תצוגה מקדימה בלי מצלמה</button>
+                <button id="btn-install" class="hidden">📲 התקן כאפליקציה במכשיר</button>
             </div>
             <p id="xr-note">בודק תמיכה במכשיר…</p>
 
@@ -49,7 +55,7 @@
                 <div>🔒 המצלמה רצה רק בדפדפן שלך - שום תמונה לא נשלחת לשרת.</div>
             </div>
 
-            <a class="back-link" href="{{ url_for('home') }}">← חזרה לעמוד החדשות</a>
+            <a id="back-link" class="back-link" href="../">← חזרה לעמוד החדשות</a>
         </section>
 
         <!-- -------------------------------------------------------- HUD -->
@@ -113,6 +119,6 @@
         </section>
     </div>
 
-    <script type="module" src="{{ url_for('static', filename='js/ar-animals.js') }}"></script>
+    <script type="module" src="js/ar-animals.js"></script>
 </body>
 </html>
