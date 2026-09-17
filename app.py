@@ -258,6 +258,16 @@ def home():
     grouped_articles = get_all_articles()
     return render_template('home.html', ynet_articles=ynet_articles, n12_articles=n12_articles, kan11_articles=kan11_articles, now14_articles=now14_articles, grouped_articles=grouped_articles)
 
+@app.route('/ar')
+def ar_animals():
+    """פיצ'ר AR: חיות תלת ממד בגודל אמיתי דרך מצלמת המכשיר.
+
+    כל הלוגיקה רצה בדפדפן (WebXR / getUserMedia + three.js) - השרת רק
+    מגיש את העמוד, ושום פריים מהמצלמה לא נשלח לכאן.
+    שימו לב: גישה למצלמה דורשת HTTPS (או localhost).
+    """
+    return render_template('ar_animals.html')
+
 @app.route('/more_ynet_articles/<int:start>')
 def more_ynet_articles(start):
     articles = get_ynet_articles(start=start, limit=5)
