@@ -307,9 +307,10 @@ function buildQuadruped(cfg) {
             ear = ball(earSize, skinMat);
             ear.scale.set(1, 1, 0.35);
         } else if (cfg.earShape === 'fan') {
-            // אוזני פיל: יריעות רחבות שיוצאות לצדדים ומעט לאחור
-            ear = box(earSize * 1.7, earSize * 2.3, earSize * 0.14, skinMat);
-            ear.rotation.set(0, side * 1.15, side * 0.2);
+            // אוזני פיל: מניפות מעוגלות ושטוחות שנתלות מצדי הראש
+            ear = ball(earSize, skinMat);
+            ear.scale.set(0.95, 1.25, 0.12);
+            ear.rotation.set(0.15, side * 0.85, side * 0.12);
         } else {
             ear = cone(earSize * 0.62, earSize * 1.8, skinMat);
             ear.rotation.z = side * 0.3;
