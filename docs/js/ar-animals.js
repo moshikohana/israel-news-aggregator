@@ -16,6 +16,7 @@ import { createModelAnimal, hasModel, measure } from './models.js';
 const EYE_HEIGHT = 1.6;          // גובה עין ממוצע במצב מצלמה (מטר)
 const DEFAULT_FOV = 65;          // ברירת מחדל לכיול שדה הראייה
 const STORAGE_KEY = 'ar-animals-settings';
+const APP_VERSION = '3';
 
 const state = {
     mode: 'idle',                // idle | xr | camera | preview
@@ -254,18 +255,37 @@ async function startXR() {
 
 function onXRSelect() {
     if (!animalGroup) return;
+    const pos = new THREE.Vector3();
+
     if (reticle.visible) {
-        const pos = new THREE.Vector3().setFromMatrixPosition(reticle.matrix);
-        animalGroup.position.copy(pos);
-        shadowPlane.position.y = pos.y;
-        animalGroup.visible = true;
-        state.placed = true;
-        // מפנה את החיה אל הצופה
+        pos.setFromMatrixPosition(reticle.matrix);
+    } else {
+        // אין זיהוי רצפה (תאורה חלשה, רצפה חלקה, משטח לא מזוהה) -
+        // מציבים בכל זאת: על הרצפה המשוערת, לפני הצופה
         const camPos = new THREE.Vector3();
         camera.getWorldPosition(camPos);
-        state.yaw = Math.atan2(camPos.x - pos.x, camPos.z - pos.z);
-        animalGroup.rotation.y = state.yaw;
-        updateHumanRef();
+        const dir = new THREE.Vector3();
+        camera.getWorldDirection(dir);
+        dir.y = 0;
+        if (dir.lengthSq() < 1e-6) dir.set(0, 0, -1);
+        dir.normalize();
+        const spec = getAnimal(state.animalId);
+        const away = THREE.MathUtils.clamp(spec.heightM * 1.6, 1.5, 8);
+        pos.set(camPos.x + dir.x * away, camPos.y - EYE_HEIGHT, camPos.z + dir.z * away);
+        setStatus('לא זוהתה רצפה - הצבתי את החיה לפניך');
+    }
+
+    animalGroup.position.copy(pos);
+    shadowPlane.position.y = pos.y;
+    animalGroup.visible = true;
+    state.placed = true;
+
+    const camPos = new THREE.Vector3();
+    camera.getWorldPosition(camPos);
+    state.yaw = Math.atan2(camPos.x - pos.x, camPos.z - pos.z);
+    animalGroup.rotation.y = state.yaw;
+    updateHumanRef();
+    if (reticle.visible) {
         setStatus(`${getAnimal(state.animalId).name} הוצב/ה בגודל אמיתי - התרחק/י כדי לראות הכל`);
     }
 }
@@ -444,6 +464,48 @@ function setDistance(v) {
     if (state.mode !== 'xr') placeInFront(state.distance);
 }
 
+/* ------------------------------------------------- מחוון "החיה מחוץ לפריים" */
+
+const _animalPos = new THREE.Vector3();
+const _ndc = new THREE.Vector3();
+
+function updateOffscreenHint() {
+    const hint = dom.hint;
+    if (!animalGroup || !animalGroup.visible || !state.placed) {
+        hint.classList.remove('show');
+        return;
+    }
+
+    // מרכז החיה (בערך באמצע הגובה שלה) בקואורדינטות מסך
+    const spec = getAnimal(state.animalId);
+    animalGroup.getWorldPosition(_animalPos);
+    _animalPos.y += spec.heightM * 0.5;
+    _ndc.copy(_animalPos).project(camera);
+
+    const behind = _ndc.z > 1;
+    const outside = behind || Math.abs(_ndc.x) > 1 || Math.abs(_ndc.y) > 1;
+    if (!outside) {
+        hint.classList.remove('show');
+        return;
+    }
+
+    const camPos = new THREE.Vector3();
+    camera.getWorldPosition(camPos);
+    const distance = camPos.distanceTo(_animalPos);
+
+    // כשהחיה מאחור, ההיטל מתהפך - מתקנים כדי שהחץ יצביע נכון
+    const x = behind ? -_ndc.x : _ndc.x;
+    const y = behind ? -_ndc.y : _ndc.y;
+    let arrow = '⬆️';
+    if (behind && Math.abs(x) < 0.4) arrow = '🔄';
+    else if (Math.abs(x) > Math.abs(y)) arrow = x > 0 ? '➡️' : '⬅️';
+    else arrow = y > 0 ? '⬆️' : '⬇️';
+
+    hint.innerHTML = `<span class="hint-arrow">${arrow}</span>`
+        + `<span>${spec.emoji} ${spec.name} כאן, ${distance.toFixed(1)} מ' - הפנה/י את המצלמה</span>`;
+    hint.classList.add('show');
+}
+
 /* --------------------------------------------------------------- לולאת ציור */
 
 function render(timestamp, frame) {
@@ -475,6 +537,8 @@ function render(timestamp, frame) {
             state.yaw = animalGroup.rotation.y;
         }
     }
+    updateOffscreenHint();
+    if (t - (render.lastDiag || 0) > 0.5) { render.lastDiag = t; updateDiagnostics(); }
     renderer.render(scene, camera);
 }
 
@@ -684,7 +748,64 @@ function registerServiceWorker() {
     if (!('serviceWorker' in navigator)) return;
     // דורש הקשר מאובטח (https או localhost) - בלעדיו פשוט מדלגים
     if (!window.isSecureContext) return;
-    navigator.serviceWorker.register('sw.js').catch((err) => console.warn('SW failed', err));
+
+    // אפליקציה מותקנת מגישה את עצמה מהמטמון, ובלי זה גרסה ישנה
+    // הייתה יכולה להישאר תקועה על המכשיר גם אחרי עדכון
+    const hadController = !!navigator.serviceWorker.controller;
+    let reloading = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!hadController || reloading) return;   // בהתקנה ראשונה אין מה לרענן
+        reloading = true;
+        location.reload();
+    });
+
+    navigator.serviceWorker.register('sw.js')
+        .then((reg) => reg.update())
+        .catch((err) => console.warn('SW failed', err));
+}
+
+/* ---------------------------------------------------------------- אבחון */
+
+const diagnostics = { lastError: null };
+
+window.addEventListener('error', (e) => { diagnostics.lastError = e.message; });
+window.addEventListener('unhandledrejection', (e) => {
+    diagnostics.lastError = String(e.reason?.message || e.reason);
+});
+
+function updateDiagnostics() {
+    const box = el('diag');
+    if (!box || !el('settings').classList.contains('open')) return;
+
+    const spec = getAnimal(state.animalId);
+    const gl = renderer?.getContext?.();
+    let gpu = 'לא זמין';
+    try {
+        const info = gl?.getExtension('WEBGL_debug_renderer_info');
+        gpu = info ? gl.getParameter(info.UNMASKED_RENDERER_WEBGL) : (gl ? 'WebGL פעיל' : 'אין WebGL');
+    } catch { gpu = gl ? 'WebGL פעיל' : 'אין WebGL'; }
+
+    let onScreen = '—';
+    if (animalGroup) {
+        const p = new THREE.Vector3();
+        animalGroup.getWorldPosition(p);
+        p.y += spec.heightM * 0.5;
+        p.project(camera);
+        onScreen = (p.z < 1 && Math.abs(p.x) <= 1 && Math.abs(p.y) <= 1) ? 'כן' : 'לא (מחוץ לפריים)';
+    }
+
+    const rows = [
+        ['גרסה', APP_VERSION],
+        ['מצב', { xr: 'AR מלא', camera: 'מצלמה', preview: 'תצוגה מקדימה', idle: 'לא פעיל' }[state.mode]],
+        ['כרטיס מסך', String(gpu).slice(0, 38)],
+        ['חיה', `${spec.name} · ${animalGroup ? (animalGroup.userData.model ? 'מודל מלא' : 'פרוצדורלי') : 'לא נטענה'}`],
+        ['מוצבת', animalGroup ? (animalGroup.visible && state.placed ? 'כן' : 'לא') : 'לא'],
+        ['בתוך הפריים', onScreen],
+        ['מרחק', `${state.distance.toFixed(1)} מ'`],
+        ['מצלמה חיה', videoEl && videoEl.videoWidth ? `${videoEl.videoWidth}×${videoEl.videoHeight}` : 'לא פעילה'],
+        ['שגיאה אחרונה', diagnostics.lastError ? diagnostics.lastError.slice(0, 60) : 'אין'],
+    ];
+    box.innerHTML = rows.map(([k, v]) => `<div><span>${k}</span><b>${v}</b></div>`).join('');
 }
 
 /* ------------------------------------------------------------------ הפעלה */
@@ -694,9 +815,10 @@ async function boot() {
         start: el('start'), hud: el('hud'), status: el('status'), picker: el('picker'),
         infoName: el('info-name'), infoDims: el('info-dims'), infoFact: el('info-fact'),
         infoRatio: el('info-ratio'), distance: el('distance'), distanceOut: el('distance-out'),
-        fov: el('fov'), fovOut: el('fov-out'),
+        fov: el('fov'), fovOut: el('fov-out'), hint: el('hint'),
     });
 
+    el('version').textContent = `גרסה ${APP_VERSION}`;
     setupInstall();
     registerServiceWorker();
 
@@ -732,14 +854,18 @@ async function boot() {
         setStatus(state.showHuman ? 'הוספתי דמות אדם בגובה 1.75 מ\' להשוואה' : 'הסרתי את דמות ההשוואה');
     });
     el('btn-center').addEventListener('click', () => {
+        if (!animalGroup) return;
         if (state.mode === 'xr') {
-            state.placed = false;
-            if (animalGroup) animalGroup.visible = false;
-            setStatus('כוון/י לרצפה ולחץ/י כדי להציב מחדש');
-        } else {
-            placeInFront(state.distance, true);
-            setStatus('החיה מוקמה מולך');
+            // מציב מיד לפני הצופה, בלי להמתין לזיהוי רצפה
+            onXRSelect();
+            setStatus('הבאתי את החיה לפניך');
+            return;
         }
+        // מרחק שממנו רואים את כל החיה, בכיוון שאליו המצלמה מופנית עכשיו
+        setDistance(fitDistance(getAnimal(state.animalId)));
+        placeInFront(state.distance, true);
+        animalGroup.visible = true;
+        setStatus('הבאתי את החיה לפניך');
     });
     el('btn-spin').addEventListener('click', (e) => {
         state.spin = !state.spin;
@@ -785,5 +911,6 @@ window.__info = () => {
         pitch: +camera.rotation.x.toFixed(2),
     };
 };
+window.__look = (angle) => { camera.rotation.order = 'YXZ'; camera.rotation.y = angle; };
 window.__yaw = () => (animalGroup ? animalGroup.rotation.y : 0);
 window.__face = (angle) => { if (animalGroup) animalGroup.rotation.y = angle; };
