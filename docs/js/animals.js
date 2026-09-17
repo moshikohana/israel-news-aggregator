@@ -132,34 +132,51 @@ function pattern(name, a, b) {
     return textureCache.get(key);
 }
 
-/* ------------------------------------------------------------ עזרי גיאומטריה */
+
+/* ------------------------------------------------------------ עזרי חומרים */
 
 function mat(color, opts = {}) {
     return new THREE.MeshStandardMaterial({
         color: new THREE.Color(color),
-        roughness: opts.roughness ?? 0.85,
-        metalness: opts.metalness ?? 0.02,
+        roughness: opts.roughness ?? 0.9,
+        metalness: 0,
         map: opts.map || null,
         flatShading: opts.flat || false,
     });
 }
 
-function capsule(radius, length, material) {
-    const m = new THREE.Mesh(new THREE.CapsuleGeometry(radius, Math.max(length, 0.001), 6, 14), material);
-    m.castShadow = true;
-    return m;
-}
-
 function ball(radius, material) {
-    const m = new THREE.Mesh(new THREE.SphereGeometry(radius, 20, 14), material);
+    const m = new THREE.Mesh(new THREE.SphereGeometry(radius, 18, 14), material);
     m.castShadow = true;
     return m;
 }
 
-function box(w, h, d, material) {
-    const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), material);
-    m.castShadow = true;
+/** כדור מתוח לצירים שונים - הבסיס לראשים, ללחיים ולכריות */
+function ellipsoid(rx, ry, rz, material) {
+    const m = ball(1, material);
+    m.scale.set(rx, ry, rz);
     return m;
+}
+
+/** גליל מתחדד שמצביע לכיוון +Y, עם קצוות מעוגלים */
+function taper(rBottom, rTop, length, material, round = true) {
+    const g = new THREE.Group();
+    const body = new THREE.Mesh(
+        new THREE.CylinderGeometry(rTop, rBottom, length, 14, 1, true),
+        material
+    );
+    body.position.y = length / 2;
+    body.castShadow = true;
+    g.add(body);
+    if (round) {
+        const bottom = ball(rBottom, material);
+        bottom.scale.y = 0.75;
+        const top = ball(rTop, material);
+        top.scale.y = 0.75;
+        top.position.y = length;
+        g.add(bottom, top);
+    }
+    return g;
 }
 
 function cone(radius, height, material) {
@@ -168,362 +185,578 @@ function cone(radius, height, material) {
     return m;
 }
 
-const EYE_MAT = new THREE.MeshStandardMaterial({ color: 0x10100e, roughness: 0.25 });
+const EYE_MAT = new THREE.MeshStandardMaterial({ color: 0x0d0c0a, roughness: 0.15 });
+const NOSE_MAT = new THREE.MeshStandardMaterial({ color: 0x241f1c, roughness: 0.5 });
 
-function addEyes(head, spread, forward, up, radius) {
-    for (const side of [-1, 1]) {
-        const eye = ball(radius, EYE_MAT);
-        eye.castShadow = false;
-        eye.position.set(side * spread, up, forward);
-        head.add(eye);
+/* ------------------------------------------------- גוף לפי עמוד שדרה מעוקל */
+
+/**
+ * בונה גוף אורגני: מעבירים עקומה חלקה דרך נקודות עמוד השדרה,
+ * וסביב כל נקודה נמתחת טבעת אליפטית ברדיוס וברוחב משתנים.
+ * ככה מתקבל גוף שמתעבה בחזה, נכנס במותן ומתדקק לצוואר -
+ * במקום קפסולה אחידה שנראית כמו נקניק.
+ *
+ * points: [{ z, y, r, w }] מהזנב קדימה. r = רדיוס אנכי, w = מכפיל רוחב.
+ */
+function spineBody(points, material, opts = {}) {
+    const segments = opts.segments ?? 60;
+    const radial = opts.radial ?? 18;
+    const widthScale = opts.width ?? 1;
+
+    const curve = new THREE.CatmullRomCurve3(
+        points.map((p) => new THREE.Vector3(0, p.y, p.z)), false, 'catmullrom', 0.5
+    );
+
+    // מיפוי t על העקומה לפרופיל הרדיוסים של נקודות הבקרה
+    const profile = (t) => {
+        const x = t * (points.length - 1);
+        const i = Math.min(points.length - 2, Math.floor(x));
+        const f = x - i;
+        const smooth = f * f * (3 - 2 * f);
+        return {
+            r: points[i].r + (points[i + 1].r - points[i].r) * smooth,
+            w: (points[i].w ?? 1) + ((points[i + 1].w ?? 1) - (points[i].w ?? 1)) * smooth,
+        };
+    };
+
+    const pos = [];
+    const uv = [];
+    const idx = [];
+    const up = new THREE.Vector3(0, 1, 0);
+    const tangent = new THREE.Vector3();
+    const right = new THREE.Vector3();
+    const normal = new THREE.Vector3();
+    const point = new THREE.Vector3();
+
+    for (let i = 0; i <= segments; i++) {
+        const t = i / segments;
+        curve.getPoint(t, point);
+        curve.getTangent(t, tangent);
+        // הגוף שטוח במישור x=0, אז "ימינה" הוא תמיד ציר X - בלי פיתולים
+        right.crossVectors(up, tangent).normalize();
+        if (right.lengthSq() < 0.5) right.set(1, 0, 0);
+        normal.crossVectors(tangent, right).normalize();
+
+        const { r, w } = profile(t);
+        for (let j = 0; j <= radial; j++) {
+            const a = (j / radial) * Math.PI * 2;
+            const cos = Math.cos(a);
+            const sin = Math.sin(a);
+            pos.push(
+                point.x + right.x * cos * r * w * widthScale + normal.x * sin * r,
+                point.y + right.y * cos * r * w * widthScale + normal.y * sin * r,
+                point.z + right.z * cos * r * w * widthScale + normal.z * sin * r
+            );
+            uv.push(t * (opts.repeat ?? 2), j / radial);
+        }
     }
+
+    for (let i = 0; i < segments; i++) {
+        for (let j = 0; j < radial; j++) {
+            const a = i * (radial + 1) + j;
+            const b = a + radial + 1;
+            idx.push(a, b, a + 1, b, b + 1, a + 1);
+        }
+    }
+
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    geo.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+    geo.setIndex(idx);
+    geo.computeVertexNormals();
+
+    const mesh = new THREE.Mesh(geo, material);
+    mesh.castShadow = true;
+
+    // סגירת הקצוות בכדורים, כדי שלא יישארו חורים
+    const head = profile(1);
+    const tail = profile(0);
+    const capA = ellipsoid(tail.r * tail.w * widthScale, tail.r, tail.r, material);
+    capA.position.copy(curve.getPoint(0));
+    const capB = ellipsoid(head.r * head.w * widthScale, head.r, head.r, material);
+    capB.position.copy(curve.getPoint(1));
+
+    const group = new THREE.Group();
+    group.add(mesh, capA, capB);
+    group.userData.curve = curve;
+    group.userData.mesh = mesh;
+    return group;
 }
 
-/* ------------------------------------------------------- בניית רגל דו-מפרקית */
+/* ----------------------------------------------------------------- רגליים */
 
-function buildLeg(cfg, material) {
-    // הירך היא נקודת הסיבוב; הברך מאפשרת הליכה אמינה יותר
+/**
+ * רגל בעלת שלושה מקטעים (ירך, שוק, כף) עם זוויות מפרק שונות
+ * לחיות שהולכות על כפות (digitigrade) ולחיות שהולכות על פרסות.
+ */
+function buildLeg(cfg, material, isFront) {
+    const len = cfg.length;
     const hip = new THREE.Group();
-    const upperLen = cfg.legLength * 0.52;
-    const lowerLen = cfg.legLength * 0.48;
 
-    const upper = capsule(cfg.legRadius, upperLen - cfg.legRadius * 2, material);
-    upper.position.y = -upperLen / 2;
+    const upperLen = len * 0.42;
+    const lowerLen = len * 0.36;
+    const footLen = len * 0.22;
+    const r = cfg.thickness;
+
+    const upper = taper(r, r * 0.8, upperLen, material);
+    upper.rotation.x = Math.PI; // מצביע כלפי מטה
     hip.add(upper);
 
     const knee = new THREE.Group();
     knee.position.y = -upperLen;
     hip.add(knee);
-
-    const lower = capsule(cfg.legRadius * 0.78, lowerLen - cfg.legRadius * 1.6, material);
-    lower.position.y = -lowerLen / 2;
+    const lower = taper(r * 0.8, r * 0.6, lowerLen, material);
+    lower.rotation.x = Math.PI;
     knee.add(lower);
+
+    const ankle = new THREE.Group();
+    ankle.position.y = -lowerLen;
+    knee.add(ankle);
+    const pastern = taper(r * 0.6, r * 0.5, footLen, material);
+    pastern.rotation.x = Math.PI;
+    ankle.add(pastern);
+
+    // תנוחת מנוחה: הברך והקרסול כפופים קלות כמו בחיה עומדת
+    const bend = cfg.digitigrade ? 1 : 0.45;
+    knee.rotation.x = (isFront ? -0.22 : 0.4) * bend;
+    ankle.rotation.x = (isFront ? 0.18 : -0.45) * bend;
 
     if (cfg.hoof) {
         const hoof = new THREE.Mesh(
-            new THREE.CylinderGeometry(cfg.legRadius * 0.95, cfg.legRadius * 1.05, cfg.legRadius * 0.9, 12),
-            mat(cfg.hoofColor || 0x2e2a26)
+            new THREE.CylinderGeometry(r * 0.75, r * 0.95, r * 1.5, 12),
+            mat(cfg.hoofColor || 0x2f2a25)
         );
-        hoof.position.y = -lowerLen + cfg.legRadius * 0.45;
+        hoof.position.y = -footLen + r * 0.6;
         hoof.castShadow = true;
-        knee.add(hoof);
+        ankle.add(hoof);
     } else {
-        const paw = ball(cfg.legRadius * 1.15, material);
-        paw.scale.set(1, 0.7, 1.35);
-        paw.position.set(0, -lowerLen + cfg.legRadius * 0.6, cfg.legRadius * 0.4);
-        knee.add(paw);
+        const paw = ellipsoid(r * 1.1, r * 0.7, r * 1.7, material);
+        paw.position.set(0, -footLen + r * 0.5, r * 0.7);
+        ankle.add(paw);
+        for (let i = -1; i <= 1; i++) {
+            const toe = ellipsoid(r * 0.32, r * 0.3, r * 0.45, material);
+            toe.position.set(i * r * 0.62, -footLen + r * 0.35, r * 1.75);
+            ankle.add(toe);
+        }
     }
 
-    return { hip, knee };
+    return { hip, knee, ankle };
 }
 
-/* ---------------------------------------------------------- בניית זנב מפרקי */
+/* -------------------------------------------------------------------- זנב */
 
-function buildTail(segments, length, radius, material, taper = 0.6) {
+function buildTail(cfg, material) {
     const root = new THREE.Group();
     const joints = [];
+    const segs = cfg.segments ?? 6;
+    const segLen = cfg.length / segs;
     let parent = root;
-    const segLen = length / segments;
-    for (let i = 0; i < segments; i++) {
+    for (let i = 0; i < segs; i++) {
         const joint = new THREE.Group();
-        joint.position.y = i === 0 ? 0 : -segLen;
+        if (i > 0) joint.position.y = -segLen;
         parent.add(joint);
-        const r = radius * Math.pow(taper, i / segments);
-        const seg = capsule(r, segLen * 0.7, material);
-        seg.position.y = -segLen / 2;
+        const r0 = cfg.radius * (1 - (i / segs) * (cfg.taper ?? 0.75));
+        const r1 = cfg.radius * (1 - ((i + 1) / segs) * (cfg.taper ?? 0.75));
+        const seg = taper(r0, r1, segLen, material, i === segs - 1);
+        seg.rotation.x = Math.PI;
         joint.add(seg);
         joints.push(joint);
         parent = joint;
     }
+    if (cfg.tuft) {
+        const tuft = ellipsoid(cfg.radius * 1.6, cfg.radius * 2.4, cfg.radius * 1.6, mat(cfg.tuft));
+        tuft.position.y = -segLen;
+        joints[joints.length - 1].add(tuft);
+    }
     return { root, joints };
 }
 
-/* ------------------------------------------------------------- ארבע-רגליים */
+/* -------------------------------------------------------------------- ראש */
 
-function buildQuadruped(cfg) {
-    const group = new THREE.Group();
-    const bodyMat = mat(cfg.color, { map: cfg.pattern ? pattern(cfg.pattern) : null, flat: cfg.flat });
-    const skinMat = mat(cfg.skinColor || cfg.color, { flat: cfg.flat });
-
-    const bodyY = cfg.legLength + cfg.bodyDepth / 2;
-
-    // גו
-    const torsoPivot = new THREE.Group();
-    torsoPivot.position.y = bodyY;
-    group.add(torsoPivot);
-
-    const torso = capsule(cfg.bodyDepth / 2, cfg.bodyLength - cfg.bodyDepth, bodyMat);
-    torso.rotation.x = Math.PI / 2;
-    torso.scale.set(cfg.bodyWidth / cfg.bodyDepth, 1, 1);
-    torsoPivot.add(torso);
-
-    if (cfg.hump) {
-        const hump = ball(cfg.bodyDepth * 0.42, bodyMat);
-        hump.scale.set(0.9, 0.7, 1.2);
-        hump.position.set(0, cfg.bodyDepth * 0.35, cfg.bodyLength * 0.2);
-        torsoPivot.add(hump);
-    }
-
-    // צוואר
-    const neckPivot = new THREE.Group();
-    neckPivot.position.set(0, cfg.bodyDepth * 0.22, cfg.bodyLength * 0.42);
-    torsoPivot.add(neckPivot);
-
-    const neck = capsule(cfg.neckRadius, cfg.neckLength, skinMat.clone());
-    if (cfg.pattern && cfg.patternNeck !== false) neck.material.map = pattern(cfg.pattern);
-    neck.position.y = cfg.neckLength / 2;
-    neck.rotation.x = -(cfg.neckTilt ?? 0.35);
-    neck.position.z = Math.sin(cfg.neckTilt ?? 0.35) * cfg.neckLength * 0.5;
-    neckPivot.add(neck);
-
-    // ראש
-    const headPivot = new THREE.Group();
-    headPivot.position.set(
-        0,
-        Math.cos(cfg.neckTilt ?? 0.35) * cfg.neckLength,
-        Math.sin(cfg.neckTilt ?? 0.35) * cfg.neckLength
-    );
-    neckPivot.add(headPivot);
-
+function buildHead(cfg, skinMat) {
     const head = new THREE.Group();
-    headPivot.add(head);
+    const size = cfg.size;                       // אורך הגולגולת
+    const w = size * (cfg.width ?? 0.62);
+    const h = size * (cfg.height ?? 0.66);
 
-    const skull = ball(cfg.headSize, skinMat);
-    skull.scale.set(0.85, 0.9, 1.15);
+    const skull = ellipsoid(w, h, size, skinMat);
     head.add(skull);
 
-    const snout = capsule(cfg.headSize * (cfg.snoutRadius ?? 0.55), cfg.headSize * (cfg.snoutLength ?? 0.9), skinMat);
-    snout.rotation.x = Math.PI / 2;
-    snout.position.set(0, -cfg.headSize * 0.18, cfg.headSize * (0.75 + (cfg.snoutLength ?? 0.9) * 0.4));
-    head.add(snout);
-
-    addEyes(head, cfg.headSize * 0.52, cfg.headSize * 0.62, cfg.headSize * 0.35, cfg.headSize * 0.13);
-
-    // אוזניים
-    const earSize = cfg.headSize * (cfg.earSize ?? 0.4);
-    for (const side of [-1, 1]) {
-        let ear;
-        if (cfg.earShape === 'round') {
-            ear = ball(earSize, skinMat);
-            ear.scale.set(1, 1, 0.35);
-        } else if (cfg.earShape === 'fan') {
-            // אוזני פיל: מניפות מעוגלות ושטוחות שנתלות מצדי הראש
-            ear = ball(earSize, skinMat);
-            ear.scale.set(0.95, 1.25, 0.12);
-            ear.rotation.set(0.15, side * 0.85, side * 0.12);
-        } else {
-            ear = cone(earSize * 0.62, earSize * 1.8, skinMat);
-            ear.rotation.z = side * 0.3;
+    // לחיים / רכס גבות - מה שנותן לראש אופי
+    if (cfg.cheeks !== false) {
+        for (const side of [-1, 1]) {
+            const cheek = ellipsoid(w * 0.55, h * 0.5, size * 0.5, skinMat);
+            cheek.position.set(side * w * 0.55, -h * 0.15, size * 0.1);
+            head.add(cheek);
         }
-        // אוזני פיל נתלות מצדי הראש ולאחור; שאר האוזניים יושבות על קודקוד הראש
-        ear.position.set(
-            side * cfg.headSize * (cfg.earShape === 'fan' ? 0.8 : 0.6),
-            cfg.headSize * (cfg.earShape === 'fan' ? -0.45 : 0.75),
-            cfg.headSize * (cfg.earShape === 'fan' ? -0.75 : -0.1)
-        );
-        head.add(ear);
     }
 
-    // קרניים
-    if (cfg.horns) {
-        for (const side of [-1, 1]) {
-            const horn = cone(cfg.headSize * 0.16, cfg.headSize * (cfg.horns === 'long' ? 1.6 : 0.7), mat(0x2e2a24));
-            horn.position.set(side * cfg.headSize * 0.42, cfg.headSize * 0.95, -cfg.headSize * 0.05);
-            horn.rotation.z = side * (cfg.horns === 'long' ? -0.9 : -0.45);
+    // חוטם מתחדד קדימה
+    const muzzleLen = size * (cfg.muzzle ?? 1.1);
+    const muzzleR = w * (cfg.muzzleWidth ?? 0.62);
+    if (muzzleLen > 0.01) {
+        const muzzle = taper(muzzleR, muzzleR * (cfg.muzzleTaper ?? 0.72), muzzleLen, skinMat, false);
+        muzzle.rotation.x = Math.PI / 2;
+        muzzle.position.set(0, -h * (cfg.muzzleDrop ?? 0.18), size * 0.62);
+        head.add(muzzle);
+
+        const tipR = muzzleR * (cfg.muzzleTaper ?? 0.72);
+        const tip = ellipsoid(tipR, tipR * 0.9, tipR * 0.8, skinMat);
+        tip.position.set(0, -h * (cfg.muzzleDrop ?? 0.18), size * 0.62 + muzzleLen);
+        head.add(tip);
+
+        const nose = ellipsoid(tipR * 0.55, tipR * 0.42, tipR * 0.35, NOSE_MAT);
+        nose.position.set(0, -h * (cfg.muzzleDrop ?? 0.18) + tipR * 0.25, size * 0.62 + muzzleLen + tipR * 0.6);
+        head.add(nose);
+
+        // לסת תחתונה
+        const jaw = ellipsoid(muzzleR * 0.85, h * 0.3, muzzleLen * 0.55, skinMat);
+        jaw.position.set(0, -h * ((cfg.muzzleDrop ?? 0.18) + 0.42), size * 0.62 + muzzleLen * 0.45);
+        head.add(jaw);
+    }
+
+    // עיניים בצדי הגולגולת, נוטות קדימה אצל טורפים
+    const eyeR = size * (cfg.eye ?? 0.11);
+    const eyeFwd = cfg.eyeForward ?? 0.55;
+    for (const side of [-1, 1]) {
+        const eye = ball(eyeR, EYE_MAT);
+        eye.castShadow = false;
+        eye.position.set(side * w * (1 - eyeFwd * 0.35), h * 0.35, size * eyeFwd);
+        head.add(eye);
+        if (cfg.brow !== false) {
+            const brow = ellipsoid(w * 0.3, h * 0.16, size * 0.3, skinMat);
+            brow.position.set(side * w * 0.62, h * 0.55, size * 0.35);
+            head.add(brow);
+        }
+    }
+
+    return { head, skull, size, w, h };
+}
+
+function addEars(head, cfg, skinMat, size, w, h) {
+    const s = size * (cfg.size ?? 0.45);
+    for (const side of [-1, 1]) {
+        let ear;
+        if (cfg.shape === 'fan') {                    // פיל
+            ear = ellipsoid(s * 0.95, s * 1.25, s * 0.12, skinMat);
+            ear.rotation.set(0.15, side * 0.85, side * 0.12);
+            ear.position.set(side * w * 0.9, -h * 0.35, -size * 0.55);
+        } else if (cfg.shape === 'round') {           // חתוליים ודובים
+            ear = ellipsoid(s * 0.9, s * 0.9, s * 0.28, skinMat);
+            ear.position.set(side * w * 0.78, h * 0.92, -size * 0.1);
+            ear.rotation.y = side * 0.4;
+        } else if (cfg.shape === 'tall') {            // קנגורו וארנביים
+            ear = ellipsoid(s * 0.45, s * 1.5, s * 0.3, skinMat);
+            ear.position.set(side * w * 0.6, h * 1.5, -size * 0.1);
+            ear.rotation.z = side * 0.18;
+        } else {                                       // מחודד - כלביים, סוסיים
+            ear = cone(s * 0.55, s * 1.7, skinMat);
+            ear.position.set(side * w * 0.62, h * 1.0, -size * 0.12);
+            ear.rotation.set(-0.15, 0, side * 0.28);
+        }
+        ear.castShadow = true;
+        head.add(ear);
+    }
+}
+
+/* ------------------------------------------------------------ תוספות מינים */
+
+function addMane(head, size, color) {
+    const maneMat = mat(color, { map: pattern('fur', '#7a5228', '#3a2411'), flat: true });
+    for (let i = 0; i < 9; i++) {
+        const a = (i / 9) * Math.PI * 2;
+        const lobe = ellipsoid(size * 0.62, size * 0.62, size * 0.42, maneMat);
+        lobe.position.set(Math.cos(a) * size * 1.05, Math.sin(a) * size * 1.05 + size * 0.1, -size * 0.45);
+        head.add(lobe);
+    }
+    const back = ellipsoid(size * 1.25, size * 1.3, size * 0.75, maneMat);
+    back.position.z = -size * 0.75;
+    head.add(back);
+}
+
+function addTusks(head, size, w, h) {
+    for (const side of [-1, 1]) {
+        const tusk = new THREE.Group();
+        let parent = tusk;
+        for (let i = 0; i < 5; i++) {
+            const seg = taper(size * 0.1 * (1 - i * 0.15), size * 0.1 * (1 - (i + 1) * 0.15), size * 0.42, mat(0xefe6d2), i === 4);
+            const joint = new THREE.Group();
+            joint.position.y = i === 0 ? 0 : size * 0.42;
+            joint.rotation.x = i === 0 ? 0 : 0.2;   // עיקול עדין קדימה ומעלה
+            joint.add(seg);
+            parent.add(joint);
+            parent = joint;
+        }
+        tusk.position.set(side * w * 0.55, -h * 0.55, size * 0.75);
+        tusk.rotation.set(Math.PI * 0.62, 0, side * 0.1);
+        head.add(tusk);
+    }
+}
+
+function addHorns(head, kind, size, w, h, color = 0x33302a) {
+    const hornMat = mat(color);
+    for (const side of [-1, 1]) {
+        if (kind === 'antlers') {
+            const beam = new THREE.Group();
+            let parent = beam;
+            for (let i = 0; i < 4; i++) {
+                const joint = new THREE.Group();
+                joint.position.y = i === 0 ? 0 : size * 0.5;
+                joint.rotation.set(-0.18, 0, side * (i === 0 ? 0.45 : 0.12));
+                joint.add(taper(size * 0.09 * (1 - i * 0.18), size * 0.09 * (1 - (i + 1) * 0.18), size * 0.5, hornMat, i === 3));
+                parent.add(joint);
+                if (i > 0) {                     // ענפים צדדיים
+                    const tine = taper(size * 0.055, size * 0.02, size * 0.42, hornMat);
+                    tine.rotation.set(-0.5, 0, side * 0.75);
+                    joint.add(tine);
+                }
+                parent = joint;
+            }
+            beam.position.set(side * w * 0.5, h * 0.85, -size * 0.05);
+            head.add(beam);
+        } else if (kind === 'curved') {
+            const horn = new THREE.Group();
+            let parent = horn;
+            for (let i = 0; i < 4; i++) {
+                const joint = new THREE.Group();
+                joint.position.y = i === 0 ? 0 : size * 0.26;
+                joint.rotation.z = side * (i === 0 ? 0.9 : -0.28);
+                joint.add(taper(size * 0.1 * (1 - i * 0.2), size * 0.1 * (1 - (i + 1) * 0.2), size * 0.26, hornMat, i === 3));
+                parent.add(joint);
+                parent = joint;
+            }
+            horn.position.set(side * w * 0.6, h * 0.8, -size * 0.05);
+            head.add(horn);
+        } else {                                  // קצר וישר
+            const horn = taper(size * 0.09, size * 0.02, size * 0.42, hornMat);
+            horn.position.set(side * w * 0.55, h * 0.8, -size * 0.05);
+            horn.rotation.z = side * -0.55;
             head.add(horn);
         }
     }
-
-    // חדק (פיל)
-    if (cfg.trunk) {
-        const trunk = buildTail(6, cfg.trunk, cfg.headSize * 0.32, skinMat, 0.35);
-        trunk.root.position.set(0, -cfg.headSize * 0.35, cfg.headSize * 1.0);
-        head.add(trunk.root);
-        trunk.joints.forEach((j, i) => { j.rotation.x = i === 0 ? 0.25 : 0.18; });
-        group.userData.trunk = trunk.joints;
-
-        for (const side of [-1, 1]) {
-            const tusk = capsule(cfg.headSize * 0.09, cfg.headSize * 1.1, mat(0xf2ead5));
-            tusk.position.set(side * cfg.headSize * 0.38, -cfg.headSize * 0.5, cfg.headSize * 0.85);
-            tusk.rotation.set(0.9, 0, side * 0.12);
-            head.add(tusk);
-        }
-    }
-
-    // רעמה (אריה)
-    if (cfg.mane) {
-        const maneMat = mat(cfg.maneColor || 0x6b4423, { map: pattern('fur', '#7a5228', '#3a2411'), flat: true });
-        const mane = new THREE.Mesh(new THREE.SphereGeometry(cfg.headSize * 1.55, 16, 12), maneMat);
-        mane.scale.set(1, 1, 0.8);
-        mane.position.z = -cfg.headSize * 0.25;
-        mane.castShadow = true;
-        head.add(mane);
-    }
-
-    // קרן (קרנף)
-    if (cfg.nasalHorn) {
-        const h1 = cone(cfg.headSize * 0.22, cfg.nasalHorn, mat(0x8d8477));
-        h1.position.set(0, cfg.headSize * 0.3, cfg.headSize * 1.5);
-        h1.rotation.x = -0.25;
-        head.add(h1);
-        const h2 = cone(cfg.headSize * 0.15, cfg.nasalHorn * 0.45, mat(0x8d8477));
-        h2.position.set(0, cfg.headSize * 0.4, cfg.headSize * 0.95);
-        head.add(h2);
-    }
-
-    // רגליים
-    const legs = [];
-    const xOff = cfg.bodyWidth * 0.36;
-    const zFront = cfg.bodyLength * 0.33;
-    const zBack = -cfg.bodyLength * 0.33;
-    for (const [x, z, id] of [[-xOff, zFront, 'fl'], [xOff, zFront, 'fr'], [-xOff, zBack, 'bl'], [xOff, zBack, 'br']]) {
-        const leg = buildLeg(cfg, skinMat);
-        leg.hip.position.set(x, -cfg.bodyDepth * 0.25, z);
-        leg.id = id;
-        torsoPivot.add(leg.hip);
-        legs.push(leg);
-    }
-
-    // זנב
-    let tail = null;
-    if (cfg.tailLength > 0) {
-        tail = buildTail(cfg.tailSegments || 4, cfg.tailLength, cfg.tailRadius || cfg.legRadius * 0.45, skinMat);
-        tail.root.position.set(0, cfg.bodyDepth * 0.2, -cfg.bodyLength * 0.46);
-        // מפרק ראשון קובע את זווית היציאה לאחור, השאר מוסיפים עקומה עדינה
-        tail.joints.forEach((j, i) => { j.rotation.x = i === 0 ? (cfg.tailAngle ?? 0.7) : 0.12; });
-        torsoPivot.add(tail.root);
-        if (cfg.tailTuft) {
-            const tuft = ball(cfg.tailRadius * 2.4, mat(cfg.tailTuft));
-            tuft.position.y = -cfg.tailLength / (cfg.tailSegments || 4);
-            tail.joints[tail.joints.length - 1].add(tuft);
-        }
-    }
-
-    group.userData.rig = { torsoPivot, neckPivot, headPivot, legs, tail, type: 'quadruped' };
-    return group;
 }
 
-/* ----------------------------------------------------------------- דו-רגליים */
+function addJaws(head, size, w, h, skinMat) {
+    // לסת טורפת: לסת תחתונה ארוכה עם שיניים בשתי הלסתות
+    const jawLen = size * 1.5;
+    const jaw = new THREE.Group();
+    jaw.position.set(0, -h * 0.5, size * 0.35);
+    const jawMesh = ellipsoid(w * 0.78, h * 0.34, jawLen * 0.55, skinMat);
+    jawMesh.position.z = jawLen * 0.35;
+    jaw.add(jawMesh);
+    head.add(jaw);
 
-function buildBiped(cfg) {
-    const group = new THREE.Group();
+    const toothMat = mat(0xf0e8d8);
+    for (let i = 0; i < 6; i++) {
+        const t = i / 6;
+        const z = size * 0.45 + t * jawLen * 0.78;
+        const scale = 1 - t * 0.45;
+        for (const side of [-1, 1]) {
+            const upper = cone(size * 0.055 * scale, size * 0.24 * scale, toothMat);
+            upper.rotation.x = Math.PI;
+            upper.position.set(side * w * 0.62, -h * 0.42, z);
+            head.add(upper);
+            const lower = cone(size * 0.05 * scale, size * 0.2 * scale, toothMat);
+            lower.position.set(side * w * 0.6, h * 0.12, z - size * 0.35);
+            jaw.add(lower);
+        }
+    }
+    return jaw;
+}
+
+/* ------------------------------------------------------------ בניית החיה */
+
+const DEFAULTS = {
+    bodyWidth: 0.95,
+    withersLift: 0,
+    rumpLift: 0,
+    bellySag: 0,
+    tilt: 0,
+    legPairs: 2,
+    neck: { length: 0.4, angle: 35, r0: 0.2, r1: 0.16 },
+    head: { size: 0.25 },
+    ears: { shape: 'pointy', size: 0.45 },
+    legs: { thickness: 0.08 },
+};
+
+function rotateAboutX(y, z, pivotY, pivotZ, angle) {
+    const dy = y - pivotY;
+    const dz = z - pivotZ;
+    const cos = Math.cos(angle);
+    const sin = Math.sin(angle);
+    return { y: pivotY + dy * cos - dz * sin, z: pivotZ + dy * sin + dz * cos };
+}
+
+function buildCreature(raw) {
+    const cfg = { ...DEFAULTS, ...raw };
+    const neck = { ...DEFAULTS.neck, ...(raw.neck || {}) };
+    const legsCfg = { ...DEFAULTS.legs, ...(raw.legs || {}) };
+    const earsCfg = { ...DEFAULTS.ears, ...(raw.ears || {}) };
+    const headCfg = { ...DEFAULTS.head, ...(raw.head || {}) };
+
+    const root = new THREE.Group();
+    const torso = new THREE.Group();
+    root.add(torso);
+
     const bodyMat = mat(cfg.color, { map: cfg.pattern ? pattern(cfg.pattern) : null, flat: cfg.flat });
     const skinMat = mat(cfg.skinColor || cfg.color, { flat: cfg.flat });
 
-    const hipY = cfg.legLength;
-    const torsoPivot = new THREE.Group();
-    torsoPivot.position.y = hipY;
-    group.add(torsoPivot);
+    const L = cfg.bodyLength;
+    const back = cfg.back;                          // גובה קו הגב מהרצפה
+    const chestR = cfg.chestR;
+    const cy = back - chestR;                       // מרכז הגו
 
-    const torso = capsule(cfg.bodyDepth / 2, cfg.bodyLength - cfg.bodyDepth, bodyMat);
-    if (cfg.horizontal) {
-        torso.rotation.x = Math.PI / 2;
+    // --- עמוד השדרה: מבסיס הזנב, דרך האגן והחזה, אל בסיס הצוואר ---
+    const spine = [
+        { z: -L * 0.50, y: cy + cfg.rumpLift * 0.8, r: cfg.rumpR * 0.62, w: 0.78 },
+        { z: -L * 0.34, y: cy + cfg.rumpLift, r: cfg.rumpR, w: 1 },
+        { z: -L * 0.10, y: cy - cfg.bellySag, r: cfg.waistR, w: 0.98 },
+        { z: L * 0.14, y: cy, r: chestR, w: 1 },
+        { z: L * 0.34, y: cy + cfg.withersLift, r: chestR * 0.9, w: 0.9 },
+    ];
+
+    // --- הצוואר ממשיך את אותה עקומה, בזווית שלו ---
+    const neckAngle = THREE.MathUtils.degToRad(neck.angle);
+    const start = spine[spine.length - 1];
+    const dir = { y: Math.sin(neckAngle), z: Math.cos(neckAngle) };
+    for (let i = 1; i <= 3; i++) {
+        const t = i / 3;
+        spine.push({
+            z: start.z + dir.z * neck.length * t,
+            y: start.y + dir.y * neck.length * t + neck.r0 * 0.35,
+            r: neck.r0 + (neck.r1 - neck.r0) * t,
+            w: 0.9 - t * 0.1,
+        });
     }
-    torso.scale.set(cfg.bodyWidth / cfg.bodyDepth, 1, 1);
-    torsoPivot.add(torso);
 
-    if (cfg.belly) {
-        const belly = ball(cfg.bodyDepth * 0.5, mat(cfg.belly));
-        belly.scale.set(0.85, cfg.horizontal ? 0.8 : 1.15, 0.7);
-        belly.position.set(0, cfg.horizontal ? -cfg.bodyDepth * 0.25 : -cfg.bodyLength * 0.05, cfg.bodyDepth * 0.28);
-        torsoPivot.add(belly);
+    // --- הטיית הגו (חיות זקופות: קנגורו, פינגווין) ---
+    const hips = spine[1];
+    const tilt = THREE.MathUtils.degToRad(-cfg.tilt);
+    if (cfg.tilt) {
+        const pivotY = hips.y;
+        const pivotZ = hips.z;
+        for (const p of spine) {
+            const rotated = rotateAboutX(p.y, p.z, pivotY, pivotZ, tilt);
+            p.y = rotated.y;
+            p.z = rotated.z;
+        }
     }
 
-    const neckPivot = new THREE.Group();
-    neckPivot.position.set(
-        0,
-        cfg.horizontal ? cfg.bodyDepth * 0.2 : cfg.bodyLength * 0.45,
-        cfg.horizontal ? cfg.bodyLength * 0.42 : cfg.bodyDepth * 0.1
-    );
-    torsoPivot.add(neckPivot);
+    const body = spineBody(spine, bodyMat, { width: cfg.bodyWidth, repeat: cfg.textureRepeat ?? 2 });
+    torso.add(body);
 
-    const neck = capsule(cfg.neckRadius, cfg.neckLength, skinMat);
-    neck.position.y = cfg.neckLength / 2;
-    neck.position.z = cfg.horizontal ? cfg.neckLength * 0.35 : 0;
-    neck.rotation.x = cfg.horizontal ? -0.7 : 0;
-    neckPivot.add(neck);
+    if (cfg.bellyPatch) {
+        const patch = ellipsoid(chestR * 0.78, chestR * 1.15, chestR * 0.55, mat(cfg.bellyPatch));
+        patch.position.set(0, cy + chestR * 0.15, spine[3].z + chestR * 0.55);
+        torso.add(patch);
+    }
 
+    // --- ראש ---
+    const neckEnd = spine[spine.length - 1];
     const headPivot = new THREE.Group();
-    headPivot.position.set(0, cfg.neckLength * (cfg.horizontal ? 0.75 : 1), cfg.horizontal ? cfg.neckLength * 0.7 : 0);
-    neckPivot.add(headPivot);
+    headPivot.position.set(0, neckEnd.y + neck.r1 * 0.3, neckEnd.z);
+    headPivot.rotation.x = -(neckAngle + tilt) * (headCfg.align ?? 0.35);
+    torso.add(headPivot);
 
-    const head = new THREE.Group();
-    headPivot.add(head);
-    const skull = ball(cfg.headSize, skinMat);
-    skull.scale.set(0.85, 0.95, 1.2);
-    head.add(skull);
+    const built = buildHead(headCfg, skinMat);
+    headPivot.add(built.head);
+    addEars(built.head, earsCfg, skinMat, built.size, built.w, built.h);
+
+    if (cfg.mane) addMane(built.head, built.size, cfg.maneColor || 0x6b4423);
+    if (cfg.tusks) addTusks(built.head, built.size, built.w, built.h);
+    if (cfg.horns) addHorns(built.head, cfg.horns, built.size, built.w, built.h, cfg.hornColor);
+    if (cfg.jaws) addJaws(built.head, built.size, built.w, built.h, skinMat);
+
+    if (cfg.nasalHorn) {
+        const big = cone(built.size * 0.2, cfg.nasalHorn, mat(0x8f867a));
+        big.position.set(0, -built.h * 0.1, built.size * 1.35);
+        big.rotation.x = -0.35;
+        built.head.add(big);
+        const small = cone(built.size * 0.14, cfg.nasalHorn * 0.42, mat(0x8f867a));
+        small.position.set(0, built.h * 0.2, built.size * 0.72);
+        small.rotation.x = -0.15;
+        built.head.add(small);
+    }
 
     if (cfg.beak) {
-        const beak = cone(cfg.headSize * 0.3, cfg.beak, mat(cfg.beakColor || 0xe0913a));
+        const beak = cone(built.size * 0.26, cfg.beak, mat(cfg.beakColor || 0xdd8f34));
         beak.rotation.x = Math.PI / 2;
-        beak.position.set(0, -cfg.headSize * 0.1, cfg.headSize + cfg.beak * 0.4);
-        head.add(beak);
+        beak.position.set(0, -built.h * 0.1, built.size * 0.9 + cfg.beak * 0.4);
+        built.head.add(beak);
     }
-    if (cfg.jaw) {
-        const jaw = box(cfg.headSize * 1.1, cfg.headSize * 0.75, cfg.headSize * 2.4, skinMat);
-        jaw.position.set(0, -cfg.headSize * 0.15, cfg.headSize * 1.25);
-        head.add(jaw);
-        const teethMat = mat(0xf3ece0);
-        for (let i = 0; i < 5; i++) {
-            for (const side of [-1, 1]) {
-                const tooth = cone(cfg.headSize * 0.07, cfg.headSize * 0.26, teethMat);
-                tooth.rotation.x = Math.PI;
-                tooth.position.set(side * cfg.headSize * 0.5, -cfg.headSize * 0.34, cfg.headSize * (0.5 + i * 0.4));
-                head.add(tooth);
-            }
-        }
-    }
-    addEyes(head, cfg.headSize * 0.55, cfg.headSize * 0.7, cfg.headSize * 0.42, cfg.headSize * 0.12);
 
-    if (cfg.earShape === 'tall') {
+    let trunkJoints = null;
+    if (cfg.trunk) {
+        const trunk = buildTail({ length: cfg.trunk, radius: built.size * 0.3, segments: 7, taper: 0.62 }, skinMat);
+        trunk.root.position.set(0, -built.h * 0.35, built.size * 0.95);
+        built.head.add(trunk.root);
+        trunk.joints.forEach((j, i) => { j.rotation.x = i === 0 ? 0.45 : 0.16; });
+        trunkJoints = trunk.joints;
+    }
+
+    // --- רגליים ---
+    const legs = [];
+    const attach = [];
+    if (cfg.legPairs === 2) attach.push({ point: spine[4], id: 'front', front: true });
+    attach.push({ point: spine[1], id: 'back', front: false });
+
+    for (const a of attach) {
+        const spread = a.point.r * a.point.w * cfg.bodyWidth * 0.66;
         for (const side of [-1, 1]) {
-            const ear = capsule(cfg.headSize * 0.16, cfg.headSize * 1.1, skinMat);
-            ear.position.set(side * cfg.headSize * 0.45, cfg.headSize * 1.1, -cfg.headSize * 0.1);
-            ear.rotation.z = side * 0.2;
-            head.add(ear);
+            const leg = buildLeg({
+                ...legsCfg,
+                length: a.point.y * 1.04,
+                thickness: a.front ? legsCfg.thickness : legsCfg.thickness * (legsCfg.backScale ?? 1.05),
+            }, skinMat, a.front);
+            leg.hip.position.set(side * spread, a.point.y, a.point.z);
+            leg.id = `${a.id}${side < 0 ? 'L' : 'R'}`;
+            leg.front = a.front;
+            torso.add(leg.hip);
+            legs.push(leg);
+
+            // שריר הכתף/הירך שמחבר את הרגל לגוף
+            const shoulder = ellipsoid(a.point.r * 0.42, a.point.r * 0.72, a.point.r * 0.62, skinMat);
+            shoulder.position.set(side * spread, a.point.y - a.point.r * 0.15, a.point.z);
+            torso.add(shoulder);
         }
     }
 
-    // זרועות / כנפיים
+    // --- זרועות / כנפיים ---
     const arms = [];
-    if (cfg.armLength) {
+    if (cfg.arms) {
+        const at = spine[4];
         for (const side of [-1, 1]) {
             const shoulder = new THREE.Group();
-            shoulder.position.set(
-                side * cfg.bodyWidth * 0.5,
-                cfg.horizontal ? 0 : cfg.bodyLength * 0.28,
-                cfg.horizontal ? cfg.bodyLength * 0.2 : cfg.bodyDepth * 0.1
-            );
-            torsoPivot.add(shoulder);
-            const arm = cfg.wing
-                ? box(cfg.armLength * 0.4, cfg.armLength, cfg.armLength * 0.12, bodyMat)
-                : capsule(cfg.armLength * 0.16, cfg.armLength * 0.7, skinMat);
-            arm.position.y = -cfg.armLength / 2;
-            shoulder.add(arm);
-            shoulder.rotation.z = side * 0.18;
+            shoulder.position.set(side * at.r * at.w * cfg.bodyWidth * 0.9, at.y + at.r * 0.2, at.z);
+            const limb = cfg.arms.flipper
+                ? ellipsoid(cfg.arms.length * 0.16, cfg.arms.length * 0.55, cfg.arms.length * 0.1, bodyMat)
+                : taper(cfg.arms.length * 0.18, cfg.arms.length * 0.1, cfg.arms.length, skinMat);
+            if (cfg.arms.flipper) limb.position.y = -cfg.arms.length * 0.5;
+            else limb.rotation.x = Math.PI;
+            shoulder.add(limb);
+            shoulder.rotation.set(cfg.arms.flipper ? 0 : 0.8, 0, side * 0.25);
+            torso.add(shoulder);
             arms.push({ shoulder, side });
         }
     }
 
-    // רגליים
-    const legs = [];
-    for (const side of [-1, 1]) {
-        const leg = buildLeg(cfg, skinMat);
-        leg.hip.position.set(side * cfg.bodyWidth * 0.3, cfg.horizontal ? -cfg.bodyDepth * 0.15 : -cfg.bodyLength * 0.42, 0);
-        torsoPivot.add(leg.hip);
-        legs.push(leg);
-    }
-
+    // --- זנב ---
     let tail = null;
-    if (cfg.tailLength > 0) {
-        tail = buildTail(cfg.tailSegments || 5, cfg.tailLength, cfg.tailRadius || cfg.bodyDepth * 0.25, bodyMat, 0.4);
-        tail.root.position.set(0, cfg.horizontal ? 0 : -cfg.bodyLength * 0.35, -cfg.bodyLength * (cfg.horizontal ? 0.45 : 0.1));
-        tail.joints.forEach((j, i) => { j.rotation.x = cfg.horizontal ? (i === 0 ? 1.5 : 0.04) : 0.9; });
-        torsoPivot.add(tail.root);
+    if (cfg.tail) {
+        const at = spine[0];
+        tail = buildTail({ ...cfg.tail, radius: cfg.tail.radius ?? at.r * 0.5 }, skinMat);
+        tail.root.position.set(0, at.y, at.z);
+        tail.joints.forEach((j, i) => {
+            j.rotation.x = i === 0 ? THREE.MathUtils.degToRad(cfg.tail.angle ?? 55) : (cfg.tail.curve ?? 0.1);
+        });
+        torso.add(tail.root);
     }
 
-    group.userData.rig = { torsoPivot, neckPivot, headPivot, legs, arms, tail, type: 'biped' };
-    return group;
+    root.userData.rig = {
+        torso, body: body.userData.mesh, headPivot, legs, tail, arms,
+        trunk: trunkJoints, baseY: torso.position.y,
+    };
+    return root;
 }
 
 /* ---------------------------------------------------------- דמות ייחוס אנושית */
@@ -531,23 +764,19 @@ function buildBiped(cfg) {
 export function buildHumanReference(heightM = 1.75) {
     const group = new THREE.Group();
     const m = new THREE.MeshStandardMaterial({
-        color: 0x3ad6c0,
-        transparent: true,
-        opacity: 0.55,
-        roughness: 0.4,
-        emissive: 0x0d5e52,
-        emissiveIntensity: 0.4,
+        color: 0x3ad6c0, transparent: true, opacity: 0.55,
+        roughness: 0.4, emissive: 0x0d5e52, emissiveIntensity: 0.4,
     });
     const s = heightM / 1.75;
-    const legs = capsule(0.09 * s, 0.78 * s, m);
-    legs.position.y = 0.48 * s;
-    const body = capsule(0.17 * s, 0.4 * s, m);
-    body.position.y = 1.15 * s;
+    const legs = ellipsoid(0.12 * s, 0.45 * s, 0.12 * s, m);
+    legs.position.y = 0.45 * s;
+    const body = ellipsoid(0.19 * s, 0.32 * s, 0.13 * s, m);
+    body.position.y = 1.18 * s;
     const head = ball(0.12 * s, m);
     head.position.y = 1.62 * s;
     for (const side of [-1, 1]) {
-        const arm = capsule(0.055 * s, 0.5 * s, m);
-        arm.position.set(side * 0.22 * s, 1.15 * s, 0);
+        const arm = ellipsoid(0.055 * s, 0.28 * s, 0.055 * s, m);
+        arm.position.set(side * 0.23 * s, 1.15 * s, 0);
         group.add(arm);
     }
     group.add(legs, body, head);
@@ -562,235 +791,389 @@ export const ANIMALS = [
         id: 'elephant', name: 'פיל אפריקאי', emoji: '🐘', category: 'ספארי',
         heightM: 3.3, lengthM: 6.5, weightKg: 6000, speedKmh: 40,
         fact: 'הפיל האפריקאי הוא בעל החיים היבשתי הגדול בעולם. האוזניים שלו יכולות להגיע לרוחב 2 מטר.',
-        build: () => buildQuadruped({
-            color: 0x8d8b86, skinColor: 0x93918c, flat: true,
-            legLength: 1.75, legRadius: 0.3, hoof: true, hoofColor: 0x6f6b64,
-            bodyLength: 5.857, bodyWidth: 1.7, bodyDepth: 2.1,
-            neckLength: 0.45, neckRadius: 0.62, neckTilt: 0.2,
-            headSize: 0.72, snoutLength: 0.25, snoutRadius: 0.5,
-            earShape: 'fan', earSize: 1.25, trunk: 2.0,
-            tailLength: 2.474, tailSegments: 4, tailRadius: 0.07, tailTuft: 0x4a453e,
+        build: () => buildCreature({
+            color: 0x8d8b86, skinColor: 0x929089, flat: true,
+            back: 3.05, bodyLength: 4.0, chestR: 1.05, waistR: 1.0, rumpR: 1.0,
+            bodyWidth: 0.92, withersLift: 0.14,
+            neck: { length: 0.45, angle: 10, r0: 0.82, r1: 0.62 },
+            head: { size: 0.72, width: 0.85, height: 0.92, muzzle: 0.12, muzzleWidth: 0.75, eye: 0.06, align: 0.2, brow: false },
+            ears: { shape: 'fan', size: 1.45 },
+            tusks: true, trunk: 1.9,
+            legs: { thickness: 0.3, hoof: true, hoofColor: 0x5f5952 },
+            tail: { length: 1.15, radius: 0.075, segments: 5, angle: 18, tuft: 0x403a33 },
         }),
     },
     {
         id: 'giraffe', name: "ג'ירפה", emoji: '🦒', category: 'ספארי',
         heightM: 5.5, lengthM: 4.8, weightKg: 1200, speedKmh: 60,
-        fact: 'הצוואר של הג\'ירפה מגיע ל-2.4 מטר, אבל יש בו בדיוק 7 חוליות - בדיוק כמו אצל בני אדם.',
-        build: () => buildQuadruped({
-            color: 0xe8cf9a, skinColor: 0xe8cf9a, pattern: 'giraffe',
-            legLength: 2.0, legRadius: 0.13, hoof: true,
-            bodyLength: 2.595, bodyWidth: 0.95, bodyDepth: 1.25,
-            neckLength: 2.15, neckRadius: 0.24, neckTilt: 0.22,
-            headSize: 0.3, snoutLength: 1.0, snoutRadius: 0.5,
-            earShape: 'pointy', earSize: 0.7, horns: 'short', hump: true,
-            tailLength: 1.141, tailSegments: 4, tailRadius: 0.035, tailTuft: 0x3a2f20,
+        fact: "הצוואר של הג'ירפה מגיע ל-2.4 מטר, אבל יש בו בדיוק 7 חוליות - כמו אצל בני אדם.",
+        build: () => buildCreature({
+            color: 0xe8cf9a, skinColor: 0xe6cb95, pattern: 'giraffe', textureRepeat: 3,
+            back: 3.15, bodyLength: 2.3, chestR: 0.6, waistR: 0.5, rumpR: 0.52,
+            bodyWidth: 0.82, withersLift: 0.26, rumpLift: -0.12,
+            neck: { length: 2.1, angle: 72, r0: 0.3, r1: 0.19 },
+            head: { size: 0.3, width: 0.5, height: 0.55, muzzle: 0.8, muzzleWidth: 0.62, align: 0.6, eye: 0.14 },
+            ears: { shape: 'pointy', size: 0.8 },
+            horns: 'short', hornColor: 0x5a452c,
+            legs: { thickness: 0.115, hoof: true },
+            tail: { length: 0.95, radius: 0.05, segments: 5, angle: 22, tuft: 0x38301f },
         }),
     },
     {
         id: 'lion', name: 'אריה', emoji: '🦁', category: 'טורפים',
         heightM: 1.2, lengthM: 2.9, weightKg: 190, speedKmh: 80,
         fact: 'שאגת האריה נשמעת למרחק של עד 8 קילומטרים.',
-        build: () => buildQuadruped({
-            color: 0xd0a463, skinColor: 0xd0a463, mane: true, maneColor: 0x6d4a22,
-            legLength: 0.72, legRadius: 0.1,
-            bodyLength: 2.206, bodyWidth: 0.52, bodyDepth: 0.62,
-            neckLength: 0.28, neckRadius: 0.22, neckTilt: 0.35,
-            headSize: 0.22, snoutLength: 0.7, snoutRadius: 0.6,
-            earShape: 'round', earSize: 0.42,
-            tailLength: 1.469, tailSegments: 5, tailRadius: 0.03, tailTuft: 0x4a3418,
+        build: () => buildCreature({
+            color: 0xcfa367, skinColor: 0xcfa367, mane: true, maneColor: 0x6d4a22,
+            back: 1.08, bodyLength: 1.52, chestR: 0.3, waistR: 0.25, rumpR: 0.29,
+            bodyWidth: 0.86, withersLift: 0.04,
+            neck: { length: 0.3, angle: 20, r0: 0.24, r1: 0.2 },
+            head: { size: 0.24, width: 0.72, height: 0.72, muzzle: 0.5, muzzleWidth: 0.78, eye: 0.11, eyeForward: 0.72 },
+            ears: { shape: 'round', size: 0.4 },
+            legs: { thickness: 0.075, digitigrade: true, backScale: 1.12 },
+            tail: { length: 0.92, radius: 0.035, segments: 7, angle: 42, curve: 0.16, taper: 0.4, tuft: 0x4a3418 },
         }),
     },
     {
         id: 'tiger', name: 'טיגריס בנגלי', emoji: '🐅', category: 'טורפים',
         heightM: 1.05, lengthM: 3.3, weightKg: 230, speedKmh: 65,
         fact: 'לכל טיגריס דפוס פסים ייחודי - כמו טביעת אצבע. גם העור מתחת לפרווה מפוספס.',
-        build: () => buildQuadruped({
-            color: 0xe08a2b, skinColor: 0xdd8e37, pattern: 'tiger',
-            legLength: 0.62, legRadius: 0.11,
-            bodyLength: 2.57, bodyWidth: 0.54, bodyDepth: 0.6,
-            neckLength: 0.24, neckRadius: 0.21, neckTilt: 0.3,
-            headSize: 0.22, snoutLength: 0.65, snoutRadius: 0.62,
-            earShape: 'round', earSize: 0.4,
-            tailLength: 1.744, tailSegments: 6, tailRadius: 0.045,
+        build: () => buildCreature({
+            color: 0xe08a2b, skinColor: 0xdb8b33, pattern: 'tiger', textureRepeat: 3,
+            back: 0.95, bodyLength: 1.6, chestR: 0.29, waistR: 0.25, rumpR: 0.28,
+            bodyWidth: 0.88,
+            neck: { length: 0.26, angle: 16, r0: 0.23, r1: 0.2 },
+            head: { size: 0.23, width: 0.78, height: 0.72, muzzle: 0.45, muzzleWidth: 0.82, eye: 0.11, eyeForward: 0.72 },
+            ears: { shape: 'round', size: 0.38 },
+            legs: { thickness: 0.078, digitigrade: true, backScale: 1.1 },
+            tail: { length: 1.0, radius: 0.045, segments: 7, angle: 48, curve: 0.14, taper: 0.35 },
         }),
     },
     {
         id: 'cheetah', name: 'ברדלס', emoji: '🐆', category: 'טורפים',
         heightM: 0.85, lengthM: 2.1, weightKg: 60, speedKmh: 110,
         fact: 'הברדלס הוא בעל החיים היבשתי המהיר בעולם - מ-0 ל-100 קמ"ש בשלוש שניות.',
-        build: () => buildQuadruped({
-            color: 0xd9a441, skinColor: 0xd9a441, pattern: 'leopard',
-            legLength: 0.55, legRadius: 0.07,
-            bodyLength: 1.608, bodyWidth: 0.36, bodyDepth: 0.44,
-            neckLength: 0.2, neckRadius: 0.13, neckTilt: 0.35,
-            headSize: 0.16, snoutLength: 0.55, snoutRadius: 0.6,
-            earShape: 'round', earSize: 0.42,
-            tailLength: 1.124, tailSegments: 6, tailRadius: 0.03,
+        build: () => buildCreature({
+            color: 0xd9a441, skinColor: 0xd9a441, pattern: 'leopard', textureRepeat: 3,
+            back: 0.8, bodyLength: 1.15, chestR: 0.19, waistR: 0.14, rumpR: 0.185,
+            bodyWidth: 0.8, bellySag: 0.03,
+            neck: { length: 0.22, angle: 25, r0: 0.14, r1: 0.12 },
+            head: { size: 0.15, width: 0.8, height: 0.78, muzzle: 0.4, muzzleWidth: 0.75, eye: 0.13, eyeForward: 0.7 },
+            ears: { shape: 'round', size: 0.42 },
+            legs: { thickness: 0.048, digitigrade: true },
+            tail: { length: 0.78, radius: 0.03, segments: 7, angle: 55, curve: 0.2, taper: 0.3 },
         }),
     },
     {
         id: 'zebra', name: 'זברה', emoji: '🦓', category: 'ספארי',
         heightM: 1.4, lengthM: 2.7, weightKg: 350, speedKmh: 65,
         fact: 'הפסים של הזברה מבלבלים זבובים טורפים ומקשים עליהם לנחות עליה.',
-        build: () => buildQuadruped({
-            color: 0xf2ece0, skinColor: 0xf2ece0, pattern: 'zebra',
-            legLength: 0.82, legRadius: 0.075, hoof: true,
-            bodyLength: 2.223, bodyWidth: 0.5, bodyDepth: 0.72,
-            neckLength: 0.62, neckRadius: 0.2, neckTilt: 0.42,
-            headSize: 0.2, snoutLength: 1.1, snoutRadius: 0.55,
-            earShape: 'pointy', earSize: 0.55,
-            tailLength: 1.183, tailSegments: 3, tailRadius: 0.028, tailTuft: 0x1c1a17,
+        build: () => buildCreature({
+            color: 0xf2ece0, skinColor: 0xeee7da, pattern: 'zebra', textureRepeat: 4,
+            back: 1.32, bodyLength: 2.0, chestR: 0.36, waistR: 0.32, rumpR: 0.36,
+            bodyWidth: 0.82, withersLift: 0.05,
+            neck: { length: 0.68, angle: 52, r0: 0.23, r1: 0.17 },
+            head: { size: 0.24, width: 0.46, height: 0.5, muzzle: 0.9, muzzleWidth: 0.6, align: 0.5 },
+            ears: { shape: 'pointy', size: 0.6 },
+            legs: { thickness: 0.07, hoof: true },
+            tail: { length: 0.68, radius: 0.03, segments: 4, angle: 26, tuft: 0x1b1917 },
         }),
     },
     {
         id: 'horse', name: 'סוס', emoji: '🐎', category: 'משק',
+        model: 'models/horse.glb',
         heightM: 1.65, lengthM: 2.9, weightKg: 500, speedKmh: 55,
         fact: 'סוסים ישנים בעמידה בזכות מנגנון נעילה בברכיים, אבל לשינה עמוקה הם נשכבים.',
-        build: () => buildQuadruped({
+        build: () => buildCreature({
             color: 0x6b432a, skinColor: 0x6b432a,
-            legLength: 0.95, legRadius: 0.08, hoof: true,
-            bodyLength: 2.143, bodyWidth: 0.55, bodyDepth: 0.78,
-            neckLength: 0.7, neckRadius: 0.22, neckTilt: 0.45,
-            headSize: 0.22, snoutLength: 1.15, snoutRadius: 0.55,
-            earShape: 'pointy', earSize: 0.5,
-            tailLength: 1.294, tailSegments: 3, tailRadius: 0.05, tailTuft: 0x2a1c12,
+            back: 1.55, bodyLength: 1.78, chestR: 0.4, waistR: 0.36, rumpR: 0.41,
+            bodyWidth: 0.82, withersLift: 0.07,
+            neck: { length: 0.72, angle: 50, r0: 0.25, r1: 0.19 },
+            head: { size: 0.26, width: 0.46, height: 0.52, muzzle: 0.95, muzzleWidth: 0.6, align: 0.5 },
+            ears: { shape: 'pointy', size: 0.55 },
+            legs: { thickness: 0.08, hoof: true },
+            tail: { length: 0.9, radius: 0.06, segments: 5, angle: 22, taper: 0.5, tuft: 0x2a1c12 },
         }),
     },
     {
         id: 'cow', name: 'פרה', emoji: '🐄', category: 'משק',
+        model: 'models/cow.glb',
         heightM: 1.5, lengthM: 2.5, weightKg: 720, speedKmh: 25,
         fact: 'פרה לועסת כ-40,000 לעיסות ביום ומייצרת עד 190 ליטר רוק.',
-        build: () => buildQuadruped({
-            color: 0xf6f2ec, skinColor: 0xf4efe8, pattern: 'cow',
-            legLength: 0.8, legRadius: 0.085, hoof: true,
-            bodyLength: 1.832, bodyWidth: 0.65, bodyDepth: 0.9,
-            neckLength: 0.35, neckRadius: 0.24, neckTilt: 0.35,
-            headSize: 0.24, snoutLength: 0.9, snoutRadius: 0.62, patternNeck: false,
-            earShape: 'pointy', earSize: 0.6, horns: 'short',
-            tailLength: 0.949, tailSegments: 4, tailRadius: 0.03, tailTuft: 0x3b352e,
+        build: () => buildCreature({
+            color: 0xf6f2ec, skinColor: 0xf2ede4, pattern: 'cow', textureRepeat: 3,
+            back: 1.4, bodyLength: 1.65, chestR: 0.46, waistR: 0.45, rumpR: 0.47,
+            bodyWidth: 0.92, withersLift: 0.06, bellySag: 0.06, rumpLift: 0.03,
+            neck: { length: 0.3, angle: 22, r0: 0.32, r1: 0.26 },
+            head: { size: 0.26, width: 0.56, height: 0.56, muzzle: 0.65, muzzleWidth: 0.82, align: 0.4 },
+            ears: { shape: 'pointy', size: 0.6 },
+            horns: 'curved', hornColor: 0x2f2a24,
+            legs: { thickness: 0.085, hoof: true },
+            tail: { length: 0.9, radius: 0.035, segments: 5, angle: 14, taper: 0.6, tuft: 0x3a342d },
         }),
     },
     {
-        id: 'bear', name: 'דוב גריזלי', emoji: '🐻', category: 'טורפים',
+        id: 'bear', name: 'דוב גריזלי', emoji: '🐻', category: 'יער',
         heightM: 1.35, lengthM: 2.2, weightKg: 400, speedKmh: 55,
         fact: 'גריזלי בעמידה על הרגליים האחוריות מגיע ל-2.7 מטר - גבוה מכל שחקן NBA.',
-        build: () => buildQuadruped({
-            color: 0x6a4a2f, skinColor: 0x6a4a2f, flat: true,
-            legLength: 0.68, legRadius: 0.15,
-            bodyLength: 2.158, bodyWidth: 0.75, bodyDepth: 0.85, hump: true,
-            neckLength: 0.2, neckRadius: 0.28, neckTilt: 0.3,
-            headSize: 0.26, snoutLength: 0.75, snoutRadius: 0.55,
-            earShape: 'round', earSize: 0.42,
-            tailLength: 0.12, tailSegments: 2, tailRadius: 0.06,
+        build: () => buildCreature({
+            color: 0x6a4a2f, skinColor: 0x684829, flat: true,
+            back: 1.12, bodyLength: 1.5, chestR: 0.42, waistR: 0.38, rumpR: 0.4,
+            bodyWidth: 1.0, withersLift: 0.16,
+            neck: { length: 0.18, angle: 14, r0: 0.34, r1: 0.29 },
+            head: { size: 0.28, width: 0.68, height: 0.64, muzzle: 0.55, muzzleWidth: 0.62, eye: 0.09, eyeForward: 0.68 },
+            ears: { shape: 'round', size: 0.4 },
+            legs: { thickness: 0.14 },
+            tail: { length: 0.14, radius: 0.06, segments: 2, angle: 35 },
         }),
     },
     {
-        id: 'wolf', name: 'זאב', emoji: '🐺', category: 'טורפים',
+        id: 'wolf', name: 'זאב', emoji: '🐺', category: 'יער',
+        model: 'models/wolf.glb',
         heightM: 0.85, lengthM: 1.9, weightKg: 45, speedKmh: 60,
         fact: 'להקת זאבים יכולה לעבור 80 קילומטר ביממה אחת במרדף אחרי טרף.',
-        build: () => buildQuadruped({
-            color: 0x7d7c78, skinColor: 0x7d7c78, flat: true,
-            legLength: 0.52, legRadius: 0.06,
-            bodyLength: 1.41, bodyWidth: 0.3, bodyDepth: 0.38,
-            neckLength: 0.18, neckRadius: 0.13, neckTilt: 0.3,
-            headSize: 0.15, snoutLength: 1.0, snoutRadius: 0.5,
-            earShape: 'pointy', earSize: 0.6,
-            tailLength: 0.827, tailSegments: 4, tailRadius: 0.06,
+        build: () => buildCreature({
+            color: 0x81807b, skinColor: 0x7c7b76, flat: true,
+            back: 0.78, bodyLength: 0.98, chestR: 0.185, waistR: 0.155, rumpR: 0.175,
+            bodyWidth: 0.82,
+            neck: { length: 0.2, angle: 22, r0: 0.155, r1: 0.13 },
+            head: { size: 0.16, width: 0.6, height: 0.62, muzzle: 0.85, muzzleWidth: 0.55, eye: 0.12, eyeForward: 0.68 },
+            ears: { shape: 'pointy', size: 0.62 },
+            legs: { thickness: 0.045, digitigrade: true },
+            tail: { length: 0.45, radius: 0.06, segments: 5, angle: 58, curve: 0.12, taper: 0.35 },
         }),
     },
     {
-        id: 'dog', name: 'רועה גרמני', emoji: '🐕', category: 'בית',
-        heightM: 0.64, lengthM: 1.1, weightKg: 35, speedKmh: 48,
+        id: 'dog', name: 'האסקי סיבירי', emoji: '🐕', category: 'בית',
+        model: 'models/husky.glb',
+        heightM: 0.6, lengthM: 1.0, weightKg: 25, speedKmh: 45,
         fact: 'חוש הריח של כלב רגיש פי 10,000 עד 100,000 משל בן אדם.',
-        build: () => buildQuadruped({
-            color: 0x5a4127, skinColor: 0x3a2a18,
-            legLength: 0.36, legRadius: 0.045,
-            bodyLength: 0.768, bodyWidth: 0.22, bodyDepth: 0.3,
-            neckLength: 0.14, neckRadius: 0.1, neckTilt: 0.35,
-            headSize: 0.11, snoutLength: 0.95, snoutRadius: 0.5,
-            earShape: 'pointy', earSize: 0.7,
-            tailLength: 0.471, tailSegments: 4, tailRadius: 0.035,
+        build: () => buildCreature({
+            color: 0x5a4127, skinColor: 0x3f2d18,
+            back: 0.6, bodyLength: 0.64, chestR: 0.145, waistR: 0.115, rumpR: 0.13,
+            bodyWidth: 0.82, withersLift: 0.04, rumpLift: -0.05,
+            neck: { length: 0.16, angle: 32, r0: 0.115, r1: 0.1 },
+            head: { size: 0.12, width: 0.62, height: 0.62, muzzle: 0.85, muzzleWidth: 0.52, eye: 0.13, eyeForward: 0.68 },
+            ears: { shape: 'pointy', size: 0.8 },
+            legs: { thickness: 0.032, digitigrade: true },
+            tail: { length: 0.38, radius: 0.04, segments: 5, angle: 78, curve: 0.18, taper: 0.4 },
         }),
     },
     {
         id: 'cat', name: 'חתול', emoji: '🐈', category: 'בית',
+        model: 'models/cat.glb',
         heightM: 0.3, lengthM: 0.75, weightKg: 4.5, speedKmh: 48,
         fact: 'חתול יכול לקפוץ לגובה פי שישה מאורך גופו.',
-        build: () => buildQuadruped({
-            color: 0x8a8681, skinColor: 0x8a8681, pattern: 'tiger',
-            legLength: 0.17, legRadius: 0.022,
-            bodyLength: 0.501, bodyWidth: 0.11, bodyDepth: 0.14,
-            neckLength: 0.05, neckRadius: 0.05, neckTilt: 0.3,
-            headSize: 0.06, snoutLength: 0.45, snoutRadius: 0.6,
-            earShape: 'pointy', earSize: 0.75,
-            tailLength: 0.411, tailSegments: 6, tailRadius: 0.018,
+        build: () => buildCreature({
+            color: 0x8a8681, skinColor: 0x8a8681, pattern: 'tiger', textureRepeat: 3,
+            back: 0.27, bodyLength: 0.33, chestR: 0.062, waistR: 0.052, rumpR: 0.062,
+            bodyWidth: 0.8,
+            neck: { length: 0.05, angle: 24, r0: 0.05, r1: 0.045 },
+            head: { size: 0.055, width: 0.88, height: 0.82, muzzle: 0.3, muzzleWidth: 0.85, eye: 0.17, eyeForward: 0.74 },
+            ears: { shape: 'pointy', size: 0.85 },
+            legs: { thickness: 0.016, digitigrade: true },
+            tail: { length: 0.3, radius: 0.017, segments: 7, angle: 45, curve: 0.22, taper: 0.25 },
         }),
     },
     {
         id: 'rhino', name: 'קרנף לבן', emoji: '🦏', category: 'ספארי',
         heightM: 1.8, lengthM: 4.0, weightKg: 2300, speedKmh: 50,
         fact: 'הקרן של הקרנף עשויה קרטין - אותו חומר שממנו עשויות הציפורניים שלנו.',
-        build: () => buildQuadruped({
-            color: 0x9a9791, skinColor: 0x9a9791, flat: true,
-            legLength: 0.95, legRadius: 0.2, hoof: true,
-            bodyLength: 3.291, bodyWidth: 1.1, bodyDepth: 1.15,
-            neckLength: 0.25, neckRadius: 0.45, neckTilt: 0.5,
-            headSize: 0.38, snoutLength: 1.0, snoutRadius: 0.62,
-            earShape: 'pointy', earSize: 0.5, nasalHorn: 0.9,
-            tailLength: 1.247, tailSegments: 3, tailRadius: 0.04, tailTuft: 0x4a463f,
+        build: () => buildCreature({
+            color: 0x9a9791, skinColor: 0x969390, flat: true,
+            back: 1.62, bodyLength: 2.4, chestR: 0.62, waistR: 0.58, rumpR: 0.6,
+            bodyWidth: 0.95, withersLift: 0.1, bellySag: 0.04,
+            neck: { length: 0.22, angle: 8, r0: 0.48, r1: 0.4 },
+            head: { size: 0.42, width: 0.52, height: 0.48, muzzle: 0.65, muzzleWidth: 0.78, align: 0.3, eye: 0.07 },
+            ears: { shape: 'pointy', size: 0.42 },
+            nasalHorn: 0.9,
+            legs: { thickness: 0.2, hoof: true, hoofColor: 0x635e57 },
+            tail: { length: 0.62, radius: 0.045, segments: 4, angle: 22, tuft: 0x494540 },
         }),
     },
     {
-        id: 'deer', name: 'אייל אדום', emoji: '🦌', category: 'ספארי',
-        heightM: 1.3, lengthM: 2.0, weightKg: 200, speedKmh: 70,
+        id: 'deer', name: 'אייל אדום', emoji: '🦌', category: 'יער',
+        model: 'models/stag.glb',
+        heightM: 1.9, lengthM: 2.1, weightKg: 200, speedKmh: 70,
         fact: 'האיילים משילים את הקרניים כל שנה ומגדלים חדשות וגדולות יותר.',
-        build: () => buildQuadruped({
-            color: 0x9a6a3c, skinColor: 0x9a6a3c,
-            legLength: 0.78, legRadius: 0.05, hoof: true,
-            bodyLength: 2.1, bodyWidth: 0.38, bodyDepth: 0.55,
-            neckLength: 0.45, neckRadius: 0.13, neckTilt: 0.4,
-            headSize: 0.15, snoutLength: 0.9, snoutRadius: 0.55,
-            earShape: 'pointy', earSize: 0.8, horns: 'long',
-            tailLength: 0.18, tailSegments: 2, tailRadius: 0.03,
+        build: () => buildCreature({
+            color: 0x96683c, skinColor: 0x8d6137,
+            back: 1.2, bodyLength: 1.2, chestR: 0.26, waistR: 0.22, rumpR: 0.25,
+            bodyWidth: 0.8, withersLift: 0.04,
+            neck: { length: 0.45, angle: 58, r0: 0.15, r1: 0.115 },
+            head: { size: 0.18, width: 0.48, height: 0.5, muzzle: 0.7, muzzleWidth: 0.58, align: 0.55 },
+            ears: { shape: 'pointy', size: 0.85 },
+            horns: 'antlers', hornColor: 0x6b5533,
+            legs: { thickness: 0.042, hoof: true },
+            tail: { length: 0.18, radius: 0.035, segments: 2, angle: 20 },
         }),
     },
     {
         id: 'penguin', name: 'פינגווין קיסר', emoji: '🐧', category: 'קוטב',
         heightM: 1.15, lengthM: 0.5, weightKg: 35, speedKmh: 9, upright: true,
         fact: 'פינגווין קיסר צולל לעומק 500 מטר ונשאר מתחת למים עד 20 דקות.',
-        build: () => buildBiped({
-            color: 0x25292e, skinColor: 0x25292e, belly: 0xf3efe4,
-            legLength: 0.2, legRadius: 0.04, hoof: false,
-            bodyLength: 0.7, bodyWidth: 0.3, bodyDepth: 0.34,
-            neckLength: 0.08, neckRadius: 0.1,
-            headSize: 0.11, beak: 0.13, beakColor: 0xe09a3a,
-            armLength: 0.42, wing: true, tailLength: 0,
+        build: () => buildCreature({
+            color: 0x25292e, skinColor: 0x25292e,
+            back: 0.95, bodyLength: 0.66, chestR: 0.17, waistR: 0.16, rumpR: 0.13,
+            bodyWidth: 0.95, tilt: 84, hipY: 0.2,
+            neck: { length: 0.1, angle: 12, r0: 0.12, r1: 0.1 },
+            head: { size: 0.1, width: 0.82, height: 0.88, muzzle: 0, eye: 0.15, align: 0.9, brow: false, cheeks: false },
+            ears: { shape: 'none' },
+            beak: 0.12, beakColor: 0xdd9a3c,
+            bellyPatch: 0xf1ece0,
+            arms: { length: 0.4, flipper: true },
+            legPairs: 1,
+            legs: { thickness: 0.035, hoof: false },
         }),
     },
     {
         id: 'kangaroo', name: 'קנגורו אדום', emoji: '🦘', category: 'ספארי',
         heightM: 1.8, lengthM: 1.6, weightKg: 85, speedKmh: 70, upright: true,
         fact: 'קנגורו אדום קופץ 9 מטר בקפיצה אחת ומגיע לגובה 3 מטר.',
-        build: () => buildBiped({
+        build: () => buildCreature({
             color: 0xa9663d, skinColor: 0xa9663d,
-            legLength: 0.75, legRadius: 0.08,
-            bodyLength: 0.85, bodyWidth: 0.34, bodyDepth: 0.4,
-            neckLength: 0.14, neckRadius: 0.1,
-            headSize: 0.14, snoutLength: 0.8, earShape: 'tall',
-            armLength: 0.4, tailLength: 1.0, tailSegments: 5, tailRadius: 0.1,
+            back: 1.45, bodyLength: 0.95, chestR: 0.25, waistR: 0.23, rumpR: 0.3,
+            bodyWidth: 0.85, tilt: 48, hipY: 0.72,
+            neck: { length: 0.2, angle: 32, r0: 0.16, r1: 0.13 },
+            head: { size: 0.16, width: 0.58, height: 0.6, muzzle: 0.75, muzzleWidth: 0.55, align: 0.5 },
+            ears: { shape: 'tall', size: 0.8 },
+            arms: { length: 0.4 },
+            legPairs: 1,
+            legs: { thickness: 0.075, digitigrade: true },
+            tail: { length: 1.1, radius: 0.15, segments: 6, angle: 72, curve: 0.06, taper: 0.7 },
         }),
     },
     {
         id: 'trex', name: 'טי-רקס', emoji: '🦖', category: 'דינוזאורים',
         heightM: 4.0, lengthM: 12.0, weightKg: 8000, speedKmh: 27,
         fact: 'נשיכת הטי-רקס הפעילה כוח של 5.8 טון - החזקה ביותר של חיה יבשתית אי פעם.',
-        build: () => buildBiped({
-            color: 0x5c6b4a, skinColor: 0x5c6b4a, flat: true, horizontal: true,
-            legLength: 1.9, legRadius: 0.26,
-            bodyLength: 4.254, bodyWidth: 1.1, bodyDepth: 1.4,
-            neckLength: 0.9, neckRadius: 0.36,
-            headSize: 0.55, jaw: true,
-            armLength: 0.55, tailLength: 5.299, tailSegments: 7, tailRadius: 0.5,
+        build: () => buildCreature({
+            color: 0x5c6b4a, skinColor: 0x596848, flat: true,
+            back: 2.9, bodyLength: 3.3, chestR: 0.78, waistR: 0.7, rumpR: 0.88,
+            bodyWidth: 0.82, withersLift: 0.05,
+            neck: { length: 1.0, angle: 42, r0: 0.44, r1: 0.32 },
+            head: { size: 0.62, width: 0.5, height: 0.6, muzzle: 0.35, muzzleWidth: 0.85, align: 0.55, eye: 0.09 },
+            ears: { shape: 'none' },
+            jaws: true,
+            arms: { length: 0.6 },
+            legPairs: 1,
+            legs: { thickness: 0.26, digitigrade: true },
+            tail: { length: 4.4, radius: 0.55, segments: 8, angle: 88, curve: 0.015, taper: 0.88 },
+        }),
+    },
+    {
+        id: 'fox', name: 'שועל אדום', emoji: '🦊', category: 'יער',
+        heightM: 0.4, lengthM: 1.1, weightKg: 7, speedKmh: 50,
+        model: 'models/fox.glb', clips: { idle: 'Survey', walk: 'Walk' },
+        fact: 'שועל שומע מכרסם שזז מתחת לשלג ממרחק שני מטרים, וקופץ עליו בצלילה מדויקת.',
+        build: () => buildCreature({
+            color: 0xc45a20, skinColor: 0xc45a20,
+            back: 0.36, bodyLength: 0.52, chestR: 0.1, waistR: 0.085, rumpR: 0.095,
+            bodyWidth: 0.8,
+            neck: { length: 0.1, angle: 24, r0: 0.085, r1: 0.075 },
+            head: { size: 0.1, width: 0.6, height: 0.6, muzzle: 0.9, muzzleWidth: 0.5, eye: 0.13, eyeForward: 0.7 },
+            ears: { shape: 'pointy', size: 0.8 },
+            legs: { thickness: 0.026, digitigrade: true },
+            tail: { length: 0.38, radius: 0.06, segments: 5, angle: 50, taper: 0.3 },
+        }),
+    },
+    {
+        id: 'alpaca', name: 'אלפקה', emoji: '🦙', category: 'משק',
+        heightM: 1.5, lengthM: 1.4, weightKg: 70, speedKmh: 55,
+        model: 'models/alpaca.glb',
+        fact: 'אלפקה יורקת כשהיא כועסת - בעיקר על אלפקות אחרות שמנסות לגנוב לה אוכל.',
+        build: () => buildCreature({
+            color: 0xd9c4a3, skinColor: 0xd9c4a3,
+            back: 1.0, bodyLength: 0.85, chestR: 0.26, waistR: 0.24, rumpR: 0.25,
+            bodyWidth: 0.85,
+            neck: { length: 0.55, angle: 78, r0: 0.14, r1: 0.11 },
+            head: { size: 0.15, width: 0.55, height: 0.6, muzzle: 0.6, muzzleWidth: 0.6, align: 0.6 },
+            ears: { shape: 'tall', size: 0.5 },
+            legs: { thickness: 0.05, hoof: true },
+            tail: { length: 0.15, radius: 0.04, segments: 2, angle: 30 },
+        }),
+    },
+    {
+        id: 'pig', name: 'חזיר', emoji: '🐖', category: 'משק',
+        heightM: 0.9, lengthM: 1.6, weightKg: 250, speedKmh: 17,
+        model: 'models/pig.glb',
+        fact: 'לחזירים אין בלוטות זיעה - הם מתגלגלים בבוץ כדי להתקרר ולהגן על העור מהשמש.',
+        build: () => buildCreature({
+            color: 0xe0a3a0, skinColor: 0xe0a3a0,
+            back: 0.72, bodyLength: 1.0, chestR: 0.26, waistR: 0.26, rumpR: 0.27,
+            bodyWidth: 0.95, bellySag: 0.04,
+            neck: { length: 0.1, angle: 8, r0: 0.22, r1: 0.2 },
+            head: { size: 0.2, width: 0.6, height: 0.55, muzzle: 0.75, muzzleWidth: 0.75 },
+            ears: { shape: 'pointy', size: 0.6 },
+            legs: { thickness: 0.05, hoof: true },
+            tail: { length: 0.2, radius: 0.02, segments: 4, angle: 70, curve: 0.5 },
+        }),
+    },
+    {
+        id: 'sheep', name: 'כבשה', emoji: '🐑', category: 'משק',
+        heightM: 1.0, lengthM: 1.3, weightKg: 80, speedKmh: 40,
+        model: 'models/sheep.glb',
+        fact: 'כבשה מזהה ומזכרת פרצופים של עד 50 כבשים אחרות במשך שנתיים.',
+        build: () => buildCreature({
+            color: 0xeee8dc, skinColor: 0xd8cfc0,
+            back: 0.75, bodyLength: 0.8, chestR: 0.24, waistR: 0.23, rumpR: 0.24,
+            bodyWidth: 0.95,
+            neck: { length: 0.15, angle: 35, r0: 0.15, r1: 0.12 },
+            head: { size: 0.14, width: 0.55, height: 0.6, muzzle: 0.6, muzzleWidth: 0.6 },
+            ears: { shape: 'pointy', size: 0.6 },
+            legs: { thickness: 0.035, hoof: true },
+            tail: { length: 0.14, radius: 0.04, segments: 2, angle: 25 },
+        }),
+    },
+    {
+        id: 'goat', name: 'עז', emoji: '🐐', category: 'משק',
+        heightM: 0.9, lengthM: 1.2, weightKg: 60, speedKmh: 25,
+        model: 'models/goat.glb',
+        fact: 'לעזים אישונים מלבניים, שנותנים להן שדה ראייה של כמעט 320 מעלות.',
+        build: () => buildCreature({
+            color: 0xb9a992, skinColor: 0xb9a992,
+            back: 0.7, bodyLength: 0.72, chestR: 0.19, waistR: 0.18, rumpR: 0.19,
+            bodyWidth: 0.85,
+            neck: { length: 0.18, angle: 40, r0: 0.13, r1: 0.11 },
+            head: { size: 0.13, width: 0.5, height: 0.55, muzzle: 0.7, muzzleWidth: 0.55 },
+            ears: { shape: 'pointy', size: 0.7 },
+            horns: 'curved', hornColor: 0x4a4238,
+            legs: { thickness: 0.032, hoof: true },
+            tail: { length: 0.12, radius: 0.03, segments: 2, angle: 100 },
+        }),
+    },
+    {
+        id: 'donkey', name: 'חמור', emoji: '🫏', category: 'משק',
+        heightM: 1.3, lengthM: 1.9, weightKg: 200, speedKmh: 40,
+        model: 'models/donkey.glb',
+        fact: 'חמור זוכר מקומות וחברים לעדר גם אחרי 25 שנה.',
+        build: () => buildCreature({
+            color: 0x8d8579, skinColor: 0x8d8579,
+            back: 1.2, bodyLength: 1.3, chestR: 0.3, waistR: 0.28, rumpR: 0.3,
+            bodyWidth: 0.82,
+            neck: { length: 0.5, angle: 55, r0: 0.19, r1: 0.15 },
+            head: { size: 0.2, width: 0.46, height: 0.52, muzzle: 0.9, muzzleWidth: 0.6, align: 0.5 },
+            ears: { shape: 'tall', size: 0.85 },
+            legs: { thickness: 0.055, hoof: true },
+            tail: { length: 0.6, radius: 0.035, segments: 4, angle: 20, tuft: 0x33302a },
+        }),
+    },
+    {
+        id: 'chicken', name: 'תרנגולת', emoji: '🐓', category: 'משק',
+        heightM: 0.45, lengthM: 0.45, weightKg: 2.5, speedKmh: 14, upright: true,
+        model: 'models/chicken.glb', clips: { idle: 'idle', walk: 'walk' },
+        fact: 'תרנגולת מטילה כ-300 ביצים בשנה, ומזהה יותר מ-100 פרצופים של בני אדם ותרנגולות.',
+        build: () => buildCreature({
+            color: 0xf0ece4, skinColor: 0xf0ece4,
+            back: 0.33, bodyLength: 0.26, chestR: 0.09, waistR: 0.085, rumpR: 0.08,
+            bodyWidth: 0.9, tilt: 55, hipY: 0.14,
+            neck: { length: 0.08, angle: 45, r0: 0.05, r1: 0.04 },
+            head: { size: 0.05, width: 0.8, height: 0.85, muzzle: 0, eye: 0.16, align: 0.8, brow: false, cheeks: false },
+            ears: { shape: 'none' },
+            beak: 0.05, beakColor: 0xe0a02c,
+            legPairs: 1,
+            legs: { thickness: 0.015 },
+            tail: { length: 0.14, radius: 0.05, segments: 3, angle: 120, taper: 0.7 },
         }),
     },
 ];
@@ -800,19 +1183,18 @@ export function getAnimal(id) {
 }
 
 /**
- * בונה חיה ומנרמל אותה לגובה האמיתי שלה במטרים,
+ * בונה חיה ומנרמל אותה לגובה ולאורך האמיתיים שלה במטרים,
  * כך שהמודל תמיד יוצא בקנה מידה נכון ביחס לעולם.
  */
 export function createAnimal(spec) {
     const group = spec.build();
-    const boxHelper = new THREE.Box3().setFromObject(group);
     const size = new THREE.Vector3();
-    boxHelper.getSize(size);
+    new THREE.Box3().setFromObject(group).getSize(size);
     if (size.y > 0.001) {
         const scale = spec.heightM / size.y;
         group.scale.setScalar(scale);
-        // התאמת אורך (חוטם עד קצה הזנב) למידה האמיתית.
-        // מוגבל ל-30% כדי שהחיה לא תימתח ותיראה מעוותת.
+        // התאמת אורך (חוטם עד קצה הזנב) למידה האמיתית,
+        // מוגבלת ל-30% כדי שהחיה לא תימתח ותיראה מעוותת
         if (spec.lengthM && !spec.upright && size.z > 0.001) {
             const wanted = spec.lengthM / (size.z * scale);
             group.scale.z = scale * THREE.MathUtils.clamp(wanted, 0.75, 1.3);
@@ -825,71 +1207,75 @@ export function createAnimal(spec) {
     const wrapper = new THREE.Group();
     wrapper.add(group);
     wrapper.userData.rig = group.userData.rig;
-    wrapper.userData.trunk = group.userData.trunk;
     wrapper.userData.spec = spec;
-    wrapper.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = false; } });
+    wrapper.traverse((o) => { if (o.isMesh) o.castShadow = true; });
     return wrapper;
 }
 
 /* ------------------------------------------------------------------ אנימציה */
 
+const LEG_PHASE = { frontL: 0, frontR: Math.PI, backL: Math.PI, backR: 0 };
+
 export function animateAnimal(animal, t, mode) {
     const rig = animal.userData.rig;
     if (!rig) return;
     const walking = mode === 'walk';
-    const speed = walking ? 3.4 : 1.1;
-    const phase = t * speed;
+    const phase = t * (walking ? 3.2 : 1);
 
-    // נשימה
-    const breathe = 1 + Math.sin(t * 1.4) * 0.012;
-    rig.torsoPivot.scale.set(breathe, breathe, 1);
+    // נשימה - רק הגוף מתנפח, הרגליים לא נמתחות
+    const breathe = 1 + Math.sin(t * 1.3) * 0.015;
+    if (rig.body) rig.body.scale.set(breathe, breathe, 1);
 
-    // רגליים
-    rig.legs.forEach((leg, i) => {
-        const offset = rig.type === 'biped' ? i * Math.PI : [0, Math.PI, Math.PI, 0][i];
+    rig.legs.forEach((leg) => {
+        const offset = LEG_PHASE[leg.id] ?? 0;
         if (walking) {
             const swing = Math.sin(phase + offset);
-            leg.hip.rotation.x = swing * 0.5;
-            leg.knee.rotation.x = Math.max(0, -Math.sin(phase + offset + 0.9)) * 0.8;
+            leg.hip.rotation.x = swing * 0.42;
+            leg.knee.rotation.x = leg.knee.userData.rest ?? (leg.knee.userData.rest = leg.knee.rotation.x);
+            leg.knee.rotation.x += Math.max(0, -Math.sin(phase + offset + 0.7)) * 0.7 * (leg.front ? -1 : 1);
+            leg.ankle.rotation.x = (leg.ankle.userData.rest ?? (leg.ankle.userData.rest = leg.ankle.rotation.x))
+                + Math.sin(phase + offset + 1.4) * 0.2;
         } else {
-            leg.hip.rotation.x = Math.sin(t * 0.8 + offset) * 0.012;
-            leg.knee.rotation.x = 0.02;
+            leg.hip.rotation.x = Math.sin(t * 0.7 + offset) * 0.012;
         }
     });
 
-    // גוף מתנדנד בהליכה
     if (walking) {
-        rig.torsoPivot.position.y = animal.userData.baseTorsoY ?? (animal.userData.baseTorsoY = rig.torsoPivot.position.y);
-        rig.torsoPivot.position.y += Math.sin(phase * 2) * 0.008 * (animal.userData.spec?.heightM || 1);
-        rig.torsoPivot.rotation.z = Math.sin(phase) * 0.02;
+        rig.torso.position.y = Math.sin(phase * 2) * 0.012 * (animal.userData.spec?.heightM || 1);
+        rig.torso.rotation.z = Math.sin(phase) * 0.018;
     } else {
-        rig.torsoPivot.rotation.z = 0;
+        rig.torso.position.y = 0;
+        rig.torso.rotation.z = 0;
     }
 
-    // ראש וצוואר
-    rig.headPivot.rotation.x = Math.sin(t * 0.9) * 0.06 + (walking ? Math.sin(phase * 2) * 0.03 : 0);
-    rig.headPivot.rotation.y = Math.sin(t * 0.37) * 0.22;
-    rig.neckPivot.rotation.x = Math.sin(t * 0.6) * 0.03;
+    // ראש: הבטה איטית לצדדים ונדנוד עדין
+    rig.headPivot.rotation.y = Math.sin(t * 0.35) * 0.3;
+    rig.headPivot.rotation.z = Math.sin(t * 0.5) * 0.05;
+    const headRest = rig.headPivot.userData.rest
+        ?? (rig.headPivot.userData.rest = rig.headPivot.rotation.x);
+    rig.headPivot.rotation.x = headRest + Math.sin(t * 0.9) * 0.05 + (walking ? Math.sin(phase * 2) * 0.03 : 0);
 
-    // זנב
     if (rig.tail) {
         rig.tail.joints.forEach((j, i) => {
-            j.rotation.z = Math.sin(t * 2.2 - i * 0.55) * (0.12 + i * 0.03);
+            j.rotation.y = Math.sin(t * 2 - i * 0.5) * (0.06 + i * 0.02);
+            if (i > 0) j.rotation.x = (j.userData.rest ?? (j.userData.rest = j.rotation.x))
+                + Math.sin(t * 1.6 - i * 0.4) * 0.04;
         });
     }
 
-    // כנפיים / זרועות
     if (rig.arms) {
         rig.arms.forEach(({ shoulder, side }) => {
-            shoulder.rotation.x = walking ? Math.sin(phase + (side > 0 ? Math.PI : 0)) * 0.35 : Math.sin(t * 1.3) * 0.08;
+            const rest = shoulder.userData.rest ?? (shoulder.userData.rest = shoulder.rotation.x);
+            shoulder.rotation.x = rest + (walking
+                ? Math.sin(phase + (side > 0 ? Math.PI : 0)) * 0.3
+                : Math.sin(t * 1.2) * 0.07);
         });
     }
 
-    // חדק הפיל
-    if (animal.userData.trunk) {
-        animal.userData.trunk.forEach((j, i) => {
-            j.rotation.x = 0.2 + Math.sin(t * 1.1 - i * 0.4) * 0.12;
-            j.rotation.z = Math.sin(t * 0.8 - i * 0.3) * 0.08;
+    if (rig.trunk) {
+        rig.trunk.forEach((j, i) => {
+            j.rotation.x = (i === 0 ? 0.45 : 0.16) + Math.sin(t * 1.1 - i * 0.35) * 0.1;
+            j.rotation.z = Math.sin(t * 0.8 - i * 0.3) * 0.07;
         });
     }
 }

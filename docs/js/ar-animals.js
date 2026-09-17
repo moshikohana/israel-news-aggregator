@@ -11,6 +11,7 @@
  */
 import * as THREE from 'three';
 import { ANIMALS, getAnimal, createAnimal, animateAnimal, buildHumanReference } from './animals.js';
+import { createModelAnimal, hasModel, measure } from './models.js';
 
 const EYE_HEIGHT = 1.6;          // גובה עין ממוצע במצב מצלמה (מטר)
 const DEFAULT_FOV = 65;          // ברירת מחדל לכיול שדה הראייה
@@ -23,6 +24,8 @@ const state = {
     showHuman: false,
     distance: 6,
     pitch: 0,
+    yaw: Math.PI,                // כיוון החיה, נשמר בין מיקומים מחדש
+    spin: false,                 // סיבוב אוטומטי לתצוגת 360 מעלות
     fov: DEFAULT_FOV,
     placed: false,
 };
@@ -113,28 +116,59 @@ function onResize() {
 
 /* ------------------------------------------------------------- טעינת חיה */
 
-function spawnAnimal(keepTransform = true) {
+let spawnToken = 0;
+
+async function spawnAnimal(keepTransform = true) {
     const spec = getAnimal(state.animalId);
+    const token = ++spawnToken;
     const prevPos = animalGroup ? animalGroup.position.clone() : null;
     const prevRot = animalGroup ? animalGroup.rotation.y : Math.PI;
+
+    let next;
+    if (hasModel(spec)) {
+        setStatus(`טוען את ${spec.name}…`);
+        try {
+            next = await createModelAnimal(spec);
+        } catch (err) {
+            console.warn('model load failed', spec.model, err);
+            next = createAnimal(spec);   // נפילה למודל הפרוצדורלי
+        }
+    } else {
+        next = createAnimal(spec);
+    }
+
+    // בזמן הטעינה המשתמש אולי כבר בחר חיה אחרת
+    if (token !== spawnToken) return;
 
     if (animalGroup) {
         scene.remove(animalGroup);
         disposeTree(animalGroup);
     }
-    animalGroup = createAnimal(spec);
+    animalGroup = next;
+    scene.add(animalGroup);
+
     if (keepTransform && prevPos) {
         animalGroup.position.copy(prevPos);
         animalGroup.rotation.y = prevRot;
     } else {
         placeInFront(state.distance);
+        animalGroup.rotation.y = state.yaw;
     }
-    scene.add(animalGroup);
+    applyAnimation();
     updateHumanRef();
     updateInfoPanel(spec);
 }
 
+/** מסנכרן את מצב עמידה/הליכה גם במודלים עם אנימציות מובנות */
+function applyAnimation() {
+    const model = animalGroup?.userData.model;
+    if (model) model.play(state.animation === 'walk' ? 'walk' : 'idle');
+}
+
 function disposeTree(obj) {
+    // מודלי GLB חולקים גיאומטריה וחומרים עם העותק שבמטמון,
+    // ולכן אסור לשחרר אותם - רק המודלים הפרוצדורליים משוחררים
+    if (obj.userData.model) return;
     obj.traverse((o) => {
         if (o.isMesh) {
             o.geometry?.dispose?.();
@@ -145,7 +179,7 @@ function disposeTree(obj) {
     });
 }
 
-function placeInFront(distance) {
+function placeInFront(distance, reface = false) {
     if (!animalGroup) return;
     const dir = new THREE.Vector3();
     camera.getWorldDirection(dir);
@@ -155,7 +189,9 @@ function placeInFront(distance) {
     const camPos = new THREE.Vector3();
     camera.getWorldPosition(camPos);
     animalGroup.position.set(camPos.x + dir.x * distance, groundY(), camPos.z + dir.z * distance);
-    animalGroup.rotation.y = Math.atan2(-dir.x, -dir.z);
+    // הכיוון שהמשתמש בחר נשמר; רק "מיקום מחדש" מפנה את החיה אליו בחזרה
+    if (reface) state.yaw = Math.atan2(-dir.x, -dir.z);
+    animalGroup.rotation.y = state.yaw;
     updateHumanRef();
     aimAtAnimal();
 }
@@ -205,7 +241,7 @@ async function startXR() {
         session.addEventListener('end', onXREnd);
 
         grid.visible = false;
-        if (!animalGroup) spawnAnimal(false);
+        if (!animalGroup) await spawnAnimal(false);
         animalGroup.visible = false;
         setStatus('כוון את המצלמה לרצפה ולחץ על המסך כדי להציב את החיה');
         showScreen(null);
@@ -227,7 +263,8 @@ function onXRSelect() {
         // מפנה את החיה אל הצופה
         const camPos = new THREE.Vector3();
         camera.getWorldPosition(camPos);
-        animalGroup.rotation.y = Math.atan2(camPos.x - pos.x, camPos.z - pos.z);
+        state.yaw = Math.atan2(camPos.x - pos.x, camPos.z - pos.z);
+        animalGroup.rotation.y = state.yaw;
         updateHumanRef();
         setStatus(`${getAnimal(state.animalId).name} הוצב/ה בגודל אמיתי - התרחק/י כדי לראות הכל`);
     }
@@ -261,7 +298,7 @@ async function startCamera() {
         state.mode = 'camera';
         grid.visible = false;
         await orientationPromise;
-        if (!animalGroup) spawnAnimal(false);
+        if (!animalGroup) await spawnAnimal(false);
         else placeInFront(state.distance);
         animalGroup.visible = true;
         state.placed = true;
@@ -273,11 +310,11 @@ async function startCamera() {
     }
 }
 
-function startPreview(message) {
+async function startPreview(message) {
     state.mode = 'preview';
     grid.visible = true;
     scene.background = new THREE.Color(0x0d1117);
-    if (!animalGroup) spawnAnimal(false);
+    if (!animalGroup) await spawnAnimal(false);
     else placeInFront(state.distance);
     animalGroup.visible = true;
     state.placed = true;
@@ -343,8 +380,10 @@ function bindPointer() {
         drag.x = e.clientX;
         drag.y = e.clientY;
 
-        // סיבוב החיה
-        animalGroup.rotation.y -= dx * 0.008;
+        // סיבוב החיה - 360 מעלות מלאות, והזווית נשמרת
+        state.yaw -= dx * 0.008;
+        animalGroup.rotation.y = state.yaw;
+        if (dx) state.spin = false;          // נגיעה עוצרת את הסיבוב האוטומטי
 
         if (state.mode === 'camera' || state.mode === 'preview') {
             if (orientation.active) {
@@ -408,7 +447,8 @@ function setDistance(v) {
 /* --------------------------------------------------------------- לולאת ציור */
 
 function render(timestamp, frame) {
-    const t = clock.getElapsedTime();
+    const delta = clock.getDelta();
+    const t = clock.elapsedTime;
 
     if (state.mode === 'xr' && frame && hitTestSource && !state.placed) {
         const results = frame.getHitTestResults(hitTestSource);
@@ -425,7 +465,16 @@ function render(timestamp, frame) {
 
     if ((state.mode === 'camera') && orientation.active) applyDeviceOrientation();
 
-    if (animalGroup) animateAnimal(animalGroup, t, state.animation);
+    if (animalGroup) {
+        const model = animalGroup.userData.model;
+        if (model) model.mixer?.update(delta);
+        else animateAnimal(animalGroup, t, state.animation);
+
+        if (state.spin) {
+            animalGroup.rotation.y += delta * 0.6;
+            state.yaw = animalGroup.rotation.y;
+        }
+    }
     renderer.render(scene, camera);
 }
 
@@ -471,7 +520,9 @@ function buildPicker() {
             const btn = document.createElement('button');
             btn.className = 'pick ui';
             btn.dataset.id = a.id;
-            btn.innerHTML = `<span class="pick-emoji">${a.emoji}</span><span class="pick-name">${a.name}</span><span class="pick-size">${a.heightM} מ'</span>`;
+            btn.innerHTML = `<span class="pick-emoji">${a.emoji}</span><span class="pick-name">${a.name}</span>`
+                + `<span class="pick-size">${a.heightM} מ'${hasModel(a) ? ' ✦' : ''}</span>`;
+            if (hasModel(a)) btn.title = 'מודל תלת ממד מלא עם אנימציות';
             btn.addEventListener('click', () => selectAnimal(a.id));
             row.appendChild(btn);
         }
@@ -671,6 +722,7 @@ async function boot() {
         state.animation = state.animation === 'walk' ? 'idle' : 'walk';
         e.currentTarget.classList.toggle('on', state.animation === 'walk');
         e.currentTarget.textContent = state.animation === 'walk' ? '🚶 בתנועה' : '🧍 עומד';
+        applyAnimation();
         saveSettings();
     });
     el('btn-human').addEventListener('click', (e) => {
@@ -685,9 +737,14 @@ async function boot() {
             if (animalGroup) animalGroup.visible = false;
             setStatus('כוון/י לרצפה ולחץ/י כדי להציב מחדש');
         } else {
-            placeInFront(state.distance);
+            placeInFront(state.distance, true);
             setStatus('החיה מוקמה מולך');
         }
+    });
+    el('btn-spin').addEventListener('click', (e) => {
+        state.spin = !state.spin;
+        e.currentTarget.classList.toggle('on', state.spin);
+        setStatus(state.spin ? 'סיבוב אוטומטי - נגיעה במסך עוצרת' : 'עצרתי את הסיבוב');
     });
     el('btn-shot').addEventListener('click', capture);
     el('btn-sheet').addEventListener('click', () => toggleSheet('sheet'));
@@ -710,3 +767,23 @@ async function boot() {
 }
 
 boot();
+
+// עזרי בדיקה אוטומטית (לא בשימוש בממשק עצמו)
+window.__pick = (id) => selectAnimal(id);
+window.__info = () => {
+    if (!animalGroup) return null;
+    const box = measure(animalGroup);
+    const cam = new THREE.Vector3(); camera.getWorldPosition(cam);
+    return {
+        pos: animalGroup.position.toArray().map((v) => +v.toFixed(2)),
+        min: box.min.toArray().map((v) => +v.toFixed(2)),
+        max: box.max.toArray().map((v) => +v.toFixed(2)),
+        visible: animalGroup.visible,
+        children: animalGroup.children.length,
+        isModel: !!animalGroup.userData.model,
+        camera: cam.toArray().map((v) => +v.toFixed(2)),
+        pitch: +camera.rotation.x.toFixed(2),
+    };
+};
+window.__yaw = () => (animalGroup ? animalGroup.rotation.y : 0);
+window.__face = (angle) => { if (animalGroup) animalGroup.rotation.y = angle; };

@@ -1,8 +1,9 @@
 /*
  * Service Worker - מאפשר לאפליקציה לעבוד אופליין אחרי התקנה.
- * כל קבצי האפליקציה נשמרים במטמון בהתקנה; העדכון מגיע ברקע.
+ * קוד האפליקציה נשמר במטמון בהתקנה; מודלי ה-GLB (כמה מגהבייט)
+ * נשמרים לפי דרישה, בפעם הראשונה שצופים בחיה.
  */
-const VERSION = 'ar-animals-v1';
+const VERSION = 'ar-animals-v2';
 const ASSETS = [
     './',
     './index.html',
@@ -10,6 +11,10 @@ const ASSETS = [
     './js/animals.js',
     './js/ar-animals.js',
     './vendor/three.module.min.js',
+    './vendor/loaders/GLTFLoader.js',
+    './vendor/utils/BufferGeometryUtils.js',
+    './vendor/utils/SkeletonUtils.js',
+    './js/models.js',
     './manifest.webmanifest',
     './icons/icon-192.png',
     './icons/icon-512.png',
