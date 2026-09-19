@@ -181,21 +181,45 @@ function disposeTree(obj) {
     });
 }
 
-function placeInFront(distance, reface = false) {
+const _dir = new THREE.Vector3();
+const _camPos = new THREE.Vector3();
+
+/** כיוון המבט האופקי של המצלמה */
+function viewDirection(target) {
+    camera.getWorldDirection(target);
+    target.y = 0;
+    if (target.lengthSq() < 1e-6) target.set(0, 0, -1);
+    return target.normalize();
+}
+
+/**
+ * ממקם את החיה במרחק מסוים מהמצלמה.
+ * keepBearing - שומר על הכיוון שבו החיה כבר נמצאת (קירוב והרחקה),
+ * במקום להעביר אותה לכיוון שאליו המצלמה מסתכלת ברגע זה.
+ */
+function positionAnimal(distance, { reface = false, keepBearing = false } = {}) {
     if (!animalGroup) return;
-    const dir = new THREE.Vector3();
-    camera.getWorldDirection(dir);
-    dir.y = 0;
-    if (dir.lengthSq() < 1e-6) dir.set(0, 0, -1);
-    dir.normalize();
-    const camPos = new THREE.Vector3();
-    camera.getWorldPosition(camPos);
-    animalGroup.position.set(camPos.x + dir.x * distance, groundY(), camPos.z + dir.z * distance);
+    camera.getWorldPosition(_camPos);
+
+    if (keepBearing && state.placed) {
+        _dir.subVectors(animalGroup.position, _camPos);
+        _dir.y = 0;
+        if (_dir.lengthSq() < 1e-6) viewDirection(_dir);
+        else _dir.normalize();
+    } else {
+        viewDirection(_dir);
+    }
+
+    animalGroup.position.set(_camPos.x + _dir.x * distance, groundY(), _camPos.z + _dir.z * distance);
     // הכיוון שהמשתמש בחר נשמר; רק "מיקום מחדש" מפנה את החיה אליו בחזרה
-    if (reface) state.yaw = Math.atan2(-dir.x, -dir.z);
+    if (reface) state.yaw = Math.atan2(-_dir.x, -_dir.z);
     animalGroup.rotation.y = state.yaw;
     updateHumanRef();
     aimAtAnimal();
+}
+
+function placeInFront(distance, reface = false) {
+    positionAnimal(distance, { reface });
 }
 
 function groundY() {
@@ -325,7 +349,7 @@ async function startCamera() {
         animalGroup.visible = true;
         state.placed = true;
         showScreen(null);
-        setStatus('גרור/י כדי לסובב · החלק/י מעלה ומטה כדי להרחיק ולקרב');
+        setStatus('גרירה = סיבוב · צביטה = קירוב והרחקה · 🎯 מביא את החיה מולך');
     } catch (err) {
         console.warn('camera failed', err);
         startPreview(`לא הצלחתי לפתוח את המצלמה (${err.name || 'שגיאה'}). מציג תצוגה מקדימה ללא מצלמה.`);
@@ -341,7 +365,7 @@ async function startPreview(message) {
     animalGroup.visible = true;
     state.placed = true;
     showScreen(null);
-    setStatus(message || 'תצוגה מקדימה - גרור/י כדי להסתכל מסביב');
+    setStatus(message || 'תצוגה מקדימה - גרירה מסובבת, גלגלת מקרבת ומרחיקה');
 }
 
 async function enableOrientation() {
@@ -382,8 +406,23 @@ function applyDeviceOrientation() {
 
 /* ------------------------------------------------------------ מגע ועכבר */
 
-let drag = null;
-let pinchStart = null;
+/*
+ * שליטה במגע
+ *
+ * אצבע אחת   - סיבוב החיה בלבד (במחשב, בלי חיישנים, גם הטיית מבט).
+ * שתי אצבעות - צביטה לקירוב ולהרחקה.
+ * גלגלת      - קירוב והרחקה במחשב.
+ *
+ * הפרדה מלאה בין סיבוב לקירוב: קודם כל גרירה אלכסונית שינתה גם את
+ * המרחק, והחיה "קפצה" תוך כדי ניסיון לסובב אותה.
+ */
+const pointers = new Map();
+let pinchDistance = null;
+
+function touchSpan() {
+    const [a, b] = [...pointers.values()];
+    return Math.hypot(a.x - b.x, a.y - b.y);
+}
 
 function bindPointer() {
     const surface = el('stage');
@@ -391,57 +430,56 @@ function bindPointer() {
     surface.addEventListener('pointerdown', (e) => {
         if (e.target.closest('.ui')) return;
         closeSheets();
-        drag = { x: e.clientX, y: e.clientY, id: e.pointerId };
+        pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+        if (pointers.size === 2) pinchDistance = touchSpan();
         surface.setPointerCapture(e.pointerId);
     });
 
     surface.addEventListener('pointermove', (e) => {
-        if (!drag || drag.id !== e.pointerId || !animalGroup) return;
-        const dx = e.clientX - drag.x;
-        const dy = e.clientY - drag.y;
-        drag.x = e.clientX;
-        drag.y = e.clientY;
+        const prev = pointers.get(e.pointerId);
+        if (!prev || !animalGroup) return;
+        const dx = e.clientX - prev.x;
+        const dy = e.clientY - prev.y;
+        prev.x = e.clientX;
+        prev.y = e.clientY;
 
-        // סיבוב החיה - 360 מעלות מלאות, והזווית נשמרת
-        state.yaw -= dx * 0.008;
-        animalGroup.rotation.y = state.yaw;
-        if (dx) state.spin = false;          // נגיעה עוצרת את הסיבוב האוטומטי
-
-        if (state.mode === 'camera' || state.mode === 'preview') {
-            if (orientation.active) {
-                // עם ג'ירוסקופ המבט מגיע מהחיישנים, אז הגרירה משנה מרחק
-                setDistance(state.distance + dy * 0.02);
-            } else {
-                // בלי חיישנים (מחשב) - גרירה אנכית מטה ומרימה את המבט
-                setPitch(state.pitch + dy * 0.004);
+        // צביטה: שתי אצבעות שולטות רק במרחק
+        if (pointers.size >= 2) {
+            const span = touchSpan();
+            if (pinchDistance && span > 0) {
+                setDistance(state.distance * (pinchDistance / span));
+                pinchDistance = span;
             }
+            return;
         }
-        updateHumanRef();
+
+        // אצבע אחת: סיבוב. החיה הולכת אחרי האצבע - גרירה ימינה מסובבת
+        // את הצד הפונה אליך ימינה, כמו סיבוב חפץ אמיתי.
+        if (dx) {
+            state.yaw += dx * 0.008;
+            animalGroup.rotation.y = state.yaw;
+            state.spin = false;              // נגיעה עוצרת את הסיבוב האוטומטי
+            updateHumanRef();
+        }
+
+        // בלי חיישני תנועה (מחשב) הגרירה האנכית מטה ומרימה את המבט
+        if (dy && !orientation.active && state.mode !== 'xr') {
+            setPitch(state.pitch + dy * 0.004);
+        }
     });
 
-    const endDrag = (e) => {
-        if (drag && drag.id === e.pointerId) drag = null;
+    const endPointer = (e) => {
+        pointers.delete(e.pointerId);
+        if (pointers.size < 2) pinchDistance = null;
     };
-    surface.addEventListener('pointerup', endDrag);
-    surface.addEventListener('pointercancel', endDrag);
-
-    surface.addEventListener('touchmove', (e) => {
-        if (e.touches.length !== 2) return;
-        const d = Math.hypot(
-            e.touches[0].clientX - e.touches[1].clientX,
-            e.touches[0].clientY - e.touches[1].clientY
-        );
-        if (pinchStart === null) { pinchStart = d; return; }
-        setDistance(state.distance * (pinchStart / d));
-        pinchStart = d;
-    }, { passive: true });
-
-    surface.addEventListener('touchend', () => { pinchStart = null; });
+    surface.addEventListener('pointerup', endPointer);
+    surface.addEventListener('pointercancel', endPointer);
+    surface.addEventListener('pointerleave', endPointer);
 
     surface.addEventListener('wheel', (e) => {
         if (state.mode === 'xr') return;
         e.preventDefault();
-        setDistance(state.distance + e.deltaY * 0.01);
+        setDistance(state.distance * (1 + e.deltaY * 0.001));
     }, { passive: false });
 }
 
@@ -463,7 +501,8 @@ function setDistance(v) {
     state.distance = THREE.MathUtils.clamp(v, 1.2, 60);
     dom.distance.value = state.distance.toFixed(1);
     dom.distanceOut.textContent = `${state.distance.toFixed(1)} מ'`;
-    if (state.mode !== 'xr') placeInFront(state.distance);
+    // קירוב והרחקה מזיזים את החיה על אותו קו, בלי שתקפוץ לכיוון אחר
+    if (state.mode !== 'xr') positionAnimal(state.distance, { keepBearing: true });
 }
 
 /* ------------------------------------------------- מחוון "החיה מחוץ לפריים" */
