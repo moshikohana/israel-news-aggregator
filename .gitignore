@@ -1,3 +1,7 @@
 __pycache__/
 *.pyc
 .venv/
+
+# Hyperframes render scratch
+brag-output/.*.hf-transaction-*/
+brag-output/work-*/
