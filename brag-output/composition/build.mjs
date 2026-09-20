@@ -1,9 +1,9 @@
 // Generates index.html from the scene data below.
 //
-// Drop a still or a clip into media/ named after the card's year — 1997.jpg,
-// 2005.mp4, 2011.webm — and this script wires it in as that card's background
-// plate. With media/ empty the composition still renders exactly as committed,
-// so the video never depends on footage that isn't there.
+// media/source/  — Barko's own broadcast, the thing being answered. Committed.
+// media/<year>.* — optional Netanyahu footage per card (1997.jpg, 2009.mp4 …).
+//                  Present: wired in as that card's background plate.
+//                  Absent:  the card renders as type only. Nothing breaks.
 //
 //   node build.mjs && npx hyperframes check && npx hyperframes render --output ../brag.mp4
 
@@ -14,13 +14,14 @@ import { fileURLToPath } from 'node:url';
 const HERE = dirname(fileURLToPath(import.meta.url));
 const IMAGE_EXT = ['jpg', 'jpeg', 'png', 'webp'];
 const VIDEO_EXT = ['mp4', 'webm'];
+const CARD_DUR = 6.5;
 
 const CARDS = [
   {
     year: '1997',
     topic: 'הסכם חברון',
-    at: 10.5,
-    slide: '״נסוג מחברון.״',
+    at: 11.5,
+    slide: '״הסכם הנסיגה מחברון.״',
     missing: 'הסכם שירש מרבין ופרס. הכנסת אישרה <b>87 מול 17</b> — כולל העבודה.',
     verdict: 'ירש הסכם. צמצם אותו.',
     figure: '87–17',
@@ -30,8 +31,8 @@ const CARDS = [
   {
     year: '1998',
     topic: 'מזכר וואי',
-    at: 17.0,
-    slide: '״חתם על נסיגה.״',
+    at: 18.0,
+    slide: '״נסיגה משטחים.״',
     missing: '13% הותנו בביטחון. <b>הועברו 2%.</b> בדצמבר הכול הוקפא.',
     verdict: 'חתם על 13%. מסר 2%.',
     figure: '2%',
@@ -41,8 +42,8 @@ const CARDS = [
   {
     year: '2005',
     topic: 'ההתנתקות',
-    at: 23.5,
-    slide: '״הצביע בעד.״',
+    at: 24.5,
+    slide: '״הצבעה בעד ההתנתקות.״',
     missing: '<b>נכון.</b> ושבוע לפני הפינוי התפטר מהממשלה וויתר על משרד האוצר.',
     verdict: 'הצביע בעד. שילם על ההתנגדות.',
     figure: '7.8.2005',
@@ -52,8 +53,8 @@ const CARDS = [
   {
     year: '2009',
     topic: 'נאום בר-אילן',
-    at: 30.0,
-    slide: '״הכיר במדינה פלסטינית.״',
+    at: 31.0,
+    slide: '״הכרה במדינה פלסטינית.״',
     missing:
       'מפורזת, <b>בלי צבא.</b> בתנאי הכרה בישראל כמדינת הלאום היהודי וירושלים מאוחדת.',
     verdict: 'תנאים שאיש לא קיבל.',
@@ -64,8 +65,8 @@ const CARDS = [
   {
     year: '2011',
     topic: 'עסקת שליט',
-    at: 36.5,
-    slide: '״שחרר 1,027.״',
+    at: 37.5,
+    slide: '״שחרור 1,027 אסירים.״',
     missing: 'הקבינט אישר <b>26 מול 3</b>. חייל חי, אחרי חמש שנים בשבי.',
     verdict: 'עסקה. לא אידאולוגיה.',
     figure: '26–3',
@@ -75,8 +76,8 @@ const CARDS = [
   {
     year: '2013',
     topic: '104 אסירים',
-    at: 43.0,
-    slide: '״שחרר עוד 104.״',
+    at: 44.0,
+    slide: '״שחרור 104 אסירים נוספים.״',
     missing: 'בלחץ אמריקאי, <b>תמורת התחייבות פלסטינית לא לפנות לאו״ם.</b>',
     verdict: 'המנה הרביעית לא שוחררה.',
     figure: '26 אסירים',
@@ -84,8 +85,6 @@ const CARDS = [
     figureSub: 'שנשארו בכלא',
   },
 ];
-
-const CARD_DUR = 6.5;
 
 /** Finds media/<year>.<ext>, preferring video, and returns its kind + path. */
 function findPlate(year) {
@@ -101,10 +100,10 @@ function findPlate(year) {
   return null;
 }
 
-const plates = CARDS.map((c) => ({ ...c, plate: findPlate(c.year) }));
-const withPlates = plates.filter((c) => c.plate);
+const cards = CARDS.map((c) => ({ ...c, plate: findPlate(c.year) }));
+const plated = cards.filter((c) => c.plate);
 
-const plateMarkup = withPlates
+const plateMarkup = plated
   .map(({ year, at, plate }) =>
     plate.kind === 'video'
       ? `      <video id="plate-${year}" class="clip plate" muted data-start="${at}" data-duration="${CARD_DUR}" data-media-start="0" data-track-index="4" src="${plate.src}"></video>`
@@ -112,7 +111,16 @@ const plateMarkup = withPlates
   )
   .join('\n');
 
-const cardMarkup = plates
+const plateTimeline = plated
+  .map(({ year, at, plate }) => {
+    const fade = `      tl.fromTo('#plate-${year}', { opacity: 0 }, { opacity: 1, duration: 0.5, ease: 'power2.out' }, ${at});`;
+    return plate.kind === 'image'
+      ? `${fade}\n      tl.fromTo('#plate-${year}', { scale: 1.06 }, { scale: 1.15, duration: ${CARD_DUR}, ease: 'none' }, ${at});`
+      : fade;
+  })
+  .join('\n');
+
+const cardMarkup = cards
   .map(
     ({ year, topic, at, slide, missing, verdict, figure, figureLtr, figureSub }) => `
       <section id="s-${year}" class="clip card" data-start="${at}" data-duration="${CARD_DUR}" data-track-index="5">
@@ -140,42 +148,21 @@ const cardMarkup = plates
   )
   .join('\n');
 
-/* --- audio: one soft impact as each card lands, one drop as its fine print rises --- */
-const cardSfx = plates
+const cardSfx = cards
   .map(
-    ({ year, at }) => `      <audio id="sfx-${year}-impact" data-start="${at.toFixed(
-      2
-    )}" data-duration="1" data-track-index="20" data-volume="0.5" src="assets/sfx/impact/impactSoft_medium_000.ogg"></audio>
+    ({ year, at }) =>
+      `      <audio id="sfx-${year}-impact" data-start="${at.toFixed(
+        2
+      )}" data-duration="1" data-track-index="20" data-volume="0.5" src="assets/sfx/impact/impactSoft_medium_000.ogg"></audio>
       <audio id="sfx-${year}-drop" data-start="${(at + 1.15).toFixed(
         2
       )}" data-duration="1" data-track-index="21" data-volume="0.42" src="assets/sfx/interface/drop_001.ogg"></audio>`
   )
   .join('\n');
 
-const cardTimeline = plates
-  .map(({ year }) => `        { id: '#s-${year}', at: ${plates.find((c) => c.year === year).at} },`)
-  .join('\n');
+const cardTimeline = cards.map(({ year, at }) => `        { id: '#s-${year}', at: ${at} },`).join('\n');
 
-const plateTimeline = withPlates
-  .map(({ year, at, plate }) => {
-    const fade = `      tl.fromTo('#plate-${year}', { opacity: 0 }, { opacity: 1, duration: 0.5, ease: 'power2.out' }, ${at});`;
-    // stills need the motion; footage brings its own
-    return plate.kind === 'image'
-      ? `${fade}\n      tl.fromTo('#plate-${year}', { scale: 1.06 }, { scale: 1.15, duration: ${CARD_DUR}, ease: 'none' }, ${at});`
-      : fade;
-  })
-  .join('\n');
-
-const html = `<!doctype html>
-<!-- GENERATED BY build.mjs — edit the scene data there, not this file. -->
-<html lang="he" data-resolution="portrait">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=1080, height=1920" />
-    <script src="assets/vendor/gsap.min.js"></script>
-    <style>
-      /* ---- Heebo, vendored so the render never touches the network ---- */
-${['400', '700', '900']
+const fontFaces = ['400', '700', '900']
   .flatMap((w) => [
     `      @font-face {
         font-family: 'Heebo';
@@ -193,7 +180,18 @@ ${['400', '700', '900']
         src: url(assets/fonts/heebo-${w}-latin.woff2) format('woff2');
       }`,
   ])
-  .join('\n')}
+  .join('\n');
+
+const html = `<!doctype html>
+<!-- GENERATED BY build.mjs — edit the scene data there, not this file. -->
+<html lang="he" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <style>
+      /* ---- Heebo, vendored so the render never touches the network ---- */
+${fontFaces}
 
       * {
         margin: 0;
@@ -227,7 +225,7 @@ ${['400', '700', '900']
           linear-gradient(#0b0d10, #0b0d10);
       }
       /* archive stills and footage sit behind the type, drained and dimmed so
-         the copy keeps its contrast no matter what the frame underneath is */
+         the copy keeps its contrast whatever the frame underneath is */
       .plate {
         width: 1080px;
         height: 1920px;
@@ -282,59 +280,67 @@ ${['400', '700', '900']
         direction: rtl;
       }
 
-      /* ---- S0 : hook ---- */
-      #s0,
-      #s1 {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        padding: 0 100px;
+      /* ---- the source: his own broadcast, shown as a quoted screen ---- */
+      /* S0 and S1 place every element at an explicit top: the quoted screen and
+         the copy must never be allowed to drift into each other. */
+      .source-frame {
+        inset: auto;
+        top: 450px;
+        left: 90px;
+        width: 900px;
+        height: 503px;
+        border: 3px solid rgba(255, 255, 255, 0.14);
+        border-radius: 10px;
+        overflow: hidden;
+        object-fit: cover;
+        filter: saturate(0.5) contrast(1.04) brightness(0.86);
+      }
+      #s0 > div,
+      #s1 > div {
+        position: absolute;
+        left: 90px;
+        width: 900px;
         text-align: center;
       }
+      .source-label {
+        font-size: 30px;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        color: #6b7484;
+      }
       #s0-a {
+        top: 1080px;
         font-size: 150px;
         font-weight: 900;
         letter-spacing: -0.03em;
         line-height: 1.02;
       }
       #s0-b {
-        margin-top: 34px;
+        top: 1280px;
         font-size: 74px;
         font-weight: 400;
-        line-height: 1.25;
+        line-height: 1.24;
         color: #9aa3ae;
-      }
-      #s0-c {
-        margin-top: 64px;
-        font-size: 68px;
-        font-weight: 700;
-        line-height: 1.3;
-        color: #e8b84b;
-        max-width: 840px;
       }
 
-      /* ---- S1 : the method ---- */
-      .method-line {
-        font-size: 64px;
-        font-weight: 400;
-        line-height: 1.32;
-        color: #9aa3ae;
-        max-width: 880px;
+      /* ---- S1 : his nine slides, straight off his own screen ---- */
+      .deck-shot {
+        position: absolute;
+        top: 400px;
+        left: 120px;
+        width: 840px;
+        border: 3px solid rgba(255, 255, 255, 0.14);
+        border-radius: 10px;
+        filter: saturate(0.45) contrast(1.05) brightness(0.9);
       }
-      #s1-b {
-        margin-top: 22px;
+      #s1-label {
+        top: 360px;
       }
-      #s1-c {
-        margin-top: 62px;
-        font-size: 78px;
-        font-weight: 400;
-        color: #f2f4f7;
-      }
-      #s1-d {
-        margin-top: 10px;
-        font-size: 108px;
+      #s1-line {
+        top: 1270px;
+        font-size: 86px;
         font-weight: 900;
+        line-height: 1.18;
         letter-spacing: -0.02em;
         color: #e8b84b;
       }
@@ -460,12 +466,11 @@ ${['400', '700', '900']
         line-height: 1.32;
         color: #8a929e;
       }
-      #s8-b,
-      #s9-b {
+      #s8-b {
         margin-top: 34px;
       }
       #s8-c,
-      #s9-c {
+      #s9-b {
         margin-top: 52px;
         font-size: 96px;
         font-weight: 900;
@@ -485,49 +490,59 @@ ${['400', '700', '900']
       data-height="1920"
     >
       <div id="bg" class="clip" data-start="0" data-duration="60" data-track-index="0"></div>
-${plateMarkup || '      <!-- no media/ plates found — drop files into media/ and re-run build.mjs -->'}
+${plateMarkup || '      <!-- no media/<year>.* plates found — drop files into media/ and re-run build.mjs -->'}
       <div id="scrim" class="clip" data-start="0" data-duration="60" data-track-index="2"></div>
       <div id="grain" class="clip" data-start="0" data-duration="60" data-track-index="3"></div>
       <div id="progress-track" class="clip" data-start="0" data-duration="60" data-track-index="1">
         <div id="progress-fill"></div>
       </div>
 
-      <!-- S0 — hook: concede the slides, attack the conclusion -->
+      <!-- S0 — his own clip, and the concession -->
+      <video
+        id="source-clip"
+        class="clip source-frame"
+        muted
+        data-start="0.2"
+        data-duration="4.8"
+        data-media-start="0"
+        data-track-index="4"
+        src="media/source/barko.mp4"
+      ></video>
       <section id="s0" class="clip" data-start="0" data-duration="5.5" data-track-index="5">
-        <div id="s0-a">בקוביץ׳ צודק.</div>
-        <div id="s0-b">בכל שבע השקופיות.</div>
-        <div id="s0-c">אז איך המסקנה יצאה הפוכה?</div>
+        <div id="s0-a">ברקו צודק.</div>
+        <div id="s0-b">כל תשע השקופיות.</div>
       </section>
 
-      <!-- S1 — name the method -->
-      <section id="s1" class="clip" data-start="5.5" data-duration="5" data-track-index="5">
-        <div id="s1-a" class="method-line">מצגת שמראה מה נחתם</div>
-        <div id="s1-b" class="method-line">ולא מה התקבל, מה הותנה, ומה לא קרה —</div>
-        <div id="s1-c">היא לא היסטוריה.</div>
-        <div id="s1-d">היא עריכה.</div>
+      <!-- S1 — his nine slides, straight off his own screen -->
+      <section id="s1" class="clip" data-start="5.5" data-duration="6" data-track-index="5">
+        <div id="s1-label" class="source-label">המצגת שלו</div>
+        <img id="deck-a" class="deck-shot" src="media/source/deck-a.jpg" alt="" />
+        <img id="deck-b" class="deck-shot" src="media/source/deck-b.jpg" alt="" />
+        <div id="s1-line">מצגת שסופרת חתימות. לא תוצאות.</div>
       </section>
 ${cardMarkup}
 
       <!-- S8 — the slide that was never in the deck -->
-      <section id="s8" class="clip" data-start="49.5" data-duration="5.5" data-track-index="5">
+      <section id="s8" class="clip" data-start="50.5" data-duration="5" data-track-index="5">
         <div id="s8-a" class="close-line">ושקופית אחת לא הייתה שם בכלל:</div>
-        <div id="s8-b" class="close-line">אחרי כל אלה, ואחרי עשרים שנה —</div>
+        <div id="s8-b" class="close-line">אחרי תשע השקופיות, ואחרי עשרים ושתיים שנה —</div>
         <div id="s8-c">מדינה פלסטינית לא קמה.</div>
       </section>
 
       <!-- S9 — close -->
-      <section id="s9" class="clip" data-start="55" data-duration="5" data-track-index="5">
-        <div id="s9-a" class="close-line">אפשר להתווכח על נתניהו. הרבה.</div>
-        <div id="s9-b" class="close-line">אבל מי שסופר חתימות ולא תוצאות</div>
-        <div id="s9-c">בונה מצגת. לא טיעון.</div>
+      <section id="s9" class="clip" data-start="55.5" data-duration="4.5" data-track-index="5">
+        <div id="s9-a" class="close-line">מי שסופר חתימות ולא תוצאות</div>
+        <div id="s9-b">בונה מצגת. לא טיעון.</div>
       </section>
 
       <!-- ---- audio ---- -->
       <audio id="sfx-hook-bell" data-start="0.15" data-duration="2" data-track-index="11" data-volume="0.5" src="assets/sfx/interface/bong_001.ogg"></audio>
-      <audio id="sfx-method" data-start="9.30" data-duration="1" data-track-index="12" data-volume="0.45" src="assets/sfx/impact/impactSoft_medium_000.ogg"></audio>
+      <audio id="sfx-deck-a" data-start="5.60" data-duration="0.8" data-track-index="12" data-volume="0.45" src="assets/sfx/casino/card-place-1.ogg"></audio>
+      <audio id="sfx-deck-b" data-start="8.30" data-duration="0.8" data-track-index="13" data-volume="0.45" src="assets/sfx/casino/card-place-1.ogg"></audio>
+      <audio id="sfx-method" data-start="10.10" data-duration="1" data-track-index="14" data-volume="0.45" src="assets/sfx/impact/impactSoft_medium_000.ogg"></audio>
 ${cardSfx}
-      <audio id="sfx-missing" data-start="52.85" data-duration="1" data-track-index="13" data-volume="0.5" src="assets/sfx/impact/impactSoft_medium_000.ogg"></audio>
-      <audio id="sfx-close-bell" data-start="58.20" data-duration="1.8" data-track-index="14" data-volume="0.55" src="assets/sfx/impact/impactBell_heavy_000.ogg"></audio>
+      <audio id="sfx-missing" data-start="53.35" data-duration="1" data-track-index="15" data-volume="0.5" src="assets/sfx/impact/impactSoft_medium_000.ogg"></audio>
+      <audio id="sfx-close-bell" data-start="57.90" data-duration="1.8" data-track-index="16" data-volume="0.55" src="assets/sfx/impact/impactBell_heavy_000.ogg"></audio>
     </div>
 
     <script>
@@ -535,18 +550,20 @@ ${cardSfx}
 
       tl.fromTo('#progress-fill', { scaleX: 0 }, { scaleX: 1, duration: 60, ease: 'none' }, 0);
 
-      /* ---- S0 : hook ---- */
-      tl.fromTo('#s0-a', { opacity: 0, y: 44 }, { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out' }, 0.3);
-      tl.fromTo('#s0-b', { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out' }, 1.9);
-      tl.fromTo('#s0-c', { opacity: 0, y: 32 }, { opacity: 1, y: 0, duration: 0.65, ease: 'power3.out' }, 3.6);
-      tl.fromTo('#s0', { opacity: 1 }, { opacity: 0, duration: 0.35, ease: 'power2.in' }, 5.15);
+      /* ---- S0 : his clip, then the concession ---- */
+      tl.fromTo('#source-clip', { opacity: 0 }, { opacity: 1, duration: 0.45, ease: 'power2.out' }, 0.2);
+      tl.fromTo('#s0-a', { opacity: 0, y: 44 }, { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out' }, 1.4);
+      tl.fromTo('#s0-b', { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out' }, 3.0);
+      tl.fromTo('#source-clip', { opacity: 1 }, { opacity: 0, duration: 0.3, ease: 'power2.in' }, 4.6);
+      tl.fromTo('#s0', { opacity: 1 }, { opacity: 0, duration: 0.3, ease: 'power2.in' }, 5.2);
 
-      /* ---- S1 : the method ---- */
-      tl.fromTo('#s1-a', { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' }, 5.8);
-      tl.fromTo('#s1-b', { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' }, 6.9);
-      tl.fromTo('#s1-c', { opacity: 0, y: 28 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' }, 8.5);
-      tl.fromTo('#s1-d', { opacity: 0, scale: 0.92 }, { opacity: 1, scale: 1, duration: 0.55, ease: 'back.out(1.7)' }, 9.3);
-      tl.fromTo('#s1', { opacity: 1 }, { opacity: 0, duration: 0.3, ease: 'power2.in' }, 10.2);
+      /* ---- S1 : nine slides, his own graphic ---- */
+      tl.fromTo('#s1-label', { opacity: 0 }, { opacity: 1, duration: 0.4, ease: 'power2.out' }, 5.6);
+      tl.fromTo('#deck-a', { opacity: 0, y: 34 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' }, 5.6);
+      tl.fromTo('#deck-a', { opacity: 1 }, { opacity: 0, duration: 0.3, ease: 'power2.inOut' }, 8.3);
+      tl.fromTo('#deck-b', { opacity: 0 }, { opacity: 1, duration: 0.3, ease: 'power2.inOut' }, 8.45);
+      tl.fromTo('#s1-line', { opacity: 0, y: 28 }, { opacity: 1, y: 0, duration: 0.55, ease: 'power3.out' }, 10.1);
+      tl.fromTo('#s1', { opacity: 1 }, { opacity: 0, duration: 0.3, ease: 'power2.in' }, 11.2);
 
       /* ---- the cards ---- */
       const CARD_DUR = ${CARD_DUR};
@@ -564,18 +581,17 @@ ${cardTimeline}
         tl.fromTo(\`\${id} .figure\`, { opacity: 0, scale: 0.94 }, { opacity: 1, scale: 1, duration: 0.5, ease: 'back.out(1.5)' }, at + CARD_DUR - 2.1);
       });
 
-${plateTimeline || '      /* no plates in this build */'}
+${plateTimeline || '      /* no year plates in this build */'}
 
       /* ---- S8 : the missing slide ---- */
-      tl.fromTo('#s8-a', { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' }, 49.8);
-      tl.fromTo('#s8-b', { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' }, 51.2);
-      tl.fromTo('#s8-c', { opacity: 0, y: 34 }, { opacity: 1, y: 0, duration: 0.65, ease: 'power3.out' }, 52.9);
-      tl.fromTo('#s8', { opacity: 1 }, { opacity: 0, duration: 0.3, ease: 'power2.in' }, 54.7);
+      tl.fromTo('#s8-a', { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' }, 50.8);
+      tl.fromTo('#s8-b', { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' }, 52.0);
+      tl.fromTo('#s8-c', { opacity: 0, y: 34 }, { opacity: 1, y: 0, duration: 0.65, ease: 'power3.out' }, 53.4);
+      tl.fromTo('#s8', { opacity: 1 }, { opacity: 0, duration: 0.3, ease: 'power2.in' }, 55.2);
 
       /* ---- S9 : close ---- */
-      tl.fromTo('#s9-a', { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' }, 55.2);
-      tl.fromTo('#s9-b', { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' }, 56.7);
-      tl.fromTo('#s9-c', { opacity: 0, y: 34 }, { opacity: 1, y: 0, duration: 0.65, ease: 'power3.out' }, 58.3);
+      tl.fromTo('#s9-a', { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' }, 55.8);
+      tl.fromTo('#s9-b', { opacity: 0, y: 34 }, { opacity: 1, y: 0, duration: 0.65, ease: 'power3.out' }, 57.9);
 
       window.__timelines = window.__timelines || {};
       window.__timelines['main'] = tl;
@@ -587,6 +603,6 @@ ${plateTimeline || '      /* no plates in this build */'}
 
 writeFileSync(join(HERE, 'index.html'), html);
 console.log(
-  `index.html written — ${plates.length} cards, ${withPlates.length} media plate(s)` +
-    (withPlates.length ? `: ${withPlates.map((c) => c.plate.src).join(', ')}` : '')
+  `index.html written — ${cards.length} cards, ${plated.length} year plate(s)` +
+    (plated.length ? `: ${plated.map((c) => c.plate.src).join(', ')}` : '')
 );

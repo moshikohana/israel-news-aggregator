@@ -1,8 +1,8 @@
-# brag-plan — תשובה לבקוביץ׳ (גרסה 2)
+# brag-plan — תשובה לברקו (גרסה 2)
 
 ## Brief
 
-- **Source material:** a video in which Yinon Bekovich presents a slide deck arguing that Netanyahu is "the biggest leftist of them all," listing 1996–2018 concessions.
+- **Source material:** a video in which Barko presents a slide deck arguing that Netanyahu is "the biggest leftist of them all," listing 1996–2018 concessions.
 - **Deliverable:** a 60-second vertical rebuttal video plus the script and a sourced fact sheet.
 - **Angle (v2):** concede every slide, attack the inference. He lists what was signed; we show what was received, what was conditioned, and what never happened. Granting his facts is both the honest position and the harder one to attack.
 - **This is not a product brag.** The `/brag` workflow (inspect → plan → Hyperframes → render) is being used as the production pipeline; the "product" is the argument.
@@ -14,7 +14,7 @@
 | What is it? | A typographic rebuttal to a political attack video |
 | Who is it for? | Hebrew-speaking social feeds (Instagram / TikTok / X) |
 | What is the single claim? | Every slide is true. The conclusion is still wrong, because the deck counts signatures and not outcomes |
-| What is the hook? | "בקוביץ׳ צודק. בכל שבע השקופיות. אז איך המסקנה יצאה הפוכה?" |
+| What is the hook? | "ברקו צודק. בכל תשע השקופיות. אז איך המסקנה יצאה הפוכה?" |
 | What must be shown? | The opponent's own claim, verbatim, before each rebuttal |
 | What is the proof? | Vote counts, dates, and the concessions that were withdrawn — 87–17, 2% of 13%, 7 Aug 2005, 26–3, the cancelled fourth tranche of 26 prisoners |
 | What is the punchline? | "בונה מצגת. לא טיעון." — after the missing slide: "מדינה פלסטינית לא קמה." |
@@ -33,7 +33,7 @@
 
 | Scene | In–Out | Beat | SFX |
 |---|---|---|---|
-| S0 | 0.0–5.5 | "בקוביץ׳ צודק." → "בכל שבע השקופיות." → "אז איך המסקנה יצאה הפוכה?" | `interface/bong_001` @ 0.15 |
+| S0 | 0.0–5.5 | "ברקו צודק." → "בכל תשע השקופיות." → "אז איך המסקנה יצאה הפוכה?" | `interface/bong_001` @ 0.15 |
 | S1 | 5.5–10.5 | Name the method: a deck of signatures is not history, it is an edit | `impact/impactSoft_medium_000` @ 9.3 |
 | S2 | 10.5–17.0 | 1997 · חברון — 87–17 | impact @ card in, drop @ +1.15 |
 | S3 | 17.0–23.5 | 1998 · וואי — 2% | same pair |
