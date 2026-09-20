@@ -150,7 +150,6 @@
         text-align: center;
       }
 
-      /* ---- S0 : the concession ---- */
       #s0-a {
         top: 1000px;
         font-size: 156px;
@@ -165,7 +164,6 @@
         color: #9aa3ae;
       }
 
-      /* ---- S1 : his nine slides ---- */
       .deck-shot {
         position: absolute;
         top: 900px;
@@ -184,7 +182,6 @@
         color: #e8b84b;
       }
 
-      /* ---- the cards : year, number, one line ---- */
       .card-topic {
         top: 930px;
         font-size: 52px;
@@ -211,7 +208,6 @@
         color: #f2f4f7;
       }
 
-      /* ---- S8 / S9 ---- */
       #s8-a,
       #s9-a {
         top: 1000px;
@@ -243,102 +239,95 @@
       data-height="1920"
     >
       <div id="bg" class="clip" data-start="0" data-duration="60" data-track-index="0"></div>
-      <video id="panel-hook" class="clip panel" muted data-start="0" data-duration="5.5" data-media-start="4" data-track-index="4" src="media/source/barko-full.mp4"></video>
-      <video id="panel-deck" class="clip panel" muted data-start="5.5" data-duration="5.5" data-media-start="8" data-track-index="4" src="media/source/barko-full.mp4"></video>
-      <video id="panel-1997" class="clip panel" muted data-start="11" data-duration="6.5" data-media-start="14" data-track-index="4" src="media/source/barko-full.mp4"></video>
-      <video id="panel-1998" class="clip panel" muted data-start="17.5" data-duration="6.5" data-media-start="20.5" data-track-index="4" src="media/source/barko-full.mp4"></video>
-      <video id="panel-2005" class="clip panel" muted data-start="24" data-duration="6.5" data-media-start="27" data-track-index="4" src="media/source/barko-full.mp4"></video>
-      <video id="panel-2009" class="clip panel" muted data-start="30.5" data-duration="6.5" data-media-start="32.5" data-track-index="4" src="media/source/barko-full.mp4"></video>
-      <video id="panel-2011" class="clip panel" muted data-start="37" data-duration="6.5" data-media-start="45" data-track-index="4" src="media/source/barko-full.mp4"></video>
-      <video id="panel-2013" class="clip panel" muted data-start="43.5" data-duration="6.5" data-media-start="51.5" data-track-index="4" src="media/source/barko-full.mp4"></video>
-      <video id="panel-missing" class="clip panel" muted data-start="50" data-duration="5" data-media-start="67" data-track-index="4" src="media/source/barko-full.mp4"></video>
-      <video id="panel-close" class="clip panel" muted data-start="55" data-duration="5" data-media-start="71.5" data-track-index="4" src="media/source/barko-full.mp4"></video>
+      <video id="panel-open" class="clip panel" muted data-start="0" data-duration="5.5" data-media-start="8.35" data-track-index="4" src="media/source/barko-full.mp4"></video>
+      <video id="panel-deck" class="clip panel" muted data-start="5.5" data-duration="5" data-media-start="16" data-track-index="4" src="media/source/barko-full.mp4"></video>
+      <video id="panel-1997" class="clip panel" muted data-start="10.5" data-duration="5.5" data-media-start="16.5" data-track-index="4" src="media/source/barko-full.mp4"></video>
+      <video id="panel-1998" class="clip panel" muted data-start="16" data-duration="6" data-media-start="22" data-track-index="4" src="media/source/barko-full.mp4"></video>
+      <video id="panel-2005" class="clip panel" muted data-start="22" data-duration="5.5" data-media-start="28" data-track-index="4" src="media/source/barko-full.mp4"></video>
+      <video id="panel-2009" class="clip panel" muted data-start="27.5" data-duration="6" data-media-start="33" data-track-index="4" src="media/source/barko-full.mp4"></video>
+      <video id="panel-2011" class="clip panel" muted data-start="33.5" data-duration="8.5" data-media-start="45.5" data-track-index="4" src="media/source/barko-full.mp4"></video>
+      <video id="panel-2013" class="clip panel" muted data-start="42" data-duration="5.5" data-media-start="54" data-track-index="4" src="media/source/barko-full.mp4"></video>
+      <video id="panel-missing" class="clip panel" muted data-start="47.5" data-duration="5.2" data-media-start="65.61" data-track-index="4" src="media/source/barko-full.mp4"></video>
+      <video id="panel-close" class="clip panel" muted data-start="52.7" data-duration="7.3" data-media-start="69.6" data-track-index="4" src="media/source/barko-full.mp4"></video>
       <div id="panel-edge" class="clip" data-start="0" data-duration="60" data-track-index="6"></div>
       <div id="grain" class="clip" data-start="0" data-duration="60" data-track-index="3"></div>
       <div id="progress-track" class="clip" data-start="0" data-duration="60" data-track-index="1">
         <div id="progress-fill"></div>
       </div>
 
-      <!-- S0 — the concession -->
+      <!-- S0 — he introduces his own deck; the concession lands on top of it -->
       <section id="s0" class="clip" data-start="0" data-duration="5.5" data-track-index="5">
         <div id="s0-a">ברקו צודק.</div>
         <div id="s0-b">כל תשע השקופיות.</div>
       </section>
 
-      <!-- S1 — his nine slides, off his own screen -->
-      <section id="s1" class="clip" data-start="5.5" data-duration="5.5" data-track-index="5">
+      <!-- S1 — his nine slides, off his own screen. Silent on purpose. -->
+      <section id="s1" class="clip" data-start="5.5" data-duration="5" data-track-index="5">
         <img id="deck-a" class="deck-shot" src="media/source/deck-a.jpg" alt="" />
         <img id="deck-b" class="deck-shot" src="media/source/deck-b.jpg" alt="" />
         <div id="s1-line">סופרת חתימות. לא תוצאות.</div>
       </section>
 
-      <section id="s-1997" class="clip card" data-start="11" data-duration="6.5" data-track-index="5">
+      <section id="s-1997" class="clip card" data-start="10.5" data-duration="5.5" data-track-index="5">
         <div class="card-topic">1997 · הסכם חברון</div>
         <div class="card-figure ltr">87–17</div>
         <div class="card-line">הסכם שירש מרבין ופרס. הכנסת אישרה — כולל העבודה.</div>
       </section>
 
-      <section id="s-1998" class="clip card" data-start="17.5" data-duration="6.5" data-track-index="5">
+      <section id="s-1998" class="clip card" data-start="16" data-duration="6" data-track-index="5">
         <div class="card-topic">1998 · מזכר וואי</div>
         <div class="card-figure ltr">2%</div>
         <div class="card-line">מתוך 13% שהותנו בביטחון. בדצמבר הוקפא.</div>
       </section>
 
-      <section id="s-2005" class="clip card" data-start="24" data-duration="6.5" data-track-index="5">
+      <section id="s-2005" class="clip card" data-start="22" data-duration="5.5" data-track-index="5">
         <div class="card-topic">2005 · ההתנתקות</div>
         <div class="card-figure ltr">7.8.2005</div>
         <div class="card-line">הצביע בעד — והתפטר שבוע לפני הפינוי.</div>
       </section>
 
-      <section id="s-2009" class="clip card" data-start="30.5" data-duration="6.5" data-track-index="5">
+      <section id="s-2009" class="clip card" data-start="27.5" data-duration="6" data-track-index="5">
         <div class="card-topic">2009 · נאום בר-אילן</div>
         <div class="card-figure">10 חודשים</div>
         <div class="card-line">מדינה מפורזת, בתנאים. ואז ההקפאה נגמרה.</div>
       </section>
 
-      <section id="s-2011" class="clip card" data-start="37" data-duration="6.5" data-track-index="5">
+      <section id="s-2011" class="clip card" data-start="33.5" data-duration="8.5" data-track-index="5">
         <div class="card-topic">2011 · עסקת שליט</div>
         <div class="card-figure ltr">26–3</div>
         <div class="card-line">הקבינט אישר. חייל חי, אחרי חמש שנים בשבי.</div>
       </section>
 
-      <section id="s-2013" class="clip card" data-start="43.5" data-duration="6.5" data-track-index="5">
+      <section id="s-2013" class="clip card" data-start="42" data-duration="5.5" data-track-index="5">
         <div class="card-topic">2013 · 104 אסירים</div>
         <div class="card-figure ltr">13–7</div>
         <div class="card-line">הקבינט אישר. המנה הרביעית בוטלה — 26 לא שוחררו.</div>
       </section>
 
-      <!-- S8 — the slide that was never in the deck -->
-      <section id="s8" class="clip" data-start="50" data-duration="5" data-track-index="5">
+      <!-- S8 — he asks the question; the missing slide answers it -->
+      <section id="s8" class="clip" data-start="47.5" data-duration="5.2" data-track-index="5">
         <div id="s8-a">ושקופית אחת לא הייתה שם בכלל:</div>
         <div id="s8-b">מדינה פלסטינית לא קמה.</div>
       </section>
 
-      <!-- S9 — close -->
-      <section id="s9" class="clip" data-start="55" data-duration="5" data-track-index="5">
+      <!-- S9 — he lands his punchline, then the answer -->
+      <section id="s9" class="clip" data-start="52.7" data-duration="7.3" data-track-index="5">
         <div id="s9-a">מי שסופר חתימות ולא תוצאות</div>
         <div id="s9-b">בונה מצגת. לא טיעון.</div>
       </section>
 
       <!-- ---- audio ---- -->
-      <audio id="sfx-hook-bell" data-start="0.15" data-duration="2" data-track-index="11" data-volume="0.5" src="assets/sfx/interface/bong_001.ogg"></audio>
-      <audio id="sfx-deck-a" data-start="5.60" data-duration="0.8" data-track-index="12" data-volume="0.45" src="assets/sfx/casino/card-place-1.ogg"></audio>
-      <audio id="sfx-deck-b" data-start="8.10" data-duration="0.8" data-track-index="13" data-volume="0.45" src="assets/sfx/casino/card-place-1.ogg"></audio>
-      <audio id="sfx-method" data-start="9.90" data-duration="1" data-track-index="14" data-volume="0.45" src="assets/sfx/impact/impactSoft_medium_000.ogg"></audio>
-      <audio id="sfx-1997-cut" data-start="11.00" data-duration="1" data-track-index="20" data-volume="0.5" src="assets/sfx/impact/impactSoft_medium_000.ogg"></audio>
-      <audio id="sfx-1997-figure" data-start="12.50" data-duration="1" data-track-index="21" data-volume="0.42" src="assets/sfx/interface/drop_001.ogg"></audio>
-      <audio id="sfx-1998-cut" data-start="17.50" data-duration="1" data-track-index="20" data-volume="0.5" src="assets/sfx/impact/impactSoft_medium_000.ogg"></audio>
-      <audio id="sfx-1998-figure" data-start="19.00" data-duration="1" data-track-index="21" data-volume="0.42" src="assets/sfx/interface/drop_001.ogg"></audio>
-      <audio id="sfx-2005-cut" data-start="24.00" data-duration="1" data-track-index="20" data-volume="0.5" src="assets/sfx/impact/impactSoft_medium_000.ogg"></audio>
-      <audio id="sfx-2005-figure" data-start="25.50" data-duration="1" data-track-index="21" data-volume="0.42" src="assets/sfx/interface/drop_001.ogg"></audio>
-      <audio id="sfx-2009-cut" data-start="30.50" data-duration="1" data-track-index="20" data-volume="0.5" src="assets/sfx/impact/impactSoft_medium_000.ogg"></audio>
-      <audio id="sfx-2009-figure" data-start="32.00" data-duration="1" data-track-index="21" data-volume="0.42" src="assets/sfx/interface/drop_001.ogg"></audio>
-      <audio id="sfx-2011-cut" data-start="37.00" data-duration="1" data-track-index="20" data-volume="0.5" src="assets/sfx/impact/impactSoft_medium_000.ogg"></audio>
-      <audio id="sfx-2011-figure" data-start="38.50" data-duration="1" data-track-index="21" data-volume="0.42" src="assets/sfx/interface/drop_001.ogg"></audio>
-      <audio id="sfx-2013-cut" data-start="43.50" data-duration="1" data-track-index="20" data-volume="0.5" src="assets/sfx/impact/impactSoft_medium_000.ogg"></audio>
-      <audio id="sfx-2013-figure" data-start="45.00" data-duration="1" data-track-index="21" data-volume="0.42" src="assets/sfx/interface/drop_001.ogg"></audio>
-      <audio id="sfx-missing" data-start="51.60" data-duration="1" data-track-index="15" data-volume="0.5" src="assets/sfx/impact/impactSoft_medium_000.ogg"></audio>
-      <audio id="sfx-close-bell" data-start="57.40" data-duration="1.8" data-track-index="16" data-volume="0.55" src="assets/sfx/impact/impactBell_heavy_000.ogg"></audio>
+      <audio id="voice-open" data-start="0.00" data-duration="5.48" data-media-start="8.35" data-track-index="30" data-volume="0.9" src="media/source/barko-audio.m4a"></audio>
+      <audio id="voice-1997" data-start="10.50" data-duration="2.56" data-media-start="20.36" data-track-index="31" data-volume="0.9" src="media/source/barko-audio.m4a"></audio>
+      <audio id="voice-1998" data-start="16.00" data-duration="4.39" data-media-start="23.63" data-track-index="32" data-volume="0.9" src="media/source/barko-audio.m4a"></audio>
+      <audio id="voice-2005" data-start="22.00" data-duration="3.47" data-media-start="28.1" data-track-index="33" data-volume="0.9" src="media/source/barko-audio.m4a"></audio>
+      <audio id="voice-2009" data-start="27.50" data-duration="3.94" data-media-start="37.4" data-track-index="34" data-volume="0.9" src="media/source/barko-audio.m4a"></audio>
+      <audio id="voice-2011" data-start="33.50" data-duration="7.60" data-media-start="49.26" data-track-index="35" data-volume="0.9" src="media/source/barko-audio.m4a"></audio>
+      <audio id="voice-2013" data-start="42.00" data-duration="3.40" data-media-start="57.26" data-track-index="36" data-volume="0.9" src="media/source/barko-audio.m4a"></audio>
+      <audio id="voice-missing" data-start="47.50" data-duration="3.76" data-media-start="65.61" data-track-index="37" data-volume="0.9" src="media/source/barko-audio.m4a"></audio>
+      <audio id="voice-close" data-start="52.70" data-duration="6.93" data-media-start="69.66" data-track-index="38" data-volume="0.9" src="media/source/barko-audio.m4a"></audio>
+
+      <audio id="sfx-close-bell" data-start="57.60" data-duration="1.8" data-track-index="16" data-volume="0.45" src="assets/sfx/impact/impactBell_heavy_000.ogg"></audio>
     </div>
 
     <script>
@@ -347,44 +336,43 @@
       tl.fromTo('#progress-fill', { scaleX: 0 }, { scaleX: 1, duration: 60, ease: 'none' }, 0);
 
       /* ---- S0 ---- */
-      tl.fromTo('#s0-a', { opacity: 0, y: 44 }, { opacity: 1, y: 0, duration: 0.65, ease: 'power3.out' }, 1.2);
-      tl.fromTo('#s0-b', { opacity: 0, y: 28 }, { opacity: 1, y: 0, duration: 0.55, ease: 'power3.out' }, 2.9);
-      tl.fromTo('#s0', { opacity: 1 }, { opacity: 0, duration: 0.3, ease: 'power2.in' }, 5.2);
+      tl.fromTo('#s0-a', { opacity: 0, y: 44 }, { opacity: 1, y: 0, duration: 0.65, ease: 'power3.out' }, 2.4);
+      tl.fromTo('#s0-b', { opacity: 0, y: 28 }, { opacity: 1, y: 0, duration: 0.55, ease: 'power3.out' }, 3.9);
+      tl.fromTo('#s0', { opacity: 1 }, { opacity: 0, duration: 0.3, ease: 'power2.in' }, 5.20);
 
       /* ---- S1 : the deck, pushing in so it never sits still ---- */
       tl.fromTo('#deck-a', { opacity: 0, scale: 0.97 }, { opacity: 1, scale: 1, duration: 0.5, ease: 'power3.out' }, 5.6);
-      tl.fromTo('#deck-a', { scale: 1 }, { scale: 1.06, duration: 2.5, ease: 'none' }, 5.6);
-      tl.fromTo('#deck-a', { opacity: 1 }, { opacity: 0, duration: 0.25, ease: 'power2.inOut' }, 8.1);
-      tl.fromTo('#deck-b', { opacity: 0, scale: 1 }, { opacity: 1, scale: 1, duration: 0.25, ease: 'power2.inOut' }, 8.25);
-      tl.fromTo('#deck-b', { scale: 1 }, { scale: 1.06, duration: 2.5, ease: 'none' }, 8.25);
-      tl.fromTo('#s1-line', { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' }, 9.9);
-      tl.fromTo('#s1', { opacity: 1 }, { opacity: 0, duration: 0.3, ease: 'power2.in' }, 10.7);
+      tl.fromTo('#deck-a', { scale: 1 }, { scale: 1.06, duration: 2.2, ease: 'none' }, 5.6);
+      tl.fromTo('#deck-a', { opacity: 1 }, { opacity: 0, duration: 0.25, ease: 'power2.inOut' }, 7.8);
+      tl.fromTo('#deck-b', { opacity: 0, scale: 1 }, { opacity: 1, scale: 1, duration: 0.25, ease: 'power2.inOut' }, 7.95);
+      tl.fromTo('#deck-b', { scale: 1 }, { scale: 1.06, duration: 2.2, ease: 'none' }, 7.95);
+      tl.fromTo('#s1-line', { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' }, 9.0);
+      tl.fromTo('#s1', { opacity: 1 }, { opacity: 0, duration: 0.3, ease: 'power2.in' }, 10.2);
 
-      /* ---- the cards ---- */
-      const CARD_DUR = 6.5;
+      /* ---- the cards: he states the claim, then the number answers ---- */
       const cards = [
-        { id: '#s-1997', at: 11 },
-        { id: '#s-1998', at: 17.5 },
-        { id: '#s-2005', at: 24 },
-        { id: '#s-2009', at: 30.5 },
-        { id: '#s-2011', at: 37 },
-        { id: '#s-2013', at: 43.5 },
+        { id: '#s-1997', at: 10.5, dur: 5.5, answer: 13.26 },
+        { id: '#s-1998', at: 16, dur: 6, answer: 20.20 },
+        { id: '#s-2005', at: 22, dur: 5.5, answer: 25.67 },
+        { id: '#s-2009', at: 27.5, dur: 6, answer: 31.64 },
+        { id: '#s-2011', at: 33.5, dur: 8.5, answer: 40.20 },
+        { id: '#s-2013', at: 42, dur: 5.5, answer: 45.60 },
       ];
 
-      cards.forEach(({ id, at }) => {
+      cards.forEach(({ id, at, dur, answer }) => {
         tl.fromTo(`${id} .card-topic`, { opacity: 0, y: 22 }, { opacity: 1, y: 0, duration: 0.45, ease: 'power3.out' }, at + 0.25);
-        tl.fromTo(`${id} .card-figure`, { opacity: 0, y: 40, scale: 0.94 }, { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: 'back.out(1.5)' }, at + 0.55);
-        tl.fromTo(`${id} .card-line`, { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' }, at + 1.5);
-        tl.fromTo(id, { opacity: 1 }, { opacity: 0, duration: 0.25, ease: 'power2.in' }, at + CARD_DUR - 0.25);
+        tl.fromTo(`${id} .card-figure`, { opacity: 0, y: 40, scale: 0.94 }, { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: 'back.out(1.5)' }, answer);
+        tl.fromTo(`${id} .card-line`, { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' }, answer + 0.55);
+        tl.fromTo(id, { opacity: 1 }, { opacity: 0, duration: 0.25, ease: 'power2.in' }, at + dur - 0.25);
       });
 
       /* ---- S8 / S9 ---- */
-      tl.fromTo('#s8-a', { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' }, 50.3);
-      tl.fromTo('#s8-b', { opacity: 0, y: 34 }, { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out' }, 51.6);
-      tl.fromTo('#s8', { opacity: 1 }, { opacity: 0, duration: 0.25, ease: 'power2.in' }, 54.75);
+      tl.fromTo('#s8-a', { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' }, 47.80);
+      tl.fromTo('#s8-b', { opacity: 0, y: 34 }, { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out' }, 51.36);
+      tl.fromTo('#s8', { opacity: 1 }, { opacity: 0, duration: 0.25, ease: 'power2.in' }, 52.45);
 
-      tl.fromTo('#s9-a', { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' }, 55.4);
-      tl.fromTo('#s9-b', { opacity: 0, y: 34 }, { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out' }, 57.4);
+      tl.fromTo('#s9-a', { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' }, 58.03);
+      tl.fromTo('#s9-b', { opacity: 0, y: 34 }, { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out' }, 59.73);
 
       window.__timelines = window.__timelines || {};
       window.__timelines['main'] = tl;
