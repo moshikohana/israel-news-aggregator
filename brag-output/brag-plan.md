@@ -1,4 +1,4 @@
-# brag-plan — תשובה לברקו (גרסה 2)
+# brag-plan — תשובה לברקו (גרסה 4)
 
 ## Brief
 
@@ -27,38 +27,46 @@
 - **Format:** vertical, 1080×1920.
 - **Duration:** 60s — the user asked for 60, overriding the 15–25s creative law.
 - **Typography:** Heebo 400/700/900, subset files vendored into `assets/fonts/` so the render is deterministic and offline.
-- **Type first, footage optional.** As shipped: type and rules only — nothing that could be mistaken for a fabricated clip of a real person. Archive stills or clips, when supplied, sit behind the type as drained background plates; they add weight without costing a second of the 60, and the argument still stands if they are stripped out.
+- **Footage first, type second.** His broadcast runs in a full-width panel for all 60 seconds; the copy under it is a year, one number and one line. Nothing is ever still, and no frame is fabricated — the only person on screen is the one being answered, in his own clip.
 
 ## Storyboard
 
-| Scene | In–Out | Beat | SFX |
-|---|---|---|---|
-| S0 | 0.0–5.5 | "ברקו צודק." → "בכל תשע השקופיות." → "אז איך המסקנה יצאה הפוכה?" | `interface/bong_001` @ 0.15 |
-| S1 | 5.5–10.5 | Name the method: a deck of signatures is not history, it is an edit | `impact/impactSoft_medium_000` @ 9.3 |
-| S2 | 10.5–17.0 | 1997 · חברון — 87–17 | impact @ card in, drop @ +1.15 |
-| S3 | 17.0–23.5 | 1998 · וואי — 2% | same pair |
-| S4 | 23.5–30.0 | 2005 · התנתקות — 7.8.2005 | same pair |
-| S5 | 30.0–36.5 | 2009 · בר-אילן — 10 חודשים | same pair |
-| S6 | 36.5–43.0 | 2011 · שליט — 26–3 | same pair |
-| S7 | 43.0–49.5 | 2013 · אסירים — 26 אסירים שנשארו בכלא | same pair |
-| S8 | 49.5–55.0 | The slide that was never in the deck: מדינה פלסטינית לא קמה | `impact/impactSoft_medium_000` @ 52.85 |
-| S9 | 55.0–60.0 | "בונה מצגת. לא טיעון." | `impact/impactBell_heavy_000` @ 58.2 |
+His graphic holds slides 1996–2009 from 14s to 39s and 2010–2018 from 44s to 66s;
+the studio two-shots run 4–13s and 67–77s. Every scene cuts from the stretch that
+matches what it is answering — real alignment, not decoration.
 
-Scene durations sum to **60.0s**. Every card runs 6.5s: claim by +0.85s, fine print
-from +1.7s, verdict at +3.6s, figure at +4.4s — each line holds well past its
-reading time.
+| Scene | In–Out | Cuts from | Copy |
+|---|---|---|---|
+| S0 | 0.0–5.5 | 4.0 (studio) | ברקו צודק. / כל תשע השקופיות. |
+| S1 | 5.5–11.0 | 8.0 (studio) + both deck stills | סופרת חתימות. לא תוצאות. |
+| 1997 | 11.0–17.5 | 14.0 (panel A) | **87–17** |
+| 1998 | 17.5–24.0 | 20.5 (panel A) | **2%** |
+| 2005 | 24.0–30.5 | 27.0 (panel A) | **7.8.2005** |
+| 2009 | 30.5–37.0 | 32.5 (panel A) | **10 חודשים** |
+| 2011 | 37.0–43.5 | 45.0 (panel B) | **26–3** |
+| 2013 | 43.5–50.0 | 51.5 (panel B) | **13–7** |
+| S8 | 50.0–55.0 | 67.0 (studio) | מדינה פלסטינית לא קמה. |
+| S9 | 55.0–60.0 | 71.5 (studio) | בונה מצגת. לא טיעון. |
+
+Scene durations sum to **60.0s**. Copy per card is down from ~22 words to ~9: the
+number is the hero, the line is its footnote.
+
+**No sentence-level alignment.** His graphic is static — no row highlights — and
+transcription is unavailable here, so there is no way to know which slide he is
+speaking at any instant. Half-level alignment is what the footage actually
+supports, and the plan claims no more than that.
+
+**His audio stays muted.** Leaving it in means he argues his case while the copy
+tries to rebut it, and without a transcript the cut cannot be made to land on the
+matching sentence. That is a worse video than silence.
 
 ## Media plates
 
-`build.mjs` regenerates `index.html` from the scene data and wires any file in
-`media/<year>.<ext>` in as that card's background plate: grayscale, brightness
-0.5, opacity 0.4, under a downward-strengthening scrim, with a slow push-in on
-stills. With `media/` empty the composition renders exactly as committed, so the
-video never depends on footage that isn't there.
-
-The footage itself has to be supplied by hand — the environment's network policy
-returns 403 for every media host, and archival material from these years is
-copyrighted. `media/README.md` carries the shot list and the rights note.
+`build.mjs` regenerates `index.html` from the scene data. Any file at
+`media/<year>.<ext>` takes over that card's panel from Barko's footage; with none
+supplied the panel stays on him and nothing breaks. The Netanyahu clips have to be
+fetched by hand — the network policy returns 403 for every media host.
+`media/README.md` carries the per-year shot list.
 
 ## Audio
 

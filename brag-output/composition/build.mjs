@@ -1,9 +1,16 @@
 // Generates index.html from the scene data below.
 //
-// media/source/  — Barko's own broadcast, the thing being answered. Committed.
-// media/<year>.* — optional Netanyahu footage per card (1997.jpg, 2009.mp4 …).
-//                  Present: wired in as that card's background plate.
-//                  Absent:  the card renders as type only. Nothing breaks.
+// The spine is Barko's own broadcast: media/source/barko-full.mp4 runs in a
+// full-width panel for all 60 seconds, each scene seeking its own in-point via
+// data-media-start. Nothing on screen is ever still.
+//
+// Source alignment is real, not decorative. His graphic carries slides
+// 1996–2009 from 14s to 39s and slides 2010–2018 from 44s to 66s, so each card
+// is cut from the stretch where his own deck is showing that half. The studio
+// two-shots (4–13s, 67–77s) carry the open and the close.
+//
+// media/<year>.*  — optional Netanyahu footage per card. Present: replaces the
+//                   panel for that card. Absent: the panel stays on Barko.
 //
 //   node build.mjs && npx hyperframes check && npx hyperframes render --output ../brag.mp4
 
@@ -14,75 +21,64 @@ import { fileURLToPath } from 'node:url';
 const HERE = dirname(fileURLToPath(import.meta.url));
 const IMAGE_EXT = ['jpg', 'jpeg', 'png', 'webp'];
 const VIDEO_EXT = ['mp4', 'webm'];
+const SRC = 'media/source/barko-full.mp4';
 const CARD_DUR = 6.5;
 
+// at = where the card sits in the 60s; src = where it cuts from in his broadcast
 const CARDS = [
   {
     year: '1997',
     topic: 'הסכם חברון',
-    at: 11.5,
-    slide: '״הסכם הנסיגה מחברון.״',
-    missing: 'הסכם שירש מרבין ופרס. הכנסת אישרה <b>87 מול 17</b> — כולל העבודה.',
-    verdict: 'ירש הסכם. צמצם אותו.',
+    at: 11.0,
+    src: 14.0, // his panel A is up: slides 1996–2009
     figure: '87–17',
     figureLtr: true,
-    figureSub: 'הצבעת הכנסת',
+    line: 'הסכם שירש מרבין ופרס. הכנסת אישרה — כולל העבודה.',
   },
   {
     year: '1998',
     topic: 'מזכר וואי',
-    at: 18.0,
-    slide: '״נסיגה משטחים.״',
-    missing: '13% הותנו בביטחון. <b>הועברו 2%.</b> בדצמבר הכול הוקפא.',
-    verdict: 'חתם על 13%. מסר 2%.',
+    at: 17.5,
+    src: 20.5,
     figure: '2%',
     figureLtr: true,
-    figureSub: 'מתוך 13%',
+    line: 'מתוך 13% שהותנו בביטחון. בדצמבר הוקפא.',
   },
   {
     year: '2005',
     topic: 'ההתנתקות',
-    at: 24.5,
-    slide: '״הצבעה בעד ההתנתקות.״',
-    missing: '<b>נכון.</b> ושבוע לפני הפינוי התפטר מהממשלה וויתר על משרד האוצר.',
-    verdict: 'הצביע בעד. שילם על ההתנגדות.',
+    at: 24.0,
+    src: 27.0,
     figure: '7.8.2005',
     figureLtr: true,
-    figureSub: 'יום ההתפטרות',
+    line: 'הצביע בעד — והתפטר שבוע לפני הפינוי.',
   },
   {
     year: '2009',
     topic: 'נאום בר-אילן',
-    at: 31.0,
-    slide: '״הכרה במדינה פלסטינית.״',
-    missing:
-      'מפורזת, <b>בלי צבא.</b> בתנאי הכרה בישראל כמדינת הלאום היהודי וירושלים מאוחדת.',
-    verdict: 'תנאים שאיש לא קיבל.',
+    at: 30.5,
+    src: 32.5,
     figure: '10 חודשים',
     figureLtr: false,
-    figureSub: 'ואז ההקפאה נגמרה',
+    line: 'מדינה מפורזת, בתנאים. ואז ההקפאה נגמרה.',
   },
   {
     year: '2011',
     topic: 'עסקת שליט',
-    at: 37.5,
-    slide: '״שחרור 1,027 אסירים.״',
-    missing: 'הקבינט אישר <b>26 מול 3</b>. חייל חי, אחרי חמש שנים בשבי.',
-    verdict: 'עסקה. לא אידאולוגיה.',
+    at: 37.0,
+    src: 45.0, // panel B is up: slides 2010–2018
     figure: '26–3',
     figureLtr: true,
-    figureSub: 'הצבעת הקבינט',
+    line: 'הקבינט אישר. חייל חי, אחרי חמש שנים בשבי.',
   },
   {
     year: '2013',
     topic: '104 אסירים',
-    at: 44.0,
-    slide: '״שחרור 104 אסירים נוספים.״',
-    missing: 'בלחץ אמריקאי, <b>תמורת התחייבות פלסטינית לא לפנות לאו״ם.</b>',
-    verdict: 'המנה הרביעית לא שוחררה.',
-    figure: '26 אסירים',
-    figureLtr: false,
-    figureSub: 'שנשארו בכלא',
+    at: 43.5,
+    src: 51.5,
+    figure: '13–7',
+    figureLtr: true,
+    line: 'הקבינט אישר. המנה הרביעית בוטלה — 26 לא שוחררו.',
   },
 ];
 
@@ -101,49 +97,33 @@ function findPlate(year) {
 }
 
 const cards = CARDS.map((c) => ({ ...c, plate: findPlate(c.year) }));
-const plated = cards.filter((c) => c.plate);
 
-const plateMarkup = plated
-  .map(({ year, at, plate }) =>
-    plate.kind === 'video'
-      ? `      <video id="plate-${year}" class="clip plate" muted data-start="${at}" data-duration="${CARD_DUR}" data-media-start="0" data-track-index="4" src="${plate.src}"></video>`
-      : `      <img id="plate-${year}" class="clip plate" data-start="${at}" data-duration="${CARD_DUR}" data-track-index="4" src="${plate.src}" alt="" />`
-  )
-  .join('\n');
+/** A panel clip cut from Barko's broadcast at the given in-point. */
+function panel(id, at, dur, srcIn) {
+  return `      <video id="panel-${id}" class="clip panel" muted data-start="${at}" data-duration="${dur}" data-media-start="${srcIn}" data-track-index="4" src="${SRC}"></video>`;
+}
 
-const plateTimeline = plated
-  .map(({ year, at, plate }) => {
-    const fade = `      tl.fromTo('#plate-${year}', { opacity: 0 }, { opacity: 1, duration: 0.5, ease: 'power2.out' }, ${at});`;
-    return plate.kind === 'image'
-      ? `${fade}\n      tl.fromTo('#plate-${year}', { scale: 1.06 }, { scale: 1.15, duration: ${CARD_DUR}, ease: 'none' }, ${at});`
-      : fade;
-  })
-  .join('\n');
+const panels = [
+  panel('hook', 0, 5.5, 4.0),
+  panel('deck', 5.5, 5.5, 8.0),
+  ...cards.map(({ year, at, src, plate }) =>
+    plate
+      ? plate.kind === 'video'
+        ? `      <video id="panel-${year}" class="clip panel" muted data-start="${at}" data-duration="${CARD_DUR}" data-media-start="0" data-track-index="4" src="${plate.src}"></video>`
+        : `      <img id="panel-${year}" class="clip panel" data-start="${at}" data-duration="${CARD_DUR}" data-track-index="4" src="${plate.src}" alt="" />`
+      : panel(year, at, CARD_DUR, src)
+  ),
+  panel('missing', 50.0, 5.0, 67.0),
+  panel('close', 55.0, 5.0, 71.5),
+].join('\n');
 
 const cardMarkup = cards
   .map(
-    ({ year, topic, at, slide, missing, verdict, figure, figureLtr, figureSub }) => `
+    ({ year, topic, at, figure, figureLtr, line }) => `
       <section id="s-${year}" class="clip card" data-start="${at}" data-duration="${CARD_DUR}" data-track-index="5">
-        <div class="card-head">
-          <div class="card-year">${year}</div>
-          <div class="card-topic">${topic}</div>
-        </div>
-        <div class="card-body">
-          <div class="claim">
-            <div class="label">השקופית שלו</div>
-            <div class="claim-text">${slide}</div>
-          </div>
-          <div class="rule"></div>
-          <div class="fact">
-            <div class="label">מה שלא בשקופית</div>
-            <div class="fact-text">${missing}</div>
-          </div>
-          <div class="verdict">${verdict}</div>
-        </div>
-        <div class="figure">
-          <div class="figure-value${figureLtr ? ' ltr' : ''}">${figure}</div>
-          <div class="figure-sub">${figureSub}</div>
-        </div>
+        <div class="card-topic">${year} · ${topic}</div>
+        <div class="card-figure${figureLtr ? ' ltr' : ''}">${figure}</div>
+        <div class="card-line">${line}</div>
       </section>`
   )
   .join('\n');
@@ -151,10 +131,10 @@ const cardMarkup = cards
 const cardSfx = cards
   .map(
     ({ year, at }) =>
-      `      <audio id="sfx-${year}-impact" data-start="${at.toFixed(
+      `      <audio id="sfx-${year}-cut" data-start="${at.toFixed(
         2
       )}" data-duration="1" data-track-index="20" data-volume="0.5" src="assets/sfx/impact/impactSoft_medium_000.ogg"></audio>
-      <audio id="sfx-${year}-drop" data-start="${(at + 1.15).toFixed(
+      <audio id="sfx-${year}-figure" data-start="${(at + 1.5).toFixed(
         2
       )}" data-duration="1" data-track-index="21" data-volume="0.42" src="assets/sfx/interface/drop_001.ogg"></audio>`
   )
@@ -218,30 +198,10 @@ ${fontFaces}
         inset: 0;
       }
 
-      /* ---- persistent chrome ---- */
       #bg {
         background:
-          radial-gradient(120% 70% at 50% 0%, #171c24 0%, #0b0d10 62%),
+          radial-gradient(120% 60% at 50% 22%, #171c24 0%, #0b0d10 64%),
           linear-gradient(#0b0d10, #0b0d10);
-      }
-      /* archive stills and footage sit behind the type, drained and dimmed so
-         the copy keeps its contrast whatever the frame underneath is */
-      .plate {
-        width: 1080px;
-        height: 1920px;
-        object-fit: cover;
-        filter: grayscale(1) contrast(1.08) brightness(0.5);
-        opacity: 0.4;
-        transform-origin: center center;
-      }
-      #scrim {
-        background: linear-gradient(
-          180deg,
-          rgba(11, 13, 16, 0.55) 0%,
-          rgba(11, 13, 16, 0.72) 38%,
-          rgba(11, 13, 16, 0.94) 72%,
-          #0b0d10 100%
-        );
       }
       #grain {
         opacity: 0.5;
@@ -271,6 +231,26 @@ ${fontFaces}
         transform-origin: right center;
       }
 
+      /* ---- the panel: his broadcast, running the whole way through ---- */
+      .panel {
+        inset: auto;
+        top: 210px;
+        left: 0;
+        width: 1080px;
+        height: 604px;
+        object-fit: cover;
+        filter: saturate(0.62) contrast(1.05) brightness(0.9);
+      }
+      #panel-edge {
+        inset: auto;
+        top: 210px;
+        left: 0;
+        width: 1080px;
+        height: 604px;
+        border-top: 2px solid rgba(255, 255, 255, 0.1);
+        border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+      }
+
       /* direction is scoped per scene — never on <html>, which blanks the render */
       #s0,
       #s1,
@@ -279,204 +259,97 @@ ${fontFaces}
       #s9 {
         direction: rtl;
       }
-
-      /* ---- the source: his own broadcast, shown as a quoted screen ---- */
-      /* S0 and S1 place every element at an explicit top: the quoted screen and
-         the copy must never be allowed to drift into each other. */
-      .source-frame {
-        inset: auto;
-        top: 450px;
-        left: 90px;
-        width: 900px;
-        height: 503px;
-        border: 3px solid rgba(255, 255, 255, 0.14);
-        border-radius: 10px;
-        overflow: hidden;
-        object-fit: cover;
-        filter: saturate(0.5) contrast(1.04) brightness(0.86);
-      }
       #s0 > div,
-      #s1 > div {
+      #s1 > div,
+      .card > div,
+      #s8 > div,
+      #s9 > div {
         position: absolute;
-        left: 90px;
-        width: 900px;
+        left: 80px;
+        width: 920px;
         text-align: center;
       }
-      .source-label {
-        font-size: 30px;
-        font-weight: 700;
-        letter-spacing: 0.16em;
-        color: #6b7484;
-      }
+
+      /* ---- S0 : the concession ---- */
       #s0-a {
-        top: 1080px;
-        font-size: 150px;
+        top: 1000px;
+        font-size: 156px;
         font-weight: 900;
         letter-spacing: -0.03em;
         line-height: 1.02;
       }
       #s0-b {
-        top: 1280px;
-        font-size: 74px;
+        top: 1200px;
+        font-size: 76px;
         font-weight: 400;
-        line-height: 1.24;
         color: #9aa3ae;
       }
 
-      /* ---- S1 : his nine slides, straight off his own screen ---- */
+      /* ---- S1 : his nine slides ---- */
       .deck-shot {
         position: absolute;
-        top: 400px;
-        left: 120px;
-        width: 840px;
+        top: 900px;
+        left: 220px;
+        width: 640px;
         border: 3px solid rgba(255, 255, 255, 0.14);
-        border-radius: 10px;
-        filter: saturate(0.45) contrast(1.05) brightness(0.9);
-      }
-      #s1-label {
-        top: 360px;
+        border-radius: 8px;
+        filter: saturate(0.45) contrast(1.05) brightness(0.92);
       }
       #s1-line {
-        top: 1270px;
-        font-size: 86px;
+        top: 1620px;
+        font-size: 80px;
         font-weight: 900;
-        line-height: 1.18;
+        line-height: 1.16;
         letter-spacing: -0.02em;
         color: #e8b84b;
       }
 
-      /* ---- the cards ---- */
-      .card {
-        padding: 140px 90px 110px;
-        display: flex;
-        flex-direction: column;
-      }
-      .card-head {
-        position: relative;
-      }
-      .card-year {
-        font-size: 128px;
-        font-weight: 900;
-        line-height: 0.9;
-        color: #e8b84b;
-        letter-spacing: -0.03em;
-        direction: ltr;
-        text-align: right;
-      }
+      /* ---- the cards : year, number, one line ---- */
       .card-topic {
-        margin-top: 10px;
-        font-size: 46px;
+        top: 930px;
+        font-size: 52px;
         font-weight: 700;
         color: #7f8896;
+        letter-spacing: 0.02em;
       }
-      .label {
-        position: relative;
-        font-size: 30px;
-        font-weight: 700;
-        letter-spacing: 0.16em;
-        color: #6b7484;
-      }
-      .card-body {
-        position: relative;
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-      }
-      .claim {
-        position: relative;
-      }
-      .claim-text {
-        margin-top: 18px;
-        font-size: 70px;
-        font-weight: 400;
-        line-height: 1.24;
-        color: #8a929e;
-        border-right: 9px solid #414954;
-        padding-right: 32px;
-      }
-      .rule {
-        position: relative;
-        height: 3px;
-        background: rgba(255, 255, 255, 0.13);
-        margin: 52px 0 0;
-        transform-origin: right center;
-      }
-      .fact {
-        position: relative;
-        margin-top: 48px;
-      }
-      .fact .label {
-        color: #e8b84b;
-      }
-      .fact-text {
-        margin-top: 20px;
-        font-size: 58px;
-        font-weight: 400;
-        line-height: 1.42;
-        color: #f2f4f7;
-        border-right: 9px solid #e8b84b;
-        padding-right: 32px;
-      }
-      .fact-text b {
-        font-weight: 900;
-      }
-      .verdict {
-        position: relative;
-        margin-top: 54px;
-        font-size: 66px;
-        font-weight: 900;
-        line-height: 1.22;
-        color: #f2f4f7;
-      }
-      .figure {
-        position: relative;
-        padding-top: 20px;
-      }
-      .figure-value {
-        font-size: 108px;
+      .card-figure {
+        top: 1060px;
+        font-size: 150px;
         font-weight: 900;
         color: #e8b84b;
-        line-height: 1.02;
-        letter-spacing: -0.01em;
+        line-height: 1;
+        letter-spacing: -0.03em;
       }
-      .figure-value.ltr {
+      .card-figure.ltr {
         direction: ltr;
-        text-align: right;
       }
-      .figure-sub {
-        margin-top: 10px;
-        font-size: 36px;
+      .card-line {
+        top: 1320px;
+        font-size: 62px;
         font-weight: 400;
-        color: #6b7484;
+        line-height: 1.34;
+        color: #f2f4f7;
       }
 
-      /* ---- S8 : the missing slide / S9 : close ---- */
-      #s8,
-      #s9 {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        padding: 0 90px;
-        text-align: right;
-      }
-      .close-line {
-        font-size: 66px;
+      /* ---- S8 / S9 ---- */
+      #s8-a,
+      #s9-a {
+        top: 1000px;
+        font-size: 64px;
         font-weight: 400;
-        line-height: 1.32;
-        color: #8a929e;
+        line-height: 1.3;
+        color: #9aa3ae;
+      }
+      #s8-b,
+      #s9-b {
+        top: 1180px;
+        font-size: 104px;
+        font-weight: 900;
+        line-height: 1.16;
+        letter-spacing: -0.025em;
       }
       #s8-b {
-        margin-top: 34px;
-      }
-      #s8-c,
-      #s9-b {
-        margin-top: 52px;
-        font-size: 96px;
-        font-weight: 900;
-        line-height: 1.18;
-        color: #f2f4f7;
-        letter-spacing: -0.02em;
+        color: #e8b84b;
       }
     </style>
   </head>
@@ -490,59 +363,47 @@ ${fontFaces}
       data-height="1920"
     >
       <div id="bg" class="clip" data-start="0" data-duration="60" data-track-index="0"></div>
-${plateMarkup || '      <!-- no media/<year>.* plates found — drop files into media/ and re-run build.mjs -->'}
-      <div id="scrim" class="clip" data-start="0" data-duration="60" data-track-index="2"></div>
+${panels}
+      <div id="panel-edge" class="clip" data-start="0" data-duration="60" data-track-index="6"></div>
       <div id="grain" class="clip" data-start="0" data-duration="60" data-track-index="3"></div>
       <div id="progress-track" class="clip" data-start="0" data-duration="60" data-track-index="1">
         <div id="progress-fill"></div>
       </div>
 
-      <!-- S0 — his own clip, and the concession -->
-      <video
-        id="source-clip"
-        class="clip source-frame"
-        muted
-        data-start="0.2"
-        data-duration="4.8"
-        data-media-start="0"
-        data-track-index="4"
-        src="media/source/barko.mp4"
-      ></video>
+      <!-- S0 — the concession -->
       <section id="s0" class="clip" data-start="0" data-duration="5.5" data-track-index="5">
         <div id="s0-a">ברקו צודק.</div>
         <div id="s0-b">כל תשע השקופיות.</div>
       </section>
 
-      <!-- S1 — his nine slides, straight off his own screen -->
-      <section id="s1" class="clip" data-start="5.5" data-duration="6" data-track-index="5">
-        <div id="s1-label" class="source-label">המצגת שלו</div>
+      <!-- S1 — his nine slides, off his own screen -->
+      <section id="s1" class="clip" data-start="5.5" data-duration="5.5" data-track-index="5">
         <img id="deck-a" class="deck-shot" src="media/source/deck-a.jpg" alt="" />
         <img id="deck-b" class="deck-shot" src="media/source/deck-b.jpg" alt="" />
-        <div id="s1-line">מצגת שסופרת חתימות. לא תוצאות.</div>
+        <div id="s1-line">סופרת חתימות. לא תוצאות.</div>
       </section>
 ${cardMarkup}
 
       <!-- S8 — the slide that was never in the deck -->
-      <section id="s8" class="clip" data-start="50.5" data-duration="5" data-track-index="5">
-        <div id="s8-a" class="close-line">ושקופית אחת לא הייתה שם בכלל:</div>
-        <div id="s8-b" class="close-line">אחרי תשע השקופיות, ואחרי עשרים ושתיים שנה —</div>
-        <div id="s8-c">מדינה פלסטינית לא קמה.</div>
+      <section id="s8" class="clip" data-start="50" data-duration="5" data-track-index="5">
+        <div id="s8-a">ושקופית אחת לא הייתה שם בכלל:</div>
+        <div id="s8-b">מדינה פלסטינית לא קמה.</div>
       </section>
 
       <!-- S9 — close -->
-      <section id="s9" class="clip" data-start="55.5" data-duration="4.5" data-track-index="5">
-        <div id="s9-a" class="close-line">מי שסופר חתימות ולא תוצאות</div>
+      <section id="s9" class="clip" data-start="55" data-duration="5" data-track-index="5">
+        <div id="s9-a">מי שסופר חתימות ולא תוצאות</div>
         <div id="s9-b">בונה מצגת. לא טיעון.</div>
       </section>
 
       <!-- ---- audio ---- -->
       <audio id="sfx-hook-bell" data-start="0.15" data-duration="2" data-track-index="11" data-volume="0.5" src="assets/sfx/interface/bong_001.ogg"></audio>
       <audio id="sfx-deck-a" data-start="5.60" data-duration="0.8" data-track-index="12" data-volume="0.45" src="assets/sfx/casino/card-place-1.ogg"></audio>
-      <audio id="sfx-deck-b" data-start="8.30" data-duration="0.8" data-track-index="13" data-volume="0.45" src="assets/sfx/casino/card-place-1.ogg"></audio>
-      <audio id="sfx-method" data-start="10.10" data-duration="1" data-track-index="14" data-volume="0.45" src="assets/sfx/impact/impactSoft_medium_000.ogg"></audio>
+      <audio id="sfx-deck-b" data-start="8.10" data-duration="0.8" data-track-index="13" data-volume="0.45" src="assets/sfx/casino/card-place-1.ogg"></audio>
+      <audio id="sfx-method" data-start="9.90" data-duration="1" data-track-index="14" data-volume="0.45" src="assets/sfx/impact/impactSoft_medium_000.ogg"></audio>
 ${cardSfx}
-      <audio id="sfx-missing" data-start="53.35" data-duration="1" data-track-index="15" data-volume="0.5" src="assets/sfx/impact/impactSoft_medium_000.ogg"></audio>
-      <audio id="sfx-close-bell" data-start="57.90" data-duration="1.8" data-track-index="16" data-volume="0.55" src="assets/sfx/impact/impactBell_heavy_000.ogg"></audio>
+      <audio id="sfx-missing" data-start="51.60" data-duration="1" data-track-index="15" data-volume="0.5" src="assets/sfx/impact/impactSoft_medium_000.ogg"></audio>
+      <audio id="sfx-close-bell" data-start="57.40" data-duration="1.8" data-track-index="16" data-volume="0.55" src="assets/sfx/impact/impactBell_heavy_000.ogg"></audio>
     </div>
 
     <script>
@@ -550,20 +411,19 @@ ${cardSfx}
 
       tl.fromTo('#progress-fill', { scaleX: 0 }, { scaleX: 1, duration: 60, ease: 'none' }, 0);
 
-      /* ---- S0 : his clip, then the concession ---- */
-      tl.fromTo('#source-clip', { opacity: 0 }, { opacity: 1, duration: 0.45, ease: 'power2.out' }, 0.2);
-      tl.fromTo('#s0-a', { opacity: 0, y: 44 }, { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out' }, 1.4);
-      tl.fromTo('#s0-b', { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out' }, 3.0);
-      tl.fromTo('#source-clip', { opacity: 1 }, { opacity: 0, duration: 0.3, ease: 'power2.in' }, 4.6);
+      /* ---- S0 ---- */
+      tl.fromTo('#s0-a', { opacity: 0, y: 44 }, { opacity: 1, y: 0, duration: 0.65, ease: 'power3.out' }, 1.2);
+      tl.fromTo('#s0-b', { opacity: 0, y: 28 }, { opacity: 1, y: 0, duration: 0.55, ease: 'power3.out' }, 2.9);
       tl.fromTo('#s0', { opacity: 1 }, { opacity: 0, duration: 0.3, ease: 'power2.in' }, 5.2);
 
-      /* ---- S1 : nine slides, his own graphic ---- */
-      tl.fromTo('#s1-label', { opacity: 0 }, { opacity: 1, duration: 0.4, ease: 'power2.out' }, 5.6);
-      tl.fromTo('#deck-a', { opacity: 0, y: 34 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' }, 5.6);
-      tl.fromTo('#deck-a', { opacity: 1 }, { opacity: 0, duration: 0.3, ease: 'power2.inOut' }, 8.3);
-      tl.fromTo('#deck-b', { opacity: 0 }, { opacity: 1, duration: 0.3, ease: 'power2.inOut' }, 8.45);
-      tl.fromTo('#s1-line', { opacity: 0, y: 28 }, { opacity: 1, y: 0, duration: 0.55, ease: 'power3.out' }, 10.1);
-      tl.fromTo('#s1', { opacity: 1 }, { opacity: 0, duration: 0.3, ease: 'power2.in' }, 11.2);
+      /* ---- S1 : the deck, pushing in so it never sits still ---- */
+      tl.fromTo('#deck-a', { opacity: 0, scale: 0.97 }, { opacity: 1, scale: 1, duration: 0.5, ease: 'power3.out' }, 5.6);
+      tl.fromTo('#deck-a', { scale: 1 }, { scale: 1.06, duration: 2.5, ease: 'none' }, 5.6);
+      tl.fromTo('#deck-a', { opacity: 1 }, { opacity: 0, duration: 0.25, ease: 'power2.inOut' }, 8.1);
+      tl.fromTo('#deck-b', { opacity: 0, scale: 1 }, { opacity: 1, scale: 1, duration: 0.25, ease: 'power2.inOut' }, 8.25);
+      tl.fromTo('#deck-b', { scale: 1 }, { scale: 1.06, duration: 2.5, ease: 'none' }, 8.25);
+      tl.fromTo('#s1-line', { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' }, 9.9);
+      tl.fromTo('#s1', { opacity: 1 }, { opacity: 0, duration: 0.3, ease: 'power2.in' }, 10.7);
 
       /* ---- the cards ---- */
       const CARD_DUR = ${CARD_DUR};
@@ -572,26 +432,19 @@ ${cardTimeline}
       ];
 
       cards.forEach(({ id, at }) => {
-        tl.fromTo(\`\${id} .card-year\`, { opacity: 0, y: 38 }, { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out' }, at);
-        tl.fromTo(\`\${id} .card-topic\`, { opacity: 0, x: 60 }, { opacity: 1, x: 0, duration: 0.45, ease: 'power3.out' }, at + 0.15);
-        tl.fromTo(\`\${id} .claim\`, { opacity: 0, x: 60 }, { opacity: 1, x: 0, duration: 0.5, ease: 'power3.out' }, at + 0.35);
-        tl.fromTo(\`\${id} .rule\`, { scaleX: 0 }, { scaleX: 1, duration: 0.4, ease: 'power2.inOut' }, at + 0.95);
-        tl.fromTo(\`\${id} .fact\`, { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.55, ease: 'power3.out' }, at + 1.15);
-        tl.fromTo(\`\${id} .verdict\`, { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' }, at + 3.6);
-        tl.fromTo(\`\${id} .figure\`, { opacity: 0, scale: 0.94 }, { opacity: 1, scale: 1, duration: 0.5, ease: 'back.out(1.5)' }, at + CARD_DUR - 2.1);
+        tl.fromTo(\`\${id} .card-topic\`, { opacity: 0, y: 22 }, { opacity: 1, y: 0, duration: 0.45, ease: 'power3.out' }, at + 0.25);
+        tl.fromTo(\`\${id} .card-figure\`, { opacity: 0, y: 40, scale: 0.94 }, { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: 'back.out(1.5)' }, at + 0.55);
+        tl.fromTo(\`\${id} .card-line\`, { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' }, at + 1.5);
+        tl.fromTo(id, { opacity: 1 }, { opacity: 0, duration: 0.25, ease: 'power2.in' }, at + CARD_DUR - 0.25);
       });
 
-${plateTimeline || '      /* no year plates in this build */'}
+      /* ---- S8 / S9 ---- */
+      tl.fromTo('#s8-a', { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' }, 50.3);
+      tl.fromTo('#s8-b', { opacity: 0, y: 34 }, { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out' }, 51.6);
+      tl.fromTo('#s8', { opacity: 1 }, { opacity: 0, duration: 0.25, ease: 'power2.in' }, 54.75);
 
-      /* ---- S8 : the missing slide ---- */
-      tl.fromTo('#s8-a', { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' }, 50.8);
-      tl.fromTo('#s8-b', { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' }, 52.0);
-      tl.fromTo('#s8-c', { opacity: 0, y: 34 }, { opacity: 1, y: 0, duration: 0.65, ease: 'power3.out' }, 53.4);
-      tl.fromTo('#s8', { opacity: 1 }, { opacity: 0, duration: 0.3, ease: 'power2.in' }, 55.2);
-
-      /* ---- S9 : close ---- */
-      tl.fromTo('#s9-a', { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' }, 55.8);
-      tl.fromTo('#s9-b', { opacity: 0, y: 34 }, { opacity: 1, y: 0, duration: 0.65, ease: 'power3.out' }, 57.9);
+      tl.fromTo('#s9-a', { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' }, 55.4);
+      tl.fromTo('#s9-b', { opacity: 0, y: 34 }, { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out' }, 57.4);
 
       window.__timelines = window.__timelines || {};
       window.__timelines['main'] = tl;
@@ -602,7 +455,10 @@ ${plateTimeline || '      /* no year plates in this build */'}
 `;
 
 writeFileSync(join(HERE, 'index.html'), html);
+const plated = cards.filter((c) => c.plate);
 console.log(
-  `index.html written — ${cards.length} cards, ${plated.length} year plate(s)` +
-    (plated.length ? `: ${plated.map((c) => c.plate.src).join(', ')}` : '')
+  `index.html written — panel runs all 60s; ${cards.length} cards, ` +
+    (plated.length
+      ? `${plated.length} on Netanyahu footage: ${plated.map((c) => c.plate.src).join(', ')}`
+      : 'all on Barko (no media/<year>.* supplied yet)')
 );
