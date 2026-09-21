@@ -663,7 +663,11 @@ el('b-install').addEventListener('click', async () => {
     el('b-install').classList.add('hidden');
 });
 
-if ('serviceWorker' in navigator) {
+// בתוך iframe (הטמעה בדף אחר) לא רושמים Service Worker: הוא לא נחוץ שם,
+// והמטמון שלו עלול להגיש גרסה ישנה אחרי עדכון.
+const embedded = (() => { try { return window.top !== window.self; } catch (_) { return true; } })();
+
+if ('serviceWorker' in navigator && !embedded) {
     window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
 }
 
