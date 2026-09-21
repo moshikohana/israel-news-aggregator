@@ -15,6 +15,7 @@ import { Character, OUTFITS } from './character.js';
 import { Desktop } from './desktop.js';
 import { Brain } from './brain.js';
 import { Voice, Speaker, AudioMeter, matchCommand } from './voice.js';
+import { Keyer, PhotoLayer } from './photo.js';
 
 const SETTINGS_KEY = 'live-wallpaper-settings';
 const el = (id) => document.getElementById(id);
@@ -45,6 +46,9 @@ const speaker = new Speaker();
 const brain = new Brain(character, desktop, speaker);
 const voice = new Voice();
 const meter = new AudioMeter();
+const keyer = new Keyer();
+const photoActor = new PhotoLayer('actor', keyer);
+const photoBg = new PhotoLayer('bg', keyer);
 
 let W = 0, H = 0, dpr = 1;
 let pointer = { x: 0, y: 0, inside: false };
@@ -103,6 +107,12 @@ function frame(now) {
     brain.update(dt, pointer.inside ? pointer : null);
     const env = brain.env;
 
+    // פרלקסה של המדיה האמיתית לפי מיקום הסמן
+    const nx = pointer.inside ? (pointer.x / W) * 2 - 1 : 0;
+    const ny = pointer.inside ? (pointer.y / H) * 2 - 1 : 0;
+    photoActor.aim(nx, ny);
+    photoBg.aim(nx, ny);
+
     // מבט וכיוון פנייה לפי הסמן
     if (pointer.inside) {
         character.look.x = pointer.x;
@@ -118,11 +128,21 @@ function frame(now) {
 
     world.update(dt, env);
     character.update(dt, env);
-    desktop.update(dt, env, character);
+    photoActor.update(dt);
+    photoBg.update(dt);
+
+    // הדמות האמיתית לא מחזיקה שלד, אז נקודת האחיזה שלה מכוונת ידנית
+    const holder = photoActor.ready
+        ? { graspPoint: () => photoActor.graspPoint(actorBox()) }
+        : character;
+    desktop.update(dt, env, holder);
 
     // ---- ציור
-    world.draw(ctx, env);
-    world.drawGloom(ctx, env);          // מכהה את הרקע לפי מזג האוויר
+    const photoBackdrop = photoBg.ready && photoBg.drawBg(ctx, W, H, env);
+    if (!photoBackdrop) {
+        world.draw(ctx, env);
+        world.drawGloom(ctx, env);      // מכהה את הרקע לפי מזג האוויר
+    }
     if (settings.icons && !wallpaperMode) {
         ctx.save();
         // מה שלא בידיים של הדמות מצויר מאחוריה
@@ -131,7 +151,11 @@ function frame(now) {
         ctx.restore();
     }
 
-    if (!brain.hidden) character.draw(ctx, env);
+    if (!brain.hidden) {
+        if (!(photoActor.ready && photoActor.drawActor(ctx, actorBox()))) {
+            character.draw(ctx, env);
+        }
+    }
 
     if (settings.icons && !wallpaperMode) {
         for (const ic of desktop.icons) if (ic === desktop.caught || ic.sheltered) desktop.drawIcon(ctx, ic, env);
@@ -144,6 +168,19 @@ function frame(now) {
 }
 
 let vignette = null, vignetteKey = '';
+
+/** הפרמטרים שהדמות האמיתית מצוירת לפיהם - אותם מיקום/גובה של הווקטורית. */
+function actorBox() {
+    return {
+        x: character.x,
+        y: character.y,
+        height: character.height,
+        facing: character.facing,
+        wet: brain.env.wet,
+        env: brain.env,
+        dpr,
+    };
+}
 
 function drawVignette(env) {
     const a = env.sunAlt < 0 ? 0.42 : 0.24;
@@ -339,6 +376,177 @@ function wireHud() {
     });
 }
 
+/* ------------------------------------------------ חלונית מצב פוטו */
+
+const MEDIA_CTLS = {
+    actor: {
+        layer: () => photoActor,
+        drop: 'drop-actor', file: 'file-actor', name: 'name-actor',
+        map: {
+            'a-scale': ['scale', (v) => v.toFixed(2) + '×'],
+            'a-x': ['offsetX', (v) => Math.round(v) + 'px'],
+            'a-y': ['offsetY', (v) => Math.round(v) + 'px'],
+            'a-anchor': ['anchorY', (v) => Math.round(v * 100) + '%'],
+            'a-hands': ['handsY', (v) => Math.round(v * 100) + '%'],
+            'a-tol': ['tolerance', (v) => v.toFixed(3)],
+            'a-soft': ['softness', (v) => v.toFixed(3)],
+            'a-spill': ['spill', (v) => Math.round(v * 100) + '%'],
+        },
+        checks: { 'a-key': 'enabled', 'a-flip': 'flip' },
+    },
+    bg: {
+        layer: () => photoBg,
+        drop: 'drop-bg', file: 'file-bg', name: 'name-bg',
+        map: {
+            'g-scale': ['scale', (v) => v.toFixed(2) + '×'],
+            'g-x': ['offsetX', (v) => Math.round(v) + 'px'],
+            'g-y': ['offsetY', (v) => Math.round(v) + 'px'],
+            'g-par': ['parallax', (v) => v.toFixed(2)],
+        },
+        checks: {},
+    },
+};
+
+const rgbToHex = (c) => '#' + c.map((v) => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, '0')).join('');
+const hexToRgbArr = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+
+/** מסנכרן את כל הפקדים עם הערכים בפועל של השכבה. */
+function syncMedia() {
+    for (const [kind, spec] of Object.entries(MEDIA_CTLS)) {
+        const layer = spec.layer();
+        for (const [id, [key, fmt]] of Object.entries(spec.map)) {
+            const input = el(id);
+            if (!input) continue;
+            input.value = layer.cfg[key];
+            const out = input.parentElement.querySelector('output');
+            if (out) out.textContent = fmt(Number(layer.cfg[key]));
+        }
+        for (const [id, key] of Object.entries(spec.checks)) {
+            const box = el(id);
+            if (box) box.checked = !!layer.cfg[key];
+        }
+        const nameEl = el(spec.name);
+        if (nameEl) {
+            nameEl.textContent = layer.ready
+                ? layer.name
+                : (layer.err || (kind === 'bg' ? 'ציור (ברירת מחדל)' : 'לא נטען'));
+        }
+        el(spec.drop).classList.toggle('loaded', layer.ready);
+    }
+    const col = el('a-color');
+    if (col) col.value = rgbToHex(photoActor.cfg.key);
+
+    const hint = el('a-hint');
+    hint.textContent = photoActor.hint || '';
+    hint.hidden = !photoActor.hint;
+}
+
+async function loadMedia(kind, file) {
+    if (!file) return;
+    const spec = MEDIA_CTLS[kind];
+    const layer = spec.layer();
+    el(spec.name).textContent = 'טוען…';
+    const ok = await layer.setFile(file);
+    syncMedia();
+    if (ok) {
+        brain.say(kind === 'actor' ? 'זאת אני עכשיו.' : 'החלפתי רקע.', 'happy');
+    } else {
+        brain.say('לא הצלחתי לפתוח את הקובץ הזה.', 'sad');
+    }
+}
+
+function wireMedia() {
+    const sheet = el('media');
+    el('b-media').addEventListener('click', () => {
+        sheet.hidden = !sheet.hidden;
+        if (!sheet.hidden) syncMedia();
+    });
+    el('media-close').addEventListener('click', () => { sheet.hidden = true; });
+
+    document.querySelectorAll('.tabs .tab').forEach((tab) => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.tabs .tab').forEach((t) => t.classList.toggle('on', t === tab));
+            document.querySelectorAll('[data-panel]').forEach((p) => {
+                p.hidden = p.dataset.panel !== tab.dataset.tab;
+            });
+        });
+    });
+
+    for (const [kind, spec] of Object.entries(MEDIA_CTLS)) {
+        const layer = spec.layer();
+        el(spec.file).addEventListener('change', (e) => loadMedia(kind, e.target.files[0]));
+
+        const drop = el(spec.drop);
+        ['dragenter', 'dragover'].forEach((ev) => drop.addEventListener(ev, (e) => {
+            e.preventDefault();
+            drop.classList.add('over');
+        }));
+        ['dragleave', 'drop'].forEach((ev) => drop.addEventListener(ev, () => drop.classList.remove('over')));
+        drop.addEventListener('drop', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            loadMedia(kind, e.dataTransfer.files[0]);
+        });
+
+        for (const [id, [key, fmt]] of Object.entries(spec.map)) {
+            const input = el(id);
+            input.addEventListener('input', () => {
+                layer.cfg[key] = Number(input.value);
+                const out = input.parentElement.querySelector('output');
+                if (out) out.textContent = fmt(Number(input.value));
+                layer.saveCfg();
+            });
+        }
+        for (const [id, key] of Object.entries(spec.checks)) {
+            el(id).addEventListener('change', (e) => {
+                layer.cfg[key] = e.target.checked;
+                layer.saveCfg();
+            });
+        }
+    }
+
+    el('a-color').addEventListener('input', (e) => {
+        photoActor.cfg.key = hexToRgbArr(e.target.value);
+        photoActor.saveCfg();
+    });
+    el('a-auto').addEventListener('click', () => {
+        photoActor.autoKey();
+        photoActor.cfg.enabled = true;
+        photoActor.saveCfg();
+        syncMedia();
+    });
+    el('a-clear').addEventListener('click', async () => {
+        await photoActor.clear();
+        syncMedia();
+        brain.say('חזרתי לצורה המצוירת.');
+    });
+    el('g-clear').addEventListener('click', async () => {
+        await photoBg.clear();
+        syncMedia();
+    });
+
+    // גרירה לכל מקום בעמוד -> נטען כדמות
+    let dragDepth = 0;
+    window.addEventListener('dragenter', (e) => {
+        if (!e.dataTransfer || !Array.from(e.dataTransfer.types).includes('Files')) return;
+        dragDepth++;
+        document.body.classList.add('dropping');
+    });
+    window.addEventListener('dragover', (e) => e.preventDefault());
+    window.addEventListener('dragleave', () => {
+        if (--dragDepth <= 0) { dragDepth = 0; document.body.classList.remove('dropping'); }
+    });
+    window.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dragDepth = 0;
+        document.body.classList.remove('dropping');
+        const f = e.dataTransfer.files[0];
+        if (!f) return;
+        sheet.hidden = false;
+        loadMedia('actor', f);
+    });
+}
+
 /* ----------------------------------------------------- צילום והקלטה */
 
 function shot() {
@@ -463,6 +671,38 @@ if ('serviceWorker' in navigator) {
 
 resize();
 wireHud();
+wireMedia();
+loadSavedMedia().then(syncMedia).catch(() => syncMedia());
+
+/**
+ * סדר העדיפות: מה שהמשתמש העלה במכשיר הזה, ואם אין - נכסים שנשמרו
+ * בריפו עצמו תחת docs/wall/media/ (ראו media/README.md).
+ */
+async function loadSavedMedia() {
+    const [actorSaved, bgSaved] = await Promise.all([
+        photoActor.restore().catch(() => false),
+        photoBg.restore().catch(() => false),
+    ]);
+    if (actorSaved && bgSaved) return;
+
+    let manifest = null;
+    try {
+        const res = await fetch('media/manifest.json', { cache: 'no-store' });
+        if (res.ok) manifest = await res.json();
+    } catch (_) { /* אין תיקיית מדיה - זה המצב הרגיל */ }
+    if (!manifest) return;
+
+    if (!actorSaved && manifest.actor) {
+        photoActor.loadCfg();
+        if (manifest.actorConfig) Object.assign(photoActor.cfg, manifest.actorConfig);
+        await photoActor.attachUrl('media/' + manifest.actor);
+    }
+    if (!bgSaved && manifest.bg) {
+        photoBg.loadCfg();
+        if (manifest.bgConfig) Object.assign(photoBg.cfg, manifest.bgConfig);
+        await photoBg.attachUrl('media/' + manifest.bg);
+    }
+}
 el('b-start').addEventListener('click', start);
 if (!voice.supported) el('mic-note').textContent = 'זיהוי דיבור זמין בכרום ובאדג\'.';
 if (wallpaperMode) {

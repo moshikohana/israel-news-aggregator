@@ -3,7 +3,7 @@
  * גם בלי רשת. קריאות לרשת (מזג אוויר, חדשות) לא נשמרות במטמון -
  * הן תמיד טריות, ואם אין רשת הן פשוט נכשלות בשקט.
  */
-const VERSION = 'live-wallpaper-v1';
+const VERSION = 'live-wallpaper-v2';
 const ASSETS = [
     './',
     './index.html',
@@ -14,6 +14,7 @@ const ASSETS = [
     './js/desktop.js',
     './js/brain.js',
     './js/voice.js',
+    './js/photo.js',
     './manifest.webmanifest',
     './icons/icon-192.png',
     './icons/icon-512.png',

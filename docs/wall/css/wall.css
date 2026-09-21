@@ -298,3 +298,128 @@ body.wallpaper #stage { cursor: default; }
 @media (prefers-reduced-motion: reduce) {
     #bubble, #hud, #intro { transition: none; }
 }
+
+/* ------------------------------------------------------ חלונית המדיה */
+
+.sheet {
+    position: fixed;
+    inset: auto 12px 12px auto;
+    z-index: 24;
+    width: min(420px, calc(100vw - 24px));
+    max-height: min(78vh, 720px);
+    overflow: auto;
+    padding: 14px 16px 16px;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background: rgba(10, 14, 22, 0.93);
+    backdrop-filter: blur(14px);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+}
+
+.sheet[hidden] { display: none; }
+
+.sheet-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.sheet-head h3 { margin: 0 0 4px; font-size: 16px; }
+
+.sheet .x {
+    width: 30px; height: 30px;
+    border: 0; border-radius: 9px;
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text); font-size: 15px; cursor: pointer;
+}
+.sheet .x:hover { background: rgba(255, 255, 255, 0.16); }
+
+.sheet-note { margin: 2px 0 12px; font-size: 12.5px; line-height: 1.55; color: var(--muted); }
+.sheet-note a { color: var(--accent); text-decoration: none; }
+.sheet-note a:hover { text-decoration: underline; }
+
+.drops { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+
+.drop {
+    display: grid;
+    justify-items: center;
+    gap: 2px;
+    padding: 12px 8px;
+    border: 1.5px dashed var(--line);
+    border-radius: 13px;
+    background: rgba(255, 255, 255, 0.03);
+    cursor: pointer;
+    text-align: center;
+    transition: border-color 0.15s ease, background 0.15s ease;
+}
+.drop:hover, .drop.over { border-color: var(--accent); background: rgba(47, 224, 189, 0.1); }
+.drop.loaded { border-style: solid; border-color: rgba(47, 224, 189, 0.55); }
+.drop-icon { font-size: 22px; }
+.drop b { font-size: 13px; }
+.drop small { font-size: 10.5px; color: var(--muted); line-height: 1.4; }
+.drop-name {
+    margin-top: 3px;
+    font-size: 10.5px;
+    font-style: normal;
+    color: var(--accent);
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    direction: ltr;
+}
+
+.tabs { display: flex; gap: 6px; margin-bottom: 10px; }
+.tabs .tab {
+    flex: 1;
+    padding: 7px 10px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: transparent;
+    color: var(--muted);
+    font: inherit;
+    font-size: 13px;
+    cursor: pointer;
+}
+.tabs .tab.on { background: rgba(47, 224, 189, 0.18); color: var(--text); border-color: rgba(47, 224, 189, 0.5); }
+
+.panel[hidden] { display: none; }
+
+.ctl { display: grid; grid-template-columns: 1fr 1.25fr auto; align-items: center; gap: 8px; margin-bottom: 7px; }
+.ctl label { font-size: 12.5px; color: #c3cdd9; }
+.ctl input[type="range"] { width: 100%; accent-color: var(--accent); }
+.ctl output { font-size: 11.5px; color: var(--muted); font-variant-numeric: tabular-nums; min-width: 42px; text-align: left; direction: ltr; }
+.ctl.row { grid-template-columns: auto auto auto auto; justify-content: start; gap: 12px; }
+.ctl.row label { display: inline-flex; align-items: center; gap: 5px; cursor: pointer; }
+.ctl.hint-line { display: block; font-size: 11.5px; color: var(--muted); line-height: 1.5; margin: 10px 0; }
+.ctl input[type="color"] { width: 34px; height: 26px; padding: 0; border: 1px solid var(--line); border-radius: 7px; background: none; cursor: pointer; }
+
+.mini {
+    padding: 6px 12px;
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text);
+    font: inherit;
+    font-size: 12px;
+    cursor: pointer;
+}
+.mini:hover { background: rgba(255, 255, 255, 0.13); }
+.mini.danger { margin-top: 10px; color: #ff9aa5; border-color: rgba(255, 120, 135, 0.35); }
+.mini.danger:hover { background: rgba(255, 90, 110, 0.16); }
+
+body.dropping::after {
+    content: 'שחררו כאן כדי לטעון';
+    position: fixed;
+    inset: 0;
+    z-index: 35;
+    display: grid;
+    place-items: center;
+    background: rgba(6, 10, 18, 0.68);
+    border: 3px dashed var(--accent);
+    color: var(--text);
+    font-size: 20px;
+    font-weight: 700;
+    pointer-events: none;
+}
+
+@media (max-width: 760px) {
+    .sheet { inset: auto 8px 8px 8px; width: auto; max-height: 72vh; }
+    .drops { grid-template-columns: 1fr; }
+    .ctl { grid-template-columns: 1fr 1fr auto; }
+}
