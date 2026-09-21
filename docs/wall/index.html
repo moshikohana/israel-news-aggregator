@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#0a1220">
+    <meta name="description" content="טפט חי ואינטראקטיבי - דמות שגרה על שולחן העבודה, שומעת אותך, מגיבה לסמן ומשנה מזג אוויר">
+    <title>טפט חי ואינטראקטיבי</title>
+    <link rel="manifest" href="manifest.webmanifest">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="טפט חי">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏝️</text></svg>">
+    <link rel="stylesheet" href="css/wall.css">
+</head>
+<body>
+    <canvas id="stage"></canvas>
+    <div id="flash"></div>
+    <div id="bubble"></div>
+    <div id="heard"></div>
+
+    <!-- ------------------------------------------------------ מסך פתיחה -->
+    <section id="intro">
+        <div class="intro-card">
+            <div class="emoji-strip">🏝️ 🌧️ 💃 🎙️ 🖥️</div>
+            <h1>טפט חי ואינטראקטיבי</h1>
+            <p class="sub">
+                דמות שגרה על שולחן העבודה שלך. היא עוקבת אחרי הסמן, שומעת מה אתה
+                אומר ועונה, מרימה לך אייקונים שנפלו, ומגינה על המסמכים כשמתחיל
+                לרדת גשם. מזג האוויר והשעה מתעדכנים לפי העולם האמיתי.
+            </p>
+
+            <button id="b-start" class="primary">▶︎ הפעל את הטפט</button>
+            <button id="b-install" class="ghost hidden">📲 התקן כאפליקציה</button>
+            <p id="mic-note" class="note">הכול רץ בדפדפן. המיקרופון והמצלמה לא נשלחים לשום שרת.</p>
+
+            <div class="tips">
+                <div>🎙️ <b>דברו אליה:</b> "שיירד גשם", "תרקדי", "מה השעה", "תשמרי על המסמכים".</div>
+                <div>🖱️ <b>גררו אייקון וזרקו</b> - היא תתפוס אותו באוויר.</div>
+                <div>⌨️ <b>קיצורים:</b> R גשם · S שמש · N לילה · D ריקוד · P הגנה · H הסתרת הממשק.</div>
+                <div>🖼️ <b>כטפט אמיתי:</b> פתחו עם <code>?mode=wallpaper</code> ב-Lively או Plash.</div>
+            </div>
+
+            <a class="back-link" href="../">← חזרה (AR חיות / עמוד החדשות)</a>
+        </div>
+    </section>
+
+    <!-- ------------------------------------------------------------- HUD -->
+    <div id="hud">
+        <div id="readout"></div>
+
+        <div class="bar">
+            <div class="group" title="מזג אוויר">
+                <button data-cmd="clear" title="שמש (S)">☀️</button>
+                <button data-cmd="clouds" title="עננים (C)">☁️</button>
+                <button data-cmd="rain" title="גשם (R)">🌧️</button>
+                <button data-cmd="storm" title="סערה (T)">⛈️</button>
+                <button data-cmd="snow" title="שלג (W)">❄️</button>
+                <button data-cmd="fog" title="ערפל (F)">🌫️</button>
+            </div>
+
+            <div class="group" title="שעה">
+                <button data-cmd="day" title="יום (M)">🌅</button>
+                <button data-cmd="sunset" title="שקיעה (G)">🌇</button>
+                <button data-cmd="night" title="לילה (N)">🌙</button>
+                <button data-cmd="now" title="שעון אמיתי">🕐</button>
+            </div>
+
+            <div class="group" title="הדמות">
+                <button data-cmd="wave" title="שלום">👋</button>
+                <button data-cmd="dance" title="ריקוד (D)">💃</button>
+                <button data-cmd="sit" title="שבי">🪑</button>
+                <button data-cmd="sleep" title="לישון">😴</button>
+                <button data-cmd="joke" title="בדיחה (J)">😄</button>
+            </div>
+
+            <div class="group" title="שולחן העבודה">
+                <button id="b-icons" title="אייקונים (I)">🗂️</button>
+                <button id="b-protect" data-cmd="protect" title="תשמרי על המסמכים (P)">🛡️</button>
+                <button data-cmd="tidy" title="סדרי (O)">🧹</button>
+                <button data-cmd="news" title="הקריאי חדשות (E)">📰</button>
+            </div>
+
+            <div class="group" title="קול">
+                <button id="b-mic" title="הקשבה קולית">🎙️</button>
+                <button id="b-sound" title="דיבור">🔊</button>
+                <button id="b-music" title="ריקוד לפי מוזיקה בחדר">🎵</button>
+                <button id="b-focus" data-cmd="focus" title="מצב פוקוס (K)">🤫</button>
+                <button data-cmd="pomodoro" title="פומודורו">🍅</button>
+            </div>
+
+            <div class="group" title="פלט">
+                <button id="b-live" title="מזג אוויר אמיתי לפי המיקום">📡</button>
+                <button id="b-shot" title="צילום מסך">📸</button>
+                <button id="b-rec" title="הקלטת וידאו">⏺</button>
+                <button id="b-hud" title="הסתר ממשק (H)">👁️</button>
+            </div>
+
+            <div id="outfits" class="group swatches" title="בגדים"></div>
+        </div>
+
+        <form id="say-form" autocomplete="off">
+            <input id="say" type="text" placeholder="אפשר גם להקליד: שיירד גשם / תרקדי / מה השעה…">
+            <button type="submit">שלח</button>
+        </form>
+    </div>
+
+    <script type="module" src="js/wall.js"></script>
+</body>
+</html>

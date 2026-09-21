@@ -80,6 +80,11 @@
             text-decoration: none;
         }
         .ar-link:hover { filter: brightness(1.08); }
+        .wall-link {
+            margin-right: 8px;
+            background: linear-gradient(135deg, #f0a06a 0%, #6b4570 100%);
+            color: #fff5ec;
+        }
         .less-button {
             display: none; /* Hide the 'Show Less' button initially */
         }
@@ -134,6 +139,7 @@
     <h1 style="text-align:center; margin-bottom:10px;">חדשות אחרונות</h1>
     <p style="text-align:center; margin-bottom:40px;">
         <a href="{{ url_for('ar_animals') }}" class="ar-link">🦒 חיות בגודל אמיתי במצלמה (AR)</a>
+        <a href="{{ url_for('live_wallpaper') }}" class="ar-link wall-link">🏝️ טפט חי ואינטראקטיבי</a>
     </p>
     <div class="container">
         <div class="column">

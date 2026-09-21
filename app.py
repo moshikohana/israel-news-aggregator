@@ -7,9 +7,10 @@ import difflib
 
 app = Flask(__name__)
 
-# אפליקציית ה-AR היא אתר סטטי עצמאי שיושב ב-docs/, כדי שאותם קבצים
-# ישמשו גם את השרת המקומי וגם אירוח ב-GitHub Pages (התקנה כאפליקציה).
+# אפליקציות הצד-לקוח הן אתרים סטטיים עצמאיים שיושבים ב-docs/, כדי שאותם
+# קבצים ישמשו גם את השרת המקומי וגם אירוח ב-GitHub Pages (התקנה כאפליקציה).
 AR_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'docs')
+WALL_DIR = os.path.join(AR_DIR, 'wall')
 
 seen_titles_ynet = set()
 seen_titles_n12 = set()
@@ -277,6 +278,22 @@ def ar_animals():
 @app.route('/ar/<path:filename>')
 def ar_asset(filename):
     return send_from_directory(AR_DIR, filename)
+
+
+@app.route('/wall/')
+def live_wallpaper():
+    """טפט חי: דמות שמגיבה לסמן, לקול ולמזג האוויר האמיתי.
+
+    כמו ה-AR, כל הלוגיקה רצה בדפדפן. השרת מגיש קבצים סטטיים, ובנוסף
+    הטפט מושך מכאן כותרות חדשות דרך /more_ynet_articles/0 כדי להציג
+    אותן בחלון שעל שולחן העבודה.
+    """
+    return send_from_directory(WALL_DIR, 'index.html')
+
+
+@app.route('/wall/<path:filename>')
+def wall_asset(filename):
+    return send_from_directory(WALL_DIR, filename)
 
 @app.route('/more_ynet_articles/<int:start>')
 def more_ynet_articles(start):
