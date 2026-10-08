@@ -195,10 +195,10 @@ function wipe(k,t){
   tl.fromTo("#wp"+k+" .wp",{x:-900,skewX:-10},{x:1300,skewX:-10,duration:0.6,ease:"power2.inOut"},t);
 }
 function punch(t){
-  tl.fromTo("#stage",{scale:1.07},{scale:1,duration:0.7,ease:"power3.out"},t);
+  tl.fromTo("#stage",{scale:1.07},{scale:1,duration:0.7,ease:"power3.out",immediateRender:false},t);
 }
 function shake(t,a){
-  tl.fromTo("#shake",{x:0,y:0},{x:a,y:-a*0.6,duration:0.04,ease:"none"},t);
+  tl.fromTo("#shake",{x:0,y:0},{x:a,y:-a*0.6,duration:0.04,ease:"none",immediateRender:false},t);
   tl.to("#shake",{x:-a*0.8,y:a*0.5,duration:0.05,ease:"none"},t+0.04);
   tl.to("#shake",{x:a*0.4,y:-a*0.3,duration:0.05,ease:"none"},t+0.09);
   tl.to("#shake",{x:0,y:0,duration:0.08,ease:"power2.out"},t+0.14);
