@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="en" data-resolution="portrait">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=1920" />
+<script src="assets/gsap.min.js"></script>
+<style>
+@font-face{font-family:"Inter";font-weight:700;src:url("assets/fonts/Inter-Bold.otf")}
+@font-face{font-family:"Inter";font-weight:600;src:url("assets/fonts/Inter-SemiBold.otf")}
+@font-face{font-family:"Inter Display";font-weight:900;src:url("assets/fonts/InterDisplay-Black.otf")}
+@font-face{font-family:"Liberation Serif";font-weight:700;font-style:normal;src:url("assets/fonts/LiberationSerif-Bold.ttf")}
+@font-face{font-family:"Liberation Serif";font-weight:700;font-style:italic;src:url("assets/fonts/LiberationSerif-BoldItalic.ttf")}
+@font-face{font-family:"Liberation Sans";font-weight:700;src:url("assets/fonts/LiberationSans-Bold.ttf")}
+@font-face{font-family:"Noto Color Emoji";src:url("assets/fonts/NotoColorEmoji.ttf")}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:#070b16}
+#root{position:relative;width:100%;height:100%;overflow:hidden;font-family:"Inter",sans-serif;color:#f5efe0}
+#shake,#stage{position:absolute;inset:0}
+.bg{position:absolute;inset:0}
+.bg-intro{background:radial-gradient(120% 70% at 50% 30%,#1b2a52 0%,#0b1226 55%,#05070f 100%)}
+.bg-gold{background:radial-gradient(110% 70% at 50% 45%,#2a2110 0%,#120e08 60%,#070605 100%)}
+.bg-chorus{background:radial-gradient(120% 75% at 50% 45%,#eaf1fb 0%,#9db6d8 38%,#27395e 80%,#0b1226 100%)}
+.bg-grey{background:radial-gradient(100% 70% at 50% 45%,#2b2b2b 0%,#121212 60%,#050505 100%)}
+.bg-recess{background:radial-gradient(110% 70% at 50% 45%,#3a2415 0%,#1b0f08 60%,#080402 100%)}
+.bg-verdict{background:radial-gradient(120% 75% at 50% 40%,#2b3d6e 0%,#0e1630 60%,#05070f 100%)}
+.orb{position:absolute;width:760px;height:760px;border-radius:50%;background:radial-gradient(circle,rgba(240,195,90,.30) 0%,rgba(240,195,90,0) 66%);opacity:.7}
+.beam{position:absolute;top:-300px;width:150px;height:2600px;background:linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,.10),rgba(255,255,255,0));opacity:.8}
+#glow{position:absolute;left:140px;top:560px;width:800px;height:800px;border-radius:50%;background:radial-gradient(circle,rgba(255,214,120,.55) 0%,rgba(255,214,120,0) 68%);opacity:0}
+#grain{position:absolute;inset:0;opacity:.09;mix-blend-mode:overlay;pointer-events:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='300' height='300' filter='url(%23n)'/></svg>")}
+#vig{position:absolute;inset:0;background:radial-gradient(120% 90% at 50% 50%,rgba(0,0,0,0) 55%,rgba(0,0,0,.55) 100%);pointer-events:none}
+#head{position:absolute;top:84px;left:0;width:100%;text-align:center;font-weight:700;font-size:26px;letter-spacing:.34em;opacity:.7}
+.tagc{position:absolute;inset:0}
+.tag{position:absolute;top:150px;left:0;width:100%;text-align:center}
+.tag .sub{font-weight:600;font-size:28px;letter-spacing:.22em;text-transform:uppercase;opacity:.65;margin-bottom:10px}
+.tag .nm{font-family:"Inter Display";font-weight:900;font-size:68px;letter-spacing:.04em;color:#f0c35a;display:inline-block}
+.tag .fl{font-family:"Noto Color Emoji";font-weight:400;display:inline-block}
+.tag .ul{width:420px;height:6px;border-radius:3px;background:currentColor;margin:14px auto 0;opacity:.7}
+.tag.t-chorus,.tag.t-chorus .nm{color:#0b1226}
+.tag.t-grey .nm{color:#e8e8e8} .tag.t-intro .nm{color:#f5efe0} .tag.t-verdict .nm{color:#f5efe0;font-size:50px}
+.pop{position:absolute;top:350px;width:900px;height:300px;display:flex;align-items:center;justify-content:center}
+.pi{display:block;text-align:center;line-height:1}
+.emo{font-family:"Noto Color Emoji"}
+.ring{position:absolute;left:350px;top:50px;width:200px;height:200px;border-radius:50%;border:8px solid rgba(240,195,90,.9)}
+.dot{position:absolute;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;background:#f0c35a}
+.txt{font-family:"Inter Display",sans-serif;font-weight:900;color:#f0c35a;letter-spacing:.02em;white-space:nowrap;text-shadow:0 6px 30px rgba(0,0,0,.45)}
+.txt.tw{color:#f5f5f5}
+.stamp{color:#ff5b4a;border:10px solid #ff5b4a;padding:6px 34px;border-radius:14px;background:rgba(0,0,0,.35)}
+.lc{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+.ln{width:920px;text-align:center;line-height:1.08;font-family:"Liberation Serif",serif;font-weight:700;color:#f5efe0;margin-top:90px}
+.w{display:inline-block;opacity:0}
+.hl{color:#f0c35a;font-style:italic}
+.k-chorus{color:#0b1226;font-family:"Inter Display",sans-serif;font-weight:900;letter-spacing:-.02em;line-height:1.04;-webkit-box-reflect:below 6px linear-gradient(transparent 55%,rgba(255,255,255,.28))}
+.k-chorus .hl{color:#8a5a00;font-style:normal}
+.k-grey{color:#f2f2f2;font-weight:700}
+.hc{position:absolute;inset:0;display:flex;align-items:flex-start;justify-content:center}
+.he{margin-top:1380px;max-width:960px;text-align:center;font-family:"Liberation Sans",sans-serif;font-weight:700;line-height:1.25;color:#fff;background:rgba(7,11,22,.76);padding:16px 34px;border-radius:24px;opacity:0}
+.wipe{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.wp{position:absolute;top:-200px;left:0;width:760px;height:2320px;background:linear-gradient(100deg,#f5f9ff 0%,#a9c1e6 55%,#f0c35a 100%);opacity:.95}
+.cardc{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(5,7,15,.94)}
+.cardi{text-align:center}
+.cem{font-family:"Noto Color Emoji";font-size:240px;line-height:1.1}
+.ct{font-family:"Inter Display";font-weight:900;font-size:84px;letter-spacing:.04em;color:#f0c35a;margin-top:30px}
+.cs{font-family:"Liberation Serif";font-weight:700;font-style:italic;font-size:70px;margin-top:24px}
+#bar{position:absolute;left:90px;top:36px;width:900px;height:6px;border-radius:3px;background:rgba(255,255,255,.18)}
+#fill{position:absolute;left:90px;top:36px;width:900px;height:6px;border-radius:3px;background:#f0c35a;transform-origin:0 50%}
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="short" data-start="0" data-duration="65.94" data-width="1080" data-height="1920">
+<div id="shake"><div id="stage">
+<div id="bg0" class="clip bg bg-chorus" data-start="0.0" data-duration="14.28" data-track-index="0"></div><div id="bg1" class="clip bg bg-gold" data-start="14.28" data-duration="7.9" data-track-index="0"></div><div id="bg2" class="clip bg bg-gold" data-start="22.18" data-duration="3.9" data-track-index="0"></div><div id="bg3" class="clip bg bg-grey" data-start="26.08" data-duration="4.2" data-track-index="0"></div><div id="bg4" class="clip bg bg-gold" data-start="30.28" data-duration="3.9" data-track-index="0"></div><div id="bg5" class="clip bg bg-gold" data-start="34.18" data-duration="3.9" data-track-index="0"></div><div id="bg6" class="clip bg bg-gold" data-start="38.08" data-duration="3.4" data-track-index="0"></div><div id="bg7" class="clip bg bg-recess" data-start="41.48" data-duration="5.3" data-track-index="0"></div><div id="bg8" class="clip bg bg-verdict" data-start="46.78" data-duration="19.16" data-track-index="0"></div>
+<div class="orb" id="o1" style="left:-200px;top:260px"></div><div class="orb" id="o2" style="left:600px;top:1000px"></div>
+<div class="beam" data-layout-allow-overflow id="b1" style="left:100px"></div><div class="beam" data-layout-allow-overflow id="b2" style="left:700px"></div>
+<div id="glow"></div>
+<div id="head">INTERNATIONAL COURT OF SELECTIVE MEMORY</div>
+<div id="tag0" class="clip tagc" data-start="0.0" data-duration="14.28" data-track-index="3"><div class="tag t-chorus"><div class="sub">Exhibit A</div><div class="nm"><span class="fl">🪞</span> THE MIRROR</div><div class="ul"></div></div></div><div id="tag1" class="clip tagc" data-start="14.28" data-duration="7.9" data-track-index="3"><div class="tag t-gold"><div class="sub">Called to the stand</div><div class="nm"><span class="fl">🇬🇧</span> BRITAIN</div><div class="ul"></div></div></div><div id="tag2" class="clip tagc" data-start="22.18" data-duration="3.9" data-track-index="3"><div class="tag t-gold"><div class="sub">Called to the stand</div><div class="nm"><span class="fl">🇪🇸</span> SPAIN</div><div class="ul"></div></div></div><div id="tag3" class="clip tagc" data-start="26.08" data-duration="4.2" data-track-index="3"><div class="tag t-grey"><div class="sub">Called to the stand</div><div class="nm"><span class="fl">🇩🇪</span> GERMANY</div><div class="ul"></div></div></div><div id="tag4" class="clip tagc" data-start="30.28" data-duration="3.9" data-track-index="3"><div class="tag t-gold"><div class="sub">Called to the stand</div><div class="nm"><span class="fl">🇹🇷</span> TURKEY</div><div class="ul"></div></div></div><div id="tag5" class="clip tagc" data-start="34.18" data-duration="3.9" data-track-index="3"><div class="tag t-gold"><div class="sub">Called to the stand</div><div class="nm"><span class="fl">🏛️</span> ARAB GOVERNMENTS</div><div class="ul"></div></div></div><div id="tag6" class="clip tagc" data-start="38.08" data-duration="3.4" data-track-index="3"><div class="tag t-gold"><div class="sub">Called to the stand</div><div class="nm"><span class="fl">🇫🇷</span> FRANCE</div><div class="ul"></div></div></div><div id="tag7" class="clip tagc" data-start="41.48" data-duration="5.3" data-track-index="3"><div class="tag t-recess"><div class="sub">The court needs coffee</div><div class="nm"><span class="fl">☕</span> RECESS</div><div class="ul"></div></div></div><div id="tag8" class="clip tagc" data-start="46.78" data-duration="19.16" data-track-index="3"><div class="tag t-verdict"><div class="sub">Out of mirrors</div><div class="nm"><span class="fl">🔨</span> THE PROSECUTION RESTS</div><div class="ul"></div></div></div>
+<div id="p0" class="clip pop" style="left:90px" data-start="56.28" data-duration="0.8" data-track-index="5"><div class="ring"></div><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><div class="pi emo" style="font-size:260px">🪞</div></div>
+<div id="p1" class="clip pop" style="left:90px" data-start="8.08" data-duration="2.4" data-track-index="5"><div class="ring"></div><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><div class="pi emo" style="font-size:260px">👉</div></div>
+<div id="p2" class="clip pop" style="left:-248px" data-start="14.58" data-duration="7.6" data-track-index="5"><div class="ring"></div><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><div class="pi emo" style="font-size:165px">🇮🇳</div></div>
+<div id="p3" class="clip pop" style="left:-22px" data-start="17.08" data-duration="5.1" data-track-index="5"><div class="ring"></div><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><div class="pi emo" style="font-size:165px">🇰🇪</div></div>
+<div id="p4" class="clip pop" style="left:202px" data-start="18.68" data-duration="3.5" data-track-index="5"><div class="ring"></div><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><div class="pi emo" style="font-size:165px">🇮🇪</div></div>
+<div id="p5" class="clip pop" style="left:428px" data-start="20.72" data-duration="1.46" data-track-index="5"><div class="ring"></div><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><div class="pi emo" style="font-size:165px">🇧🇩</div></div>
+<div id="p6" class="clip pop" style="left:90px" data-start="24.12" data-duration="1.96" data-track-index="5"><div class="ring"></div><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><div class="pi txt stamp" style="font-size:150px">1492</div></div>
+<div id="p7" class="clip pop" style="left:90px" data-start="26.38" data-duration="2.4" data-track-index="5"><div class="ring"></div><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><div class="pi txt tw" style="font-size:108px"><span class=num>0</span></div></div>
+<div id="p8" class="clip pop" style="left:90px" data-start="33.06" data-duration="1.12" data-track-index="5"><div class="ring"></div><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><div class="pi emo" style="font-size:260px">🇦🇲</div></div>
+<div id="p9" class="clip pop" style="left:-60px" data-start="34.48" data-duration="3.6" data-track-index="5"><div class="ring"></div><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><div class="pi emo" style="font-size:210px">🇮🇶</div></div>
+<div id="p10" class="clip pop" style="left:240px" data-start="36.38" data-duration="1.7" data-track-index="5"><div class="ring"></div><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><div class="pi emo" style="font-size:210px">🇪🇬</div></div>
+<div id="p11" class="clip pop" style="left:90px" data-start="38.98" data-duration="2.4" data-track-index="5"><div class="ring"></div><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><div class="pi emo" style="font-size:260px">🥖</div></div>
+<div id="p12" class="clip pop" style="left:-210px" data-start="41.78" data-duration="2.6" data-track-index="5"><div class="ring"></div><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><div class="pi emo" style="font-size:210px">🇨🇳</div></div>
+<div id="p13" class="clip pop" style="left:90px" data-start="42.6" data-duration="1.78" data-track-index="5"><div class="ring"></div><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><div class="pi emo" style="font-size:210px">🇨🇦</div></div>
+<div id="p14" class="clip pop" style="left:390px" data-start="43.74" data-duration="0.8" data-track-index="5"><div class="ring"></div><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><div class="pi emo" style="font-size:210px">🇿🇦</div></div>
+<div id="p15" class="clip pop" style="left:90px" data-start="46.24" data-duration="0.8" data-track-index="5"><div class="ring"></div><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><div class="pi emo" style="font-size:260px">☕</div></div>
+<div id="p16" class="clip pop" style="left:90px" data-start="51.96" data-duration="2.4" data-track-index="5"><div class="ring"></div><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><div class="pi emo" style="font-size:260px">🔨</div></div>
+<div id="p17" class="clip pop" style="left:90px" data-start="62.5" data-duration="2.4" data-track-index="5"><div class="ring"></div><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><i class="dot" style="left:450px;top:150px"></i><div class="pi emo" style="font-size:260px">🧼</div></div>
+<div id="l5" class="clip lc" data-start="0.0" data-duration="6.68" data-track-index="2"><div class="ln k-chorus" style="font-size:85px"><span class="w">Tell</span> <span class="w">me</span> <span class="w">what</span> <span class="w">you</span> <span class="w">accuse</span> <span class="w">the</span> <span class="w">Jews</span> <span class="w">of,</span> <span class="w">and</span> <span class="w">I&#x27;ll</span> <span class="w">tell</span> <span class="w">you</span> <span class="w">what</span> <span class="w">you&#x27;re</span> <span class="w hl">guilty</span> <span class="w">of.</span> </div></div>
+<div id="l6" class="clip lc" data-start="6.68" data-duration="1.8" data-track-index="2"><div class="ln k-chorus" style="font-size:150px"><span class="w">You</span> <span class="w">point</span> <span class="w">your</span> <span class="w">finger.</span> </div></div>
+<div id="l7" class="clip lc" data-start="8.48" data-duration="2.5" data-track-index="2"><div class="ln k-chorus" style="font-size:150px"><span class="w">Make</span> <span class="w">your</span> <span class="w">claim.</span> </div></div>
+<div id="l8" class="clip lc" data-start="10.98" data-duration="3.3" data-track-index="2"><div class="ln k-chorus" style="font-size:112px"><span class="w">But</span> <span class="w">your</span> <span class="w">own</span> <span class="w hl">history</span> <span class="w">says</span> <span class="w">the</span> <span class="w">same.</span> </div></div>
+<div id="l16" class="clip lc" data-start="14.58" data-duration="2.5" data-track-index="2"><div class="ln k-gold" style="font-size:148px"><span class="w">India</span> <span class="w">remembers.</span> </div></div>
+<div id="l17" class="clip lc" data-start="17.08" data-duration="1.6" data-track-index="2"><div class="ln k-gold" style="font-size:150px"><span class="w">Kenya</span> <span class="w">does</span> <span class="w">too.</span> </div></div>
+<div id="l18" class="clip lc" data-start="18.68" data-duration="3.5" data-track-index="2"><div class="ln k-gold" style="font-size:112px"><span class="w">Ireland</span> <span class="w">has</span> <span class="w">a</span> <span class="w">story</span> <span class="w">and</span> <span class="w">Bengal</span> <span class="w">has</span> <span class="w">a</span> <span class="w">few.</span> </div></div>
+<div id="l28" class="clip lc" data-start="22.48" data-duration="1.0" data-track-index="2"><div class="ln k-gold" style="font-size:210px"><span class="w">Spain,</span> <span class="w">hola.</span> </div></div>
+<div id="l29" class="clip lc" data-start="23.48" data-duration="0.8" data-track-index="2"><div class="ln k-gold" style="font-size:185px"><span class="w">Remember</span> <span class="w">&#x27;92?</span> </div></div>
+<div id="l30" class="clip lc" data-start="24.28" data-duration="1.8" data-track-index="2"><div class="ln k-gold" style="font-size:150px"><span class="w">Not</span> <span class="w">1940,</span> <span class="w">&#x27;92.</span> </div></div>
+<div id="l39" class="clip lc" data-start="26.38" data-duration="3.9" data-track-index="2"><div class="ln k-grey" style="font-size:92px"><span class="w">Six</span> <span class="w">million</span> <span class="w">Jewish</span> <span class="w">voices</span> <span class="w">silenced</span> <span class="w">by</span> <span class="w">the</span> <span class="w">Nazi</span> <span class="w">killing</span> <span class="w">machine.</span> </div></div>
+<div id="l45" class="clip lc" data-start="30.58" data-duration="2.0" data-track-index="2"><div class="ln k-gold" style="font-size:112px"><span class="w">Turkey,</span> <span class="w">Turkey,</span> <span class="w">come</span> <span class="w">and</span> <span class="w">take</span> <span class="w">the</span> <span class="w">stand.</span> </div></div>
+<div id="l46" class="clip lc" data-start="32.58" data-duration="1.6" data-track-index="2"><div class="ln k-gold" style="font-size:92px"><span class="w">Remember</span> <span class="w">the</span> <span class="w">Armenians</span> <span class="w">driven</span> <span class="w">from</span> <span class="w">their</span> <span class="w">land.</span> </div></div>
+<div id="l56" class="clip lc" data-start="34.48" data-duration="1.9" data-track-index="2"><div class="ln k-gold" style="font-size:112px"><span class="w">Baghdad</span> <span class="w">had</span> <span class="w">its</span> <span class="w">Jewish</span> <span class="w">streets.</span> </div></div>
+<div id="l57" class="clip lc" data-start="36.38" data-duration="1.7" data-track-index="2"><div class="ln k-gold" style="font-size:150px"><span class="w">Cairo</span> <span class="w">had</span> <span class="w">them</span> <span class="w">too.</span> </div></div>
+<div id="l73" class="clip lc" data-start="38.38" data-duration="0.6" data-track-index="2"><div class="ln k-gold" style="font-size:210px"><span class="w">France.</span> </div></div>
+<div id="l74" class="clip lc" data-start="38.98" data-duration="0.9" data-track-index="2"><div class="ln k-gold" style="font-size:185px"><span class="w">Bonjour.</span> </div></div>
+<div id="l75" class="clip lc" data-start="39.88" data-duration="1.6" data-track-index="2"><div class="ln k-gold" style="font-size:112px"><span class="w">We</span> <span class="w">haven&#x27;t</span> <span class="w">forgotten</span> <span class="w">you.</span> </div></div>
+<div id="l85" class="clip lc" data-start="41.78" data-duration="0.5" data-track-index="2"><div class="ln k-recess" style="font-size:210px"><span class="w">China?</span> </div></div>
+<div id="l86" class="clip lc" data-start="42.28" data-duration="1.1" data-track-index="2"><div class="ln k-recess" style="font-size:210px"><span class="w">Canada?</span> </div></div>
+<div id="l87" class="clip lc" data-start="43.38" data-duration="1.0" data-track-index="2"><div class="ln k-recess" style="font-size:210px"><span class="w">South</span> <span class="w">Africa?</span> </div></div>
+<div id="l92" class="clip lc" data-start="44.68" data-duration="2.1" data-track-index="2"><div class="ln k-recess" style="font-size:112px"><span class="w">Actually,</span> <span class="w">make</span> <span class="w">it</span> <span class="w">a</span> <span class="w">double.</span> </div></div>
+<div id="l101" class="clip lc" data-start="47.08" data-duration="10.0" data-track-index="2"><div class="ln k-verdict" style="font-size:76px"><span class="w">Ladies</span> <span class="w">and</span> <span class="w">gentlemen,</span> <span class="w">the</span> <span class="w">prosecution</span> <span class="w">has</span> <span class="w">rested,</span> <span class="w">not</span> <span class="w">because</span> <span class="w">they&#x27;ve</span> <span class="w">finished,</span> <span class="w">because</span> <span class="w">they&#x27;ve</span> <span class="w">run</span> <span class="w">out</span> <span class="w">of</span> <span class="w hl">mirrors.</span> </div></div>
+<div id="l102" class="clip lc" data-start="57.38" data-duration="7.06" data-track-index="2"><div class="ln k-verdict" style="font-size:76px"><span class="w">And</span> <span class="w">remember,</span> <span class="w">before</span> <span class="w">you</span> <span class="w">point</span> <span class="w">your</span> <span class="w">finger</span> <span class="w">at</span> <span class="w">the</span> <span class="w">Jews,</span> <span class="w">wash</span> <span class="w">your</span> <span class="w">hands.</span> </div></div>
+<div id="h5" class="clip hc" data-start="0.0" data-duration="6.68" data-track-index="4"><div class="he" dir="rtl" style="font-size:46px">תגידו לי במה אתם מאשימים את היהודים, ואני אגיד לכם במה אתם אשמים.</div></div>
+<div id="h6" class="clip hc" data-start="6.68" data-duration="1.8" data-track-index="4"><div class="he" dir="rtl" style="font-size:54px">אתם מפנים אצבע.</div></div>
+<div id="h7" class="clip hc" data-start="8.48" data-duration="2.5" data-track-index="4"><div class="he" dir="rtl" style="font-size:54px">מעלים טענה.</div></div>
+<div id="h8" class="clip hc" data-start="10.98" data-duration="3.3" data-track-index="4"><div class="he" dir="rtl" style="font-size:54px">אבל ההיסטוריה שלכם אומרת בדיוק אותו דבר.</div></div>
+<div id="h16" class="clip hc" data-start="14.58" data-duration="2.5" data-track-index="4"><div class="he" dir="rtl" style="font-size:54px">הודו זוכרת.</div></div>
+<div id="h17" class="clip hc" data-start="17.08" data-duration="1.6" data-track-index="4"><div class="he" dir="rtl" style="font-size:54px">קניה גם.</div></div>
+<div id="h18" class="clip hc" data-start="18.68" data-duration="3.5" data-track-index="4"><div class="he" dir="rtl" style="font-size:54px">לאירלנד יש סיפור, ולבנגל יש כמה.</div></div>
+<div id="h28" class="clip hc" data-start="22.48" data-duration="1.0" data-track-index="4"><div class="he" dir="rtl" style="font-size:54px">ספרד, הולה.</div></div>
+<div id="h29" class="clip hc" data-start="23.48" data-duration="0.8" data-track-index="4"><div class="he" dir="rtl" style="font-size:54px">זוכרים את ’92?</div></div>
+<div id="h30" class="clip hc" data-start="24.28" data-duration="1.8" data-track-index="4"><div class="he" dir="rtl" style="font-size:54px">לא 1940, ’92.</div></div>
+<div id="h39" class="clip hc" data-start="26.38" data-duration="3.9" data-track-index="4"><div class="he" dir="rtl" style="font-size:46px">שישה מיליון קולות יהודיים הושתקו בידי מכונת ההרג הנאצית.</div></div>
+<div id="h45" class="clip hc" data-start="30.58" data-duration="2.0" data-track-index="4"><div class="he" dir="rtl" style="font-size:54px">טורקיה, טורקיה, עלי לדוכן העדים.</div></div>
+<div id="h46" class="clip hc" data-start="32.58" data-duration="1.6" data-track-index="4"><div class="he" dir="rtl" style="font-size:54px">זכרו את הארמנים שגורשו מאדמתם.</div></div>
+<div id="h56" class="clip hc" data-start="34.48" data-duration="1.9" data-track-index="4"><div class="he" dir="rtl" style="font-size:54px">לבגדאד היו רחובות יהודיים.</div></div>
+<div id="h57" class="clip hc" data-start="36.38" data-duration="1.7" data-track-index="4"><div class="he" dir="rtl" style="font-size:54px">גם לקהיר.</div></div>
+<div id="h73" class="clip hc" data-start="38.38" data-duration="0.6" data-track-index="4"><div class="he" dir="rtl" style="font-size:54px">צרפת.</div></div>
+<div id="h74" class="clip hc" data-start="38.98" data-duration="0.9" data-track-index="4"><div class="he" dir="rtl" style="font-size:54px">בונז׳ור.</div></div>
+<div id="h75" class="clip hc" data-start="39.88" data-duration="1.6" data-track-index="4"><div class="he" dir="rtl" style="font-size:54px">לא שכחנו אתכם.</div></div>
+<div id="h85" class="clip hc" data-start="41.78" data-duration="0.5" data-track-index="4"><div class="he" dir="rtl" style="font-size:54px">סין?</div></div>
+<div id="h86" class="clip hc" data-start="42.28" data-duration="1.1" data-track-index="4"><div class="he" dir="rtl" style="font-size:54px">קנדה?</div></div>
+<div id="h87" class="clip hc" data-start="43.38" data-duration="1.0" data-track-index="4"><div class="he" dir="rtl" style="font-size:54px">דרום אפריקה?</div></div>
+<div id="h92" class="clip hc" data-start="44.68" data-duration="2.1" data-track-index="4"><div class="he" dir="rtl" style="font-size:54px">בעצם, תעשו אותו כפול.</div></div>
+<div id="h101" class="clip hc" data-start="47.08" data-duration="10.0" data-track-index="4"><div class="he" dir="rtl" style="font-size:46px">גבירותיי ורבותיי, התביעה סיימה, לא כי נגמר לה מה לומר, אלא כי נגמרו לה המראות.</div></div>
+<div id="h102" class="clip hc" data-start="57.38" data-duration="7.06" data-track-index="4"><div class="he" dir="rtl" style="font-size:46px">וזכרו: לפני שאתם מפנים אצבע ליהודים, שטפו ידיים.</div></div>
+</div></div>
+<div id="grain"></div><div id="vig"></div>
+<div id="wp1" class="clip wipe" data-start="14.08" data-duration="0.7" data-track-index="9"><div class="wp"></div></div>
+<div id="wp2" class="clip wipe" data-start="21.98" data-duration="0.7" data-track-index="9"><div class="wp"></div></div>
+<div id="wp3" class="clip wipe" data-start="25.88" data-duration="0.7" data-track-index="9"><div class="wp"></div></div>
+<div id="wp4" class="clip wipe" data-start="30.08" data-duration="0.7" data-track-index="9"><div class="wp"></div></div>
+<div id="wp5" class="clip wipe" data-start="33.98" data-duration="0.7" data-track-index="9"><div class="wp"></div></div>
+<div id="wp6" class="clip wipe" data-start="37.88" data-duration="0.7" data-track-index="9"><div class="wp"></div></div>
+<div id="wp7" class="clip wipe" data-start="41.28" data-duration="0.7" data-track-index="9"><div class="wp"></div></div>
+<div id="wp8" class="clip wipe" data-start="44.18" data-duration="0.7" data-track-index="9"><div class="wp"></div></div>
+<div id="wp9" class="clip wipe" data-start="46.58" data-duration="0.7" data-track-index="9"><div class="wp"></div></div>
+<div id="wp10" class="clip wipe" data-start="56.88" data-duration="0.7" data-track-index="9"><div class="wp"></div></div>
+<div id="card" class="clip cardc" data-start="64.44" data-duration="1.5" data-track-index="8"><div class="cardi"><div class="cem">🔨</div><div class="ct">COURT ADJOURNED</div><div class="cs">Wash your hands.</div></div></div>
+<div id="bar"></div><div id="fill"></div>
+<audio id="song" src="assets/song.m4a" data-start="0" data-duration="65.94" data-volume="1"></audio>
+</div>
+<script>
+const tl=gsap.timeline({paused:true});
+const ENV=[0.23, 0.23, 0.31, 0.27, 0.63, 0.51, 0.14, 0.61, 0.53, 0.65, 0.44, 0.49, 0.53, 0.57, 0.56, 0.55, 0.43, 0.22, 0.33, 0.58, 0.64, 0.55, 0.61, 0.53, 0.52, 0.52, 0.65, 0.45, 0.57, 0.52, 0.45, 0.64, 0.48, 0.33, 0.32, 0.25, 0.44, 0.45, 0.5, 0.39, 0.7, 0.49, 0.4, 0.16, 0.32, 0.42, 0.51, 0.37, 0.43, 0.66, 0.54, 0.41, 0.37, 0.42, 0.42, 0.44, 0.47, 0.53, 0.63, 0.52, 0.33, 0.43, 0.3, 0.74, 0.52, 0.72, 0.6, 0.56, 0.71, 0.62, 0.73, 0.12, 0.23, 0.47, 0.44, 0.46, 0.51, 0.64, 0.59, 0.47, 0.64, 0.71, 0.7, 0.47, 0.57, 0.46, 0.62, 0.74, 0.47, 0.67, 0.71, 0.75, 0.5, 0.61, 0.43, 0.55, 0.74, 0.46, 0.6, 0.72, 0.75, 0.58, 0.6, 0.46, 0.39, 0.76, 0.53, 0.55, 0.73, 0.73, 0.34, 0.77, 0.62, 0.71, 0.6, 0.35, 0.62, 0.7, 0.65, 0.3, 0.4, 0.57, 0.58, 0.54, 0.34, 0.45, 0.66, 0.64, 0.12, 0.31, 0.44, 0.78, 0.52, 0.76, 0.56, 0.7, 0.76, 0.54, 0.74, 0.73, 0.78, 0.6, 0.68, 0.58, 0.6, 0.75, 0.47, 0.78, 0.76, 0.81, 0.53, 0.7, 0.77, 0.57, 0.87, 0.66, 0.82, 0.78, 0.6, 0.52, 0.43, 0.59, 0.62, 0.83, 0.66, 0.81, 0.76, 0.78, 0.71, 0.64, 0.67, 0.62, 0.64, 0.63, 0.66, 0.83, 0.63, 0.81, 0.74, 0.76, 0.78, 0.67, 0.8, 0.74, 0.85, 0.77, 0.86, 0.71, 0.76, 0.83, 0.69, 0.86, 0.91, 0.79, 0.49, 0.63, 0.78, 0.85, 0.86, 0.67, 0.64, 0.78, 0.55, 0.61, 0.57, 0.49, 0.74, 0.0, 0.0, 0.55, 0.57, 0.4, 0.26, 0.25, 0.51, 0.6, 0.66, 0.71, 0.72, 0.6, 0.65, 0.49, 0.08, 0.52, 0.33, 0.24, 0.0, 0.28, 0.61, 0.7, 0.41, 0.6, 0.83, 0.7, 0.83, 0.8, 0.82, 0.82, 0.81, 0.81, 0.79, 0.79, 0.79, 0.86, 0.82, 0.77, 0.77, 0.83, 0.81, 0.74, 0.64, 0.83, 0.84, 0.89, 0.74, 0.77, 0.83, 0.84, 0.82, 0.81, 0.89, 0.75, 0.82, 0.62, 0.87, 0.84, 0.83, 0.77, 0.81, 0.81, 0.89, 0.83, 0.68, 0.74, 0.92, 0.86, 0.8, 0.85, 0.96, 0.94, 0.88, 0.86, 0.93, 0.97, 0.79, 0.7, 0.75, 0.84, 0.82, 0.95, 0.93, 0.95, 0.9, 0.82, 0.92, 0.83, 0.97, 0.86, 0.97, 0.93, 0.96, 0.89, 0.93, 0.94, 0.9, 0.93, 0.92, 0.94, 1.0, 0.97, 0.97, 0.92, 0.88, 0.84, 0.62, 0.71, 0.79, 0.79, 0.82, 0.8, 0.74, 0.69, 0.49, 0.35, 0.1, 0.66, 0.6, 0.37, 0.13];
+function ln(k,offs,a,kind,hook){
+  const ws=document.querySelectorAll("#l"+k+" .w");
+  ws.forEach((w,i)=>{
+    const rot=((i*37)%7-3)*(hook?3.2:1.6);
+    const big=hook?1.7:1;
+    if(kind==="grey") tl.fromTo(w,{opacity:0,y:10},{opacity:1,y:0,duration:0.5,ease:"power2.out"},a+offs[i]);
+    else tl.fromTo(w,{opacity:0,y:(i%2?-1:1)*50,scale:0.7*big,rotation:rot},{opacity:1,y:0,scale:1,rotation:0,duration:0.3,ease:"back.out(2)"},a+offs[i]);
+  });
+}
+function heb(k,off){
+  const el=document.querySelector("#h"+k+" .he");
+  const a=parseFloat(document.querySelector("#h"+k).dataset.start);
+  tl.fromTo(el,{opacity:0,y:18},{opacity:1,y:0,duration:0.35,ease:"power2.out"},a+off);
+}
+function pop(k,t,d,kd){
+  const root=document.querySelector("#p"+k);
+  const el=root.querySelector(".pi"),ring=root.querySelector(".ring"),dots=root.querySelectorAll(".dot");
+  if(kd==="t") tl.fromTo(el,{scale:3,rotation:-14,opacity:0},{scale:1,rotation:-6,opacity:1,duration:0.28,ease:"power4.in"},t);
+  else tl.fromTo(el,{scale:0,rotation:-16,opacity:0},{scale:1,rotation:0,opacity:1,duration:0.45,ease:"back.out(2.6)"},t);
+  tl.fromTo(ring,{scale:0.3,opacity:0.9},{scale:2.8,opacity:0,duration:0.7,ease:"power2.out"},t);
+  dots.forEach((dt,i)=>{const ang=i*Math.PI/4+0.3;tl.fromTo(dt,{x:0,y:0,opacity:1,scale:1},{x:Math.cos(ang)*230,y:Math.sin(ang)*230,opacity:0,scale:0.2,duration:0.7,ease:"power2.out"},t);});
+  tl.to(el,{y:-14,duration:0.7,yoyo:true,repeat:1,ease:"sine.inOut"},t+0.45);
+  tl.to(el,{scale:0.4,opacity:0,duration:0.25,ease:"power2.in"},t+d-0.27);
+  const num=root.querySelector(".num");
+  if(num){const o={v:0};tl.to(o,{v:6000000,duration:1.6,ease:"power2.out",onUpdate:()=>{num.textContent=Math.round(o.v).toLocaleString("en-US");}},t);}
+}
+function sec(k,a){
+  const t=document.querySelector("#tag"+k+" .nm"),sub=document.querySelector("#tag"+k+" .sub"),ul=document.querySelector("#tag"+k+" .ul");
+  tl.fromTo(t,{scale:1.8,opacity:0,y:-30},{scale:1,opacity:1,y:0,duration:0.45,ease:"back.out(1.8)"},a+0.05);
+  tl.fromTo(sub,{opacity:0,y:-14},{opacity:0.65,y:0,duration:0.4,ease:"power2.out"},a+0.15);
+  tl.fromTo(ul,{scaleX:0},{scaleX:1,duration:0.5,ease:"power3.out"},a+0.25);
+}
+function wipe(k,t){
+  tl.fromTo("#wp"+k+" .wp",{x:-900,skewX:-10},{x:1300,skewX:-10,duration:0.6,ease:"power2.inOut"},t);
+}
+function punch(t){
+  tl.fromTo("#stage",{scale:1.07},{scale:1,duration:0.7,ease:"power3.out"},t);
+}
+function shake(t,a){
+  tl.fromTo("#shake",{x:0,y:0},{x:a,y:-a*0.6,duration:0.04,ease:"none"},t);
+  tl.to("#shake",{x:-a*0.8,y:a*0.5,duration:0.05,ease:"none"},t+0.04);
+  tl.to("#shake",{x:a*0.4,y:-a*0.3,duration:0.05,ease:"none"},t+0.09);
+  tl.to("#shake",{x:0,y:0,duration:0.08,ease:"power2.out"},t+0.14);
+}
+ln(5,[0.3, 0.86, 1.26, 1.58, 1.9, 2.38, 2.58, 3.18, 3.58, 3.9, 4.38, 4.78, 5.18, 5.42, 5.78, 6.42],0.0,"chorus",1);
+ln(6,[0.0, 0.72, 1.12, 1.4],6.68,"chorus",0);
+ln(7,[0.64, 1.12, 1.44],8.48,"chorus",0);
+ln(8,[0.0, 0.16, 0.48, 0.76, 1.6, 2.08, 2.4],10.98,"chorus",0);
+ln(16,[0.0, 1.56],14.58,"gold",0);
+ln(17,[0.0, 0.72, 1.16],17.08,"gold",0);
+ln(18,[0.0, 0.84, 1.08, 1.24, 1.8, 2.04, 2.76, 2.96, 3.16],18.68,"gold",0);
+ln(28,[0.0, 0.32],22.48,"gold",0);
+ln(29,[0.0, 0.64],23.48,"gold",0);
+ln(30,[0.0, 0.72, 1.52],24.28,"gold",0);
+ln(39,[0.0, 0.24, 0.64, 1.08, 1.6, 2.16, 2.32, 2.48, 2.96, 3.36],26.38,"grey",0);
+ln(45,[0.0, 0.52, 1.04, 1.16, 1.32, 1.48, 1.6],30.58,"gold",0);
+ln(46,[0.0, 0.16, 0.48, 0.8, 1.12, 1.44, 1.45],32.58,"gold",0);
+ln(56,[0.0, 0.52, 0.68, 0.96, 1.36],34.48,"gold",0);
+ln(57,[0.0, 0.58, 1.16, 1.4],36.38,"gold",0);
+ln(73,[0.0],38.38,"gold",0);
+ln(74,[0.0],38.98,"gold",0);
+ln(75,[0.0, 0.0, 0.56, 1.4],39.88,"gold",0);
+ln(85,[0.0],41.78,"recess",0);
+ln(86,[0.32],42.28,"recess",0);
+ln(87,[0.0, 0.36],43.38,"recess",0);
+ln(92,[0.0, 0.72, 1.08, 1.28, 1.56],44.68,"recess",0);
+ln(101,[0.0, 1.88, 2.16, 3.12, 3.44, 4.52, 4.88, 5.64, 6.04, 6.44, 6.8, 7.64, 8.08, 8.4, 8.76, 8.96, 9.2],47.08,"verdict",0);
+ln(102,[0.0, 0.24, 1.28, 1.88, 2.24, 2.6, 2.88, 3.56, 3.8, 4.08, 5.12, 5.68, 6.16],57.38,"verdict",0);
+heb(5,0.25);
+heb(6,0);
+heb(7,0.59);
+heb(8,0);
+heb(16,0);
+heb(17,0);
+heb(18,0);
+heb(28,0);
+heb(29,0);
+heb(30,0);
+heb(39,0);
+heb(45,0);
+heb(46,0);
+heb(56,0);
+heb(57,0);
+heb(73,0);
+heb(74,0);
+heb(75,0);
+heb(85,0);
+heb(86,0.27);
+heb(87,0);
+heb(92,0);
+heb(101,0);
+heb(102,0);
+pop(0,56.28,0.8,"e");
+pop(1,8.08,2.4,"e");
+pop(2,14.58,7.6,"e");
+pop(3,17.08,5.1,"e");
+pop(4,18.68,3.5,"e");
+pop(5,20.72,1.46,"e");
+pop(6,24.12,1.96,"t");
+pop(7,26.38,2.4,"tw");
+pop(8,33.06,1.12,"e");
+pop(9,34.48,3.6,"e");
+pop(10,36.38,1.7,"e");
+pop(11,38.98,2.4,"e");
+pop(12,41.78,2.6,"e");
+pop(13,42.6,1.78,"e");
+pop(14,43.74,0.8,"e");
+pop(15,46.24,0.8,"e");
+pop(16,51.96,2.4,"e");
+pop(17,62.5,2.4,"e");
+sec(0,0.0);
+sec(1,14.28);
+sec(2,22.18);
+sec(3,26.08);
+sec(4,30.28);
+sec(5,34.18);
+sec(6,38.08);
+sec(7,41.48);
+sec(8,46.78);
+wipe(1,14.08);punch(14.28);
+wipe(2,21.98);punch(22.18);
+wipe(3,25.88);punch(26.08);
+wipe(4,30.08);punch(30.28);
+wipe(5,33.98);punch(34.18);
+wipe(6,37.88);punch(38.08);
+wipe(7,41.28);punch(41.48);
+wipe(8,44.18);punch(44.38);
+wipe(9,46.58);punch(46.78);
+wipe(10,56.88);punch(57.08);
+const SH=[14.4, 22.3, 24.12, 26.2, 26.38, 30.4, 34.3, 38.2, 41.6, 44.5, 46.9, 51.96, 57.2];
+// avoid overlapping shake tweens: spaced events only
+let lastS=-1;SH.forEach(t=>{if(t-lastS>0.4){shake(t,14);lastS=t;}});
+tl.fromTo("#card .cardi",{scale:0.7,opacity:0},{scale:1,opacity:1,duration:0.5,ease:"back.out(1.8)"},64.44);
+tl.set("#b1",{rotation:18},0);tl.set("#b2",{rotation:18},0);
+tl.fromTo("#b1",{x:-300},{x:1300,duration:65.94,ease:"none"},0);
+tl.fromTo("#b2",{x:-900},{x:700,duration:65.94,ease:"none"},0);
+tl.fromTo("#o1",{x:0,y:0},{x:700,y:500,duration:65.94,ease:"none"},0);
+tl.fromTo("#o2",{x:0,y:0},{x:-700,y:-600,duration:65.94,ease:"none"},0);
+tl.fromTo("#fill",{scaleX:0},{scaleX:1,duration:65.94,ease:"none"},0);
+for(let i=0;i<ENV.length;i++){
+  tl.to("#glow",{opacity:0.08+ENV[i]*0.55,scale:0.85+ENV[i]*0.4,duration:0.2,ease:"none"},i*0.2);
+}
+window.__timelines["short"]=tl;
+</script>
+</body>
+</html>
