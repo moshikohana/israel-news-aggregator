@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="en" data-resolution="portrait">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=1920" />
+<script src="assets/gsap.min.js"></script>
+<style>
+@font-face{font-family:"Inter";font-weight:700;src:url("assets/fonts/Inter-Bold.otf")}
+@font-face{font-family:"Inter";font-weight:600;src:url("assets/fonts/Inter-SemiBold.otf")}
+@font-face{font-family:"Inter Display";font-weight:900;src:url("assets/fonts/InterDisplay-Black.otf")}
+@font-face{font-family:"Liberation Serif";font-weight:700;font-style:normal;src:url("assets/fonts/LiberationSerif-Bold.ttf")}
+@font-face{font-family:"Liberation Serif";font-weight:700;font-style:italic;src:url("assets/fonts/LiberationSerif-BoldItalic.ttf")}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:#070b16}
+#root{position:relative;width:100%;height:100%;overflow:hidden;font-family:"Inter",sans-serif;color:#f5efe0}
+.bg{position:absolute;inset:0}
+.bg-intro{background:radial-gradient(120% 70% at 50% 30%,#1b2a52 0%,#0b1226 55%,#05070f 100%)}
+.bg-gold{background:radial-gradient(110% 70% at 50% 45%,#2a2110 0%,#120e08 60%,#070605 100%)}
+.bg-chorus{background:radial-gradient(120% 75% at 50% 45%,#eaf1fb 0%,#9db6d8 38%,#27395e 80%,#0b1226 100%)}
+.bg-grey{background:radial-gradient(100% 70% at 50% 45%,#2b2b2b 0%,#121212 60%,#050505 100%)}
+.bg-recess{background:radial-gradient(110% 70% at 50% 45%,#3a2415 0%,#1b0f08 60%,#080402 100%)}
+.bg-verdict{background:radial-gradient(120% 75% at 50% 40%,#2b3d6e 0%,#0e1630 60%,#05070f 100%)}
+#glow{position:absolute;left:140px;top:560px;width:800px;height:800px;border-radius:50%;background:radial-gradient(circle,rgba(255,214,120,.55) 0%,rgba(255,214,120,0) 68%);opacity:0}
+#head{position:absolute;top:84px;left:0;width:100%;text-align:center;font-weight:700;font-size:26px;letter-spacing:.34em;opacity:.7}
+.tagc{position:absolute;inset:0}
+.tag{position:absolute;top:150px;left:0;width:100%;text-align:center}
+.tag .sub{font-weight:600;font-size:28px;letter-spacing:.22em;text-transform:uppercase;opacity:.65;margin-bottom:10px}
+.tag .nm{font-family:"Inter Display";font-weight:900;font-size:68px;letter-spacing:.04em;color:#f0c35a}
+.tag.t-chorus .nm{color:#0b1226} .tag.t-chorus .sub{color:#0b1226}
+.tag.t-grey .nm{color:#e8e8e8} .tag.t-intro .nm{color:#f5efe0} .tag.t-verdict .nm{color:#f5efe0;font-size:54px}
+.tag.t-recess .nm{color:#f0c35a}
+.lc{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+.ln{width:920px;text-align:center;line-height:1.08;font-family:"Liberation Serif",serif;font-weight:700;color:#f5efe0}
+.w{display:inline-block;opacity:0}
+.hl{color:#f0c35a;font-style:italic}
+.k-chorus{color:#0b1226;font-family:"Inter Display",sans-serif;font-weight:900;letter-spacing:-.02em;line-height:1.04;-webkit-box-reflect:below 6px linear-gradient(transparent 55%,rgba(255,255,255,.28))}
+.k-chorus .hl{color:#8a5a00;font-style:normal}
+.k-grey{color:#f2f2f2;font-weight:700}
+.k-verdict{color:#f5efe0}
+.k-intro{color:#f5efe0}
+#bar{position:absolute;left:90px;bottom:96px;width:900px;height:6px;border-radius:3px;background:rgba(255,255,255,.18)}
+#fill{position:absolute;left:90px;bottom:96px;width:900px;height:6px;border-radius:3px;background:#f0c35a;transform-origin:0 50%}
+#foot{position:absolute;bottom:120px;left:0;width:100%;text-align:center;font-weight:600;font-size:24px;letter-spacing:.28em;opacity:.55}
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="court" data-start="0" data-duration="298.8" data-width="1080" data-height="1920">
+<div id="bg0" class="clip bg bg-intro" data-start="0" data-duration="20.5" data-track-index="0"></div><div id="bg1" class="clip bg bg-chorus" data-start="20.5" data-duration="23.2" data-track-index="0"></div><div id="bg2" class="clip bg bg-gold" data-start="43.7" data-duration="33.3" data-track-index="0"></div><div id="bg3" class="clip bg bg-chorus" data-start="77.0" data-duration="14.4" data-track-index="0"></div><div id="bg4" class="clip bg bg-gold" data-start="91.4" data-duration="18.5" data-track-index="0"></div><div id="bg5" class="clip bg bg-grey" data-start="109.9" data-duration="14.1" data-track-index="0"></div><div id="bg6" class="clip bg bg-chorus" data-start="124.0" data-duration="14.7" data-track-index="0"></div><div id="bg7" class="clip bg bg-gold" data-start="138.7" data-duration="17.9" data-track-index="0"></div><div id="bg8" class="clip bg bg-gold" data-start="156.6" data-duration="21.7" data-track-index="0"></div><div id="bg9" class="clip bg bg-gold" data-start="178.3" data-duration="14.7" data-track-index="0"></div><div id="bg10" class="clip bg bg-chorus" data-start="193.0" data-duration="14.9" data-track-index="0"></div><div id="bg11" class="clip bg bg-gold" data-start="207.9" data-duration="22.9" data-track-index="0"></div><div id="bg12" class="clip bg bg-recess" data-start="230.8" data-duration="12.9" data-track-index="0"></div><div id="bg13" class="clip bg bg-chorus" data-start="243.7" data-duration="25.7" data-track-index="0"></div><div id="bg14" class="clip bg bg-verdict" data-start="269.4" data-duration="17.5" data-track-index="0"></div><div id="bg15" class="clip bg bg-chorus" data-start="286.9" data-duration="11.9" data-track-index="0"></div>
+<div id="glow"></div>
+<div id="head">INTERNATIONAL COURT OF SELECTIVE MEMORY</div>
+<div id="tag0" class="clip tagc" data-start="0" data-duration="20.5" data-track-index="3"><div class="tag t-intro"><div class="sub">All rise</div><div class="nm">IN SESSION</div></div></div><div id="tag1" class="clip tagc" data-start="20.5" data-duration="23.2" data-track-index="3"><div class="tag t-chorus"><div class="sub">Exhibit A</div><div class="nm">THE MIRROR</div></div></div><div id="tag2" class="clip tagc" data-start="43.7" data-duration="33.3" data-track-index="3"><div class="tag t-gold"><div class="sub">Called to the stand</div><div class="nm">BRITAIN</div></div></div><div id="tag3" class="clip tagc" data-start="77.0" data-duration="14.4" data-track-index="3"><div class="tag t-chorus"><div class="sub">Exhibit A</div><div class="nm">THE MIRROR</div></div></div><div id="tag4" class="clip tagc" data-start="91.4" data-duration="18.5" data-track-index="3"><div class="tag t-gold"><div class="sub">Called to the stand</div><div class="nm">SPAIN</div></div></div><div id="tag5" class="clip tagc" data-start="109.9" data-duration="14.1" data-track-index="3"><div class="tag t-grey"><div class="sub">Called to the stand</div><div class="nm">GERMANY</div></div></div><div id="tag6" class="clip tagc" data-start="124.0" data-duration="14.7" data-track-index="3"><div class="tag t-chorus"><div class="sub">Exhibit A</div><div class="nm">THE MIRROR</div></div></div><div id="tag7" class="clip tagc" data-start="138.7" data-duration="17.9" data-track-index="3"><div class="tag t-gold"><div class="sub">Called to the stand</div><div class="nm">TURKEY</div></div></div><div id="tag8" class="clip tagc" data-start="156.6" data-duration="21.7" data-track-index="3"><div class="tag t-gold"><div class="sub">Called to the stand</div><div class="nm">ARAB GOVERNMENTS</div></div></div><div id="tag9" class="clip tagc" data-start="178.3" data-duration="14.7" data-track-index="3"><div class="tag t-gold"><div class="sub">Ancient lands</div><div class="nm">KURDS &amp; AMAZIGH</div></div></div><div id="tag10" class="clip tagc" data-start="193.0" data-duration="14.9" data-track-index="3"><div class="tag t-chorus"><div class="sub">Exhibit A</div><div class="nm">THE MIRROR</div></div></div><div id="tag11" class="clip tagc" data-start="207.9" data-duration="22.9" data-track-index="3"><div class="tag t-gold"><div class="sub">Called to the stand</div><div class="nm">FRANCE</div></div></div><div id="tag12" class="clip tagc" data-start="230.8" data-duration="12.9" data-track-index="3"><div class="tag t-recess"><div class="sub">The court needs coffee</div><div class="nm">RECESS</div></div></div><div id="tag13" class="clip tagc" data-start="243.7" data-duration="25.7" data-track-index="3"><div class="tag t-chorus"><div class="sub">Exhibit A</div><div class="nm">THE MIRROR</div></div></div><div id="tag14" class="clip tagc" data-start="269.4" data-duration="17.5" data-track-index="3"><div class="tag t-verdict"><div class="sub">Out of mirrors</div><div class="nm">THE PROSECUTION RESTS</div></div></div><div id="tag15" class="clip tagc" data-start="286.9" data-duration="11.9" data-track-index="3"><div class="tag t-chorus"><div class="sub">Exhibit A</div><div class="nm">THE MIRROR</div></div></div>
+<div id="l0" class="clip lc" data-start="0.1" data-duration="4.0" data-track-index="2"><div class="ln k-intro" style="font-size:112px"><span class="w">Tell</span> <span class="w">me</span> <span class="w">what</span> <span class="w">you</span> <span class="w">accuse</span> <span class="w">the</span> <span class="w">Jews</span> <span class="w">of.</span> </div></div>
+<div id="l1" class="clip lc" data-start="4.1" data-duration="6.7" data-track-index="2"><div class="ln k-intro" style="font-size:76px"><span class="w">Ladies</span> <span class="w">and</span> <span class="w">gentlemen,</span> <span class="w">welcome</span> <span class="w">to</span> <span class="w">the</span> <span class="w">International</span> <span class="w">Court</span> <span class="w">of</span> <span class="w">Selective</span> <span class="w">Memory.</span> </div></div>
+<div id="l2" class="clip lc" data-start="10.8" data-duration="4.7" data-track-index="2"><div class="ln k-intro" style="font-size:112px"><span class="w">Today&#x27;s</span> <span class="w">defendants,</span> <span class="w">the</span> <span class="w">Jews.</span> </div></div>
+<div id="l3" class="clip lc" data-start="15.5" data-duration="2.2" data-track-index="2"><div class="ln k-intro" style="font-size:150px"><span class="w">Today&#x27;s</span> <span class="w">prosecutors?</span> </div></div>
+<div id="l4" class="clip lc" data-start="17.7" data-duration="2.8" data-track-index="2"><div class="ln k-intro" style="font-size:92px"><span class="w">Well,</span> <span class="w">let&#x27;s</span> <span class="w">have</span> <span class="w">a</span> <span class="w">look</span> <span class="w">at</span> <span class="w">their</span> <span class="w hl">history,</span> <span class="w">shall</span> <span class="w">we?</span> </div></div>
+<div id="l5" class="clip lc" data-start="20.5" data-duration="7.9" data-track-index="2"><div class="ln k-chorus" style="font-size:76px"><span class="w">Tell</span> <span class="w">me</span> <span class="w">what</span> <span class="w">you</span> <span class="w">accuse</span> <span class="w">the</span> <span class="w">Jews</span> <span class="w">of,</span> <span class="w">and</span> <span class="w">I&#x27;ll</span> <span class="w">tell</span> <span class="w">you</span> <span class="w">what</span> <span class="w">you&#x27;re</span> <span class="w hl">guilty</span> <span class="w">of.</span> </div></div>
+<div id="l6" class="clip lc" data-start="28.4" data-duration="1.8" data-track-index="2"><div class="ln k-chorus" style="font-size:150px"><span class="w">You</span> <span class="w">point</span> <span class="w">your</span> <span class="w">finger.</span> </div></div>
+<div id="l7" class="clip lc" data-start="30.2" data-duration="2.5" data-track-index="2"><div class="ln k-chorus" style="font-size:150px"><span class="w">Make</span> <span class="w">your</span> <span class="w">claim.</span> </div></div>
+<div id="l8" class="clip lc" data-start="32.7" data-duration="4.3" data-track-index="2"><div class="ln k-chorus" style="font-size:112px"><span class="w">But</span> <span class="w">your</span> <span class="w">own</span> <span class="w hl">history</span> <span class="w">says</span> <span class="w">the</span> <span class="w">same.</span> </div></div>
+<div id="l9" class="clip lc" data-start="37.0" data-duration="1.0" data-track-index="2"><div class="ln k-chorus" style="font-size:210px"><span class="w">Colonizers.</span> </div></div>
+<div id="l10" class="clip lc" data-start="38.0" data-duration="0.8" data-track-index="2"><div class="ln k-chorus" style="font-size:210px"><span class="w">Occupiers.</span> </div></div>
+<div id="l11" class="clip lc" data-start="38.8" data-duration="1.9" data-track-index="2"><div class="ln k-chorus" style="font-size:112px"><span class="w">Land</span> <span class="w">grabbers.</span> <span class="w">Empire</span> <span class="w">builders.</span> </div></div>
+<div id="l12" class="clip lc" data-start="40.7" data-duration="3.0" data-track-index="2"><div class="ln k-chorus" style="font-size:92px"><span class="w">Funny</span> <span class="w">how</span> <span class="w">you</span> <span class="w">turn</span> <span class="w">away</span> <span class="w">when</span> <span class="w">the</span> <span class="w hl">mirror</span> <span class="w">faces</span> <span class="w">you</span> <span class="w">today.</span> </div></div>
+<div id="l13" class="clip lc" data-start="43.7" data-duration="2.7" data-track-index="2"><div class="ln k-gold" style="font-size:112px"><span class="w">Britain,</span> <span class="w">Britain,</span> <span class="w">let&#x27;s</span> <span class="w">begin</span> <span class="w">with</span> <span class="w">you.</span> </div></div>
+<div id="l14" class="clip lc" data-start="46.4" data-duration="2.6" data-track-index="2"><div class="ln k-gold" style="font-size:150px"><span class="w">You</span> <span class="w">say</span> <span class="w">we&#x27;re</span> <span class="w">occupiers?</span> </div></div>
+<div id="l15" class="clip lc" data-start="49.0" data-duration="1.7" data-track-index="2"><div class="ln k-gold" style="font-size:150px"><span class="w">Well,</span> <span class="w">how</span> <span class="w">do</span> <span class="w">you</span> <span class="w">do?</span> </div></div>
+<div id="l16" class="clip lc" data-start="50.7" data-duration="2.5" data-track-index="2"><div class="ln k-gold" style="font-size:150px"><span class="w">India</span> <span class="w">remembers.</span> </div></div>
+<div id="l17" class="clip lc" data-start="53.2" data-duration="1.6" data-track-index="2"><div class="ln k-gold" style="font-size:150px"><span class="w">Kenya</span> <span class="w">does</span> <span class="w">too.</span> </div></div>
+<div id="l18" class="clip lc" data-start="54.8" data-duration="3.5" data-track-index="2"><div class="ln k-gold" style="font-size:112px"><span class="w">Ireland</span> <span class="w">has</span> <span class="w">a</span> <span class="w">story</span> <span class="w">and</span> <span class="w">Bengal</span> <span class="w">has</span> <span class="w">a</span> <span class="w">few.</span> </div></div>
+<div id="l19" class="clip lc" data-start="58.3" data-duration="3.7" data-track-index="2"><div class="ln k-gold" style="font-size:92px"><span class="w">You</span> <span class="w">sailed</span> <span class="w">around</span> <span class="w">the</span> <span class="w">world,</span> <span class="w">put</span> <span class="w">your</span> <span class="w">flag</span> <span class="w">on</span> <span class="w">every</span> <span class="w">shore.</span> </div></div>
+<div id="l20" class="clip lc" data-start="62.0" data-duration="5.3" data-track-index="2"><div class="ln k-gold" style="font-size:76px"><span class="w">Saw</span> <span class="w">somebody</span> <span class="w">else&#x27;s</span> <span class="w">land</span> <span class="w">and</span> <span class="w">said,</span> <span class="w">&quot;We&#x27;ll</span> <span class="w">have</span> <span class="w">that</span> <span class="w">and</span> <span class="w">more.&quot;</span> <span class="w">And</span> <span class="w">now</span> <span class="w">you</span> <span class="w">blame</span> <span class="w">the</span> <span class="w">Jews?</span> </div></div>
+<div id="l21" class="clip lc" data-start="67.3" data-duration="1.8" data-track-index="2"><div class="ln k-gold" style="font-size:112px"><span class="w">Oh,</span> <span class="w">darling,</span> <span class="w">that&#x27;s</span> <span class="w">adorable.</span> </div></div>
+<div id="l22" class="clip lc" data-start="69.1" data-duration="4.4" data-track-index="2"><div class="ln k-gold" style="font-size:92px"><span class="w">The</span> <span class="w hl">mirror&#x27;s</span> <span class="w">right</span> <span class="w">in</span> <span class="w">front</span> <span class="w">of</span> <span class="w">you,</span> <span class="w">but</span> <span class="w">looking</span> <span class="w">is</span> <span class="w">unbearable.</span> </div></div>
+<div id="l23" class="clip lc" data-start="73.5" data-duration="3.5" data-track-index="2"><div class="ln k-gold" style="font-size:150px"><span class="w">da</span> <span class="w">·</span> <span class="w">da</span> <span class="w">·</span> <span class="w">da</span> <span class="w">·</span> <span class="w">da</span> <span class="w">·</span> <span class="w">da</span> </div></div>
+<div id="l24" class="clip lc" data-start="77.0" data-duration="6.1" data-track-index="2"><div class="ln k-chorus" style="font-size:76px"><span class="w">Tell</span> <span class="w">me</span> <span class="w">what</span> <span class="w">you</span> <span class="w">accuse</span> <span class="w">the</span> <span class="w">Jews</span> <span class="w">of,</span> <span class="w">and</span> <span class="w">I&#x27;ll</span> <span class="w">tell</span> <span class="w">you</span> <span class="w">what</span> <span class="w">you&#x27;re</span> <span class="w hl">guilty</span> <span class="w">of.</span> </div></div>
+<div id="l25" class="clip lc" data-start="83.1" data-duration="2.4" data-track-index="2"><div class="ln k-chorus" style="font-size:112px"><span class="w">You</span> <span class="w">point</span> <span class="w">your</span> <span class="w">finger.</span> <span class="w">Point</span> <span class="w">your</span> <span class="w">finger.</span> </div></div>
+<div id="l26" class="clip lc" data-start="85.5" data-duration="1.8" data-track-index="2"><div class="ln k-chorus" style="font-size:112px"><span class="w">Make</span> <span class="w">your</span> <span class="w">claim.</span> <span class="w">Make</span> <span class="w">your</span> <span class="w">claim.</span> </div></div>
+<div id="l27" class="clip lc" data-start="87.3" data-duration="4.1" data-track-index="2"><div class="ln k-chorus" style="font-size:112px"><span class="w">But</span> <span class="w">your</span> <span class="w">own</span> <span class="w hl">history</span> <span class="w">says</span> <span class="w">the</span> <span class="w">same.</span> </div></div>
+<div id="l28" class="clip lc" data-start="91.4" data-duration="1.0" data-track-index="2"><div class="ln k-gold" style="font-size:210px"><span class="w">Spain,</span> <span class="w">hola.</span> </div></div>
+<div id="l29" class="clip lc" data-start="92.4" data-duration="0.8" data-track-index="2"><div class="ln k-gold" style="font-size:210px"><span class="w">Remember</span> <span class="w">&#x27;92?</span> </div></div>
+<div id="l30" class="clip lc" data-start="93.2" data-duration="1.8" data-track-index="2"><div class="ln k-gold" style="font-size:150px"><span class="w">Not</span> <span class="w">1940,</span> <span class="w">&#x27;92.</span> </div></div>
+<div id="l31" class="clip lc" data-start="95.0" data-duration="1.8" data-track-index="2"><div class="ln k-gold" style="font-size:112px"><span class="w">Convert</span> <span class="w">or</span> <span class="w">leave</span> <span class="w">the</span> <span class="w">kingdom.</span> </div></div>
+<div id="l32" class="clip lc" data-start="96.8" data-duration="1.6" data-track-index="2"><div class="ln k-gold" style="font-size:112px"><span class="w">The</span> <span class="w">Jews</span> <span class="w">were</span> <span class="w">shown</span> <span class="w">the</span> <span class="w">door.</span> </div></div>
+<div id="l33" class="clip lc" data-start="98.4" data-duration="3.7" data-track-index="2"><div class="ln k-gold" style="font-size:92px"><span class="w">Then</span> <span class="w">you</span> <span class="w">sailed</span> <span class="w">across</span> <span class="w">the</span> <span class="w">ocean</span> <span class="w">looking</span> <span class="w">for</span> <span class="w">some</span> <span class="w">more.</span> </div></div>
+<div id="l34" class="clip lc" data-start="102.1" data-duration="3.6" data-track-index="2"><div class="ln k-gold" style="font-size:92px"><span class="w">And</span> <span class="w">now</span> <span class="w">you</span> <span class="w">blame</span> <span class="w">the</span> <span class="w">Jews</span> <span class="w">for</span> <span class="w">taking</span> <span class="w">people&#x27;s</span> <span class="w">land.</span> </div></div>
+<div id="l35" class="clip lc" data-start="105.7" data-duration="1.8" data-track-index="2"><div class="ln k-gold" style="font-size:112px"><span class="w">There&#x27;s</span> <span class="w">a</span> <span class="w hl">mirror</span> <span class="w">right</span> <span class="w">beside</span> <span class="w">you.</span> </div></div>
+<div id="l36" class="clip lc" data-start="107.5" data-duration="1.8" data-track-index="2"><div class="ln k-gold" style="font-size:112px"><span class="w">Would</span> <span class="w">you</span> <span class="w">like</span> <span class="w">a</span> <span class="w">helping</span> <span class="w">hand?</span> </div></div>
+<div id="l37" class="clip lc" data-start="109.3" data-duration="1.6" data-track-index="2"><div class="ln k-gold" style="font-size:150px"><span class="w">Germany,</span> <span class="w">oh,</span> <span class="w">Germany.</span> </div></div>
+<div id="l38" class="clip lc" data-start="110.9" data-duration="1.8" data-track-index="2"><div class="ln k-grey" style="font-size:112px"><span class="w">This</span> <span class="w">verse</span> <span class="w">is</span> <span class="w">hard</span> <span class="w">to</span> <span class="w">sing.</span> </div></div>
+<div id="l39" class="clip lc" data-start="112.7" data-duration="3.9" data-track-index="2"><div class="ln k-grey" style="font-size:92px"><span class="w">Six</span> <span class="w">million</span> <span class="w">Jewish</span> <span class="w">voices</span> <span class="w">silenced</span> <span class="w">by</span> <span class="w">the</span> <span class="w">Nazi</span> <span class="w">killing</span> <span class="w">machine.</span> </div></div>
+<div id="l40" class="clip lc" data-start="116.6" data-duration="3.6" data-track-index="2"><div class="ln k-grey" style="font-size:92px"><span class="w">No</span> <span class="w">joke</span> <span class="w">about</span> <span class="w">the</span> <span class="w">murdered,</span> <span class="w">no</span> <span class="w">punchline</span> <span class="w">for</span> <span class="w">their</span> <span class="w">pain.</span> </div></div>
+<div id="l41" class="clip lc" data-start="120.2" data-duration="3.8" data-track-index="2"><div class="ln k-grey" style="font-size:92px"><span class="w">But</span> <span class="w">when</span> <span class="w">you</span> <span class="w">accuse</span> <span class="w">the</span> <span class="w">Jews,</span> <span class="w">we</span> <span class="w">remember</span> <span class="w">every</span> <span class="w">name.</span> </div></div>
+<div id="l42" class="clip lc" data-start="124.0" data-duration="6.6" data-track-index="2"><div class="ln k-chorus" style="font-size:76px"><span class="w">Tell</span> <span class="w">me</span> <span class="w">what</span> <span class="w">you</span> <span class="w">accuse</span> <span class="w">the</span> <span class="w">Jews</span> <span class="w">of,</span> <span class="w">and</span> <span class="w">I&#x27;ll</span> <span class="w">tell</span> <span class="w">you</span> <span class="w">what</span> <span class="w">you&#x27;re</span> <span class="w hl">guilty</span> <span class="w">of.</span> </div></div>
+<div id="l43" class="clip lc" data-start="130.6" data-duration="4.0" data-track-index="2"><div class="ln k-chorus" style="font-size:76px"><span class="w">You</span> <span class="w">point</span> <span class="w">your</span> <span class="w">finger.</span> <span class="w">Point</span> <span class="w">your</span> <span class="w">finger.</span> <span class="w">Make</span> <span class="w">your</span> <span class="w">claim.</span> <span class="w">Make</span> <span class="w">your</span> <span class="w">claim.</span> </div></div>
+<div id="l44" class="clip lc" data-start="134.6" data-duration="4.1" data-track-index="2"><div class="ln k-chorus" style="font-size:112px"><span class="w">But</span> <span class="w">your</span> <span class="w">own</span> <span class="w hl">history</span> <span class="w">says</span> <span class="w">the</span> <span class="w">same.</span> </div></div>
+<div id="l45" class="clip lc" data-start="138.7" data-duration="2.0" data-track-index="2"><div class="ln k-gold" style="font-size:112px"><span class="w">Turkey,</span> <span class="w">Turkey,</span> <span class="w">come</span> <span class="w">and</span> <span class="w">take</span> <span class="w">the</span> <span class="w">stand.</span> </div></div>
+<div id="l46" class="clip lc" data-start="140.7" data-duration="1.6" data-track-index="2"><div class="ln k-gold" style="font-size:92px"><span class="w">Remember</span> <span class="w">the</span> <span class="w">Armenians</span> <span class="w">driven</span> <span class="w">from</span> <span class="w">their</span> <span class="w">land.</span> </div></div>
+<div id="l47" class="clip lc" data-start="142.3" data-duration="3.4" data-track-index="2"><div class="ln k-gold" style="font-size:92px"><span class="w">Families</span> <span class="w">through</span> <span class="w">the</span> <span class="w">desert,</span> <span class="w">starvation,</span> <span class="w">death,</span> <span class="w">and</span> <span class="w">pain.</span> </div></div>
+<div id="l48" class="clip lc" data-start="145.7" data-duration="1.8" data-track-index="2"><div class="ln k-gold" style="font-size:150px"><span class="w">Now</span> <span class="w">you</span> <span class="w">accuse</span> <span class="w">the</span> <span class="w">Jews?</span> </div></div>
+<div id="l49" class="clip lc" data-start="147.5" data-duration="1.6" data-track-index="2"><div class="ln k-gold" style="font-size:112px"><span class="w">Shall</span> <span class="w">we</span> <span class="w">read</span> <span class="w">that</span> <span class="w">book</span> <span class="w">again?</span> </div></div>
+<div id="l50" class="clip lc" data-start="149.1" data-duration="2.1" data-track-index="2"><div class="ln k-gold" style="font-size:112px"><span class="w">You</span> <span class="w">say</span> <span class="w">we&#x27;re</span> <span class="w">the</span> <span class="w">occupiers.</span> </div></div>
+<div id="l51" class="clip lc" data-start="151.2" data-duration="2.0" data-track-index="2"><div class="ln k-gold" style="font-size:112px"><span class="w">You</span> <span class="w">say</span> <span class="w">we</span> <span class="w">should</span> <span class="w">be</span> <span class="w">ashamed.</span> </div></div>
+<div id="l52" class="clip lc" data-start="153.2" data-duration="3.4" data-track-index="2"><div class="ln k-gold" style="font-size:92px"><span class="w">The</span> <span class="w hl">mirror&#x27;s</span> <span class="w">right</span> <span class="w">in</span> <span class="w">front</span> <span class="w">of</span> <span class="w">you,</span> <span class="w">but</span> <span class="w">you</span> <span class="w">look</span> <span class="w">the</span> <span class="w">other</span> <span class="w">way.</span> </div></div>
+<div id="l53" class="clip lc" data-start="156.6" data-duration="3.5" data-track-index="2"><div class="ln k-gold" style="font-size:92px"><span class="w">Now,</span> <span class="w">some</span> <span class="w">Arab</span> <span class="w">governments,</span> <span class="w">please</span> <span class="w">come</span> <span class="w">take</span> <span class="w">your</span> <span class="w">seat.</span> </div></div>
+<div id="l54" class="clip lc" data-start="160.1" data-duration="2.2" data-track-index="2"><div class="ln k-gold" style="font-size:112px"><span class="w">You</span> <span class="w">accuse</span> <span class="w">the</span> <span class="w">Jews</span> <span class="w">of</span> <span class="w">displacement.</span> </div></div>
+<div id="l55" class="clip lc" data-start="162.3" data-duration="1.5" data-track-index="2"><div class="ln k-gold" style="font-size:112px"><span class="w">Well,</span> <span class="w">isn&#x27;t</span> <span class="w">that</span> <span class="w">a</span> <span class="w">treat.</span> </div></div>
+<div id="l56" class="clip lc" data-start="163.8" data-duration="1.9" data-track-index="2"><div class="ln k-gold" style="font-size:112px"><span class="w">Baghdad</span> <span class="w">had</span> <span class="w">its</span> <span class="w">Jewish</span> <span class="w">streets.</span> </div></div>
+<div id="l57" class="clip lc" data-start="165.7" data-duration="1.7" data-track-index="2"><div class="ln k-gold" style="font-size:150px"><span class="w">Cairo</span> <span class="w">had</span> <span class="w">them</span> <span class="w">too.</span> </div></div>
+<div id="l58" class="clip lc" data-start="167.4" data-duration="3.8" data-track-index="2"><div class="ln k-gold" style="font-size:92px"><span class="w">Yemen&#x27;s</span> <span class="w">ancient</span> <span class="w">communities,</span> <span class="w">what</span> <span class="w">happened</span> <span class="w">to</span> <span class="w">the</span> <span class="w">Jews?</span> </div></div>
+<div id="l59" class="clip lc" data-start="171.2" data-duration="1.8" data-track-index="2"><div class="ln k-gold" style="font-size:112px"><span class="w">Homes</span> <span class="w">were</span> <span class="w">lost</span> <span class="w">and</span> <span class="w">families</span> <span class="w">fled.</span> </div></div>
+<div id="l60" class="clip lc" data-start="173.0" data-duration="1.6" data-track-index="2"><div class="ln k-gold" style="font-size:112px"><span class="w">Their</span> <span class="w hl">history</span> <span class="w">left</span> <span class="w">behind.</span> </div></div>
+<div id="l61" class="clip lc" data-start="174.6" data-duration="2.0" data-track-index="2"><div class="ln k-gold" style="font-size:112px"><span class="w">Now</span> <span class="w">you</span> <span class="w">say</span> <span class="w">we&#x27;re</span> <span class="w">strangers</span> <span class="w">here.</span> </div></div>
+<div id="l62" class="clip lc" data-start="176.6" data-duration="1.7" data-track-index="2"><div class="ln k-gold" style="font-size:112px"><span class="w">How</span> <span class="w">convenient</span> <span class="w">for</span> <span class="w">your</span> <span class="w">mind.</span> </div></div>
+<div id="l63" class="clip lc" data-start="178.3" data-duration="3.8" data-track-index="2"><div class="ln k-gold" style="font-size:92px"><span class="w">And</span> <span class="w">while</span> <span class="w">we&#x27;re</span> <span class="w">talking</span> <span class="w">ancient</span> <span class="w">lands,</span> <span class="w">let&#x27;s</span> <span class="w">ask</span> <span class="w">the</span> <span class="w">Kurds</span> <span class="w">as</span> <span class="w">well.</span> </div></div>
+<div id="l64" class="clip lc" data-start="182.1" data-duration="3.4" data-track-index="2"><div class="ln k-gold" style="font-size:92px"><span class="w">And</span> <span class="w">the</span> <span class="w">Amazigh</span> <span class="w">of</span> <span class="w">North</span> <span class="w">Africa,</span> <span class="w">they</span> <span class="w">got</span> <span class="w">stories</span> <span class="w">they</span> <span class="w">could</span> <span class="w">tell.</span> </div></div>
+<div id="l65" class="clip lc" data-start="185.5" data-duration="2.0" data-track-index="2"><div class="ln k-gold" style="font-size:112px"><span class="w">You</span> <span class="w">say</span> <span class="w">the</span> <span class="w">Jews</span> <span class="w">don&#x27;t</span> <span class="w">belong</span> <span class="w">here.</span> </div></div>
+<div id="l66" class="clip lc" data-start="187.5" data-duration="1.6" data-track-index="2"><div class="ln k-gold" style="font-size:112px"><span class="w">That&#x27;s</span> <span class="w">an</span> <span class="w">interesting</span> <span class="w">view.</span> </div></div>
+<div id="l67" class="clip lc" data-start="189.1" data-duration="3.9" data-track-index="2"><div class="ln k-gold" style="font-size:92px"><span class="w">Perhaps</span> <span class="w">before</span> <span class="w">you</span> <span class="w">blame</span> <span class="w">us,</span> <span class="w">read</span> <span class="w">a</span> <span class="w hl">history</span> <span class="w">book</span> <span class="w">or</span> <span class="w">two.</span> </div></div>
+<div id="l68" class="clip lc" data-start="193.0" data-duration="6.5" data-track-index="2"><div class="ln k-chorus" style="font-size:76px"><span class="w">Tell</span> <span class="w">me</span> <span class="w">what</span> <span class="w">you</span> <span class="w">accuse</span> <span class="w">the</span> <span class="w">Jews</span> <span class="w">of,</span> <span class="w">and</span> <span class="w">I&#x27;ll</span> <span class="w">tell</span> <span class="w">you</span> <span class="w">what</span> <span class="w">you&#x27;re</span> <span class="w hl">guilty</span> <span class="w">of.</span> </div></div>
+<div id="l69" class="clip lc" data-start="199.5" data-duration="1.7" data-track-index="2"><div class="ln k-chorus" style="font-size:210px"><span class="w">Colonizer.</span> </div></div>
+<div id="l70" class="clip lc" data-start="201.2" data-duration="0.8" data-track-index="2"><div class="ln k-chorus" style="font-size:210px"><span class="w">Occupier.</span> </div></div>
+<div id="l71" class="clip lc" data-start="202.0" data-duration="1.8" data-track-index="2"><div class="ln k-chorus" style="font-size:112px"><span class="w">Land</span> <span class="w">grabber.</span> <span class="w">Empire</span> <span class="w">builder.</span> </div></div>
+<div id="l72" class="clip lc" data-start="203.8" data-duration="4.1" data-track-index="2"><div class="ln k-chorus" style="font-size:76px"><span class="w">You</span> <span class="w">point</span> <span class="w">your</span> <span class="w">finger,</span> <span class="w">make</span> <span class="w">your</span> <span class="w">claim,</span> <span class="w">but</span> <span class="w">your</span> <span class="w">own</span> <span class="w hl">history</span> <span class="w">says</span> <span class="w">the</span> <span class="w">same.</span> </div></div>
+<div id="l73" class="clip lc" data-start="207.9" data-duration="0.6" data-track-index="2"><div class="ln k-gold" style="font-size:210px"><span class="w">France.</span> </div></div>
+<div id="l74" class="clip lc" data-start="208.5" data-duration="0.9" data-track-index="2"><div class="ln k-gold" style="font-size:210px"><span class="w">Bonjour.</span> </div></div>
+<div id="l75" class="clip lc" data-start="209.4" data-duration="1.6" data-track-index="2"><div class="ln k-gold" style="font-size:112px"><span class="w">We</span> <span class="w">haven&#x27;t</span> <span class="w">forgotten</span> <span class="w">you.</span> </div></div>
+<div id="l76" class="clip lc" data-start="211.0" data-duration="4.5" data-track-index="2"><div class="ln k-gold" style="font-size:92px"><span class="w">Algeria</span> <span class="w">remembers</span> <span class="w">what</span> <span class="w">your</span> <span class="w">empire</span> <span class="w">put</span> <span class="w">it</span> <span class="w">through.</span> <span class="w">You</span> <span class="w">took</span> <span class="w">the</span> <span class="w">land.</span> </div></div>
+<div id="l77" class="clip lc" data-start="215.5" data-duration="1.1" data-track-index="2"><div class="ln k-gold" style="font-size:150px"><span class="w">You</span> <span class="w">ruled</span> <span class="w">the</span> <span class="w">people.</span> </div></div>
+<div id="l78" class="clip lc" data-start="216.6" data-duration="1.6" data-track-index="2"><div class="ln k-gold" style="font-size:112px"><span class="w">They</span> <span class="w">fought</span> <span class="w">to</span> <span class="w">break</span> <span class="w">away.</span> </div></div>
+<div id="l79" class="clip lc" data-start="218.2" data-duration="3.8" data-track-index="2"><div class="ln k-gold" style="font-size:92px"><span class="w">And</span> <span class="w">now</span> <span class="w">you</span> <span class="w">blame</span> <span class="w">the</span> <span class="w">Jews</span> <span class="w">for</span> <span class="w">the</span> <span class="w">things</span> <span class="w">you</span> <span class="w">did</span> <span class="w">yesterday.</span> </div></div>
+<div id="l80" class="clip lc" data-start="222.0" data-duration="1.7" data-track-index="2"><div class="ln k-gold" style="font-size:150px"><span class="w">Liberté,</span> <span class="w">égalité.</span> </div></div>
+<div id="l81" class="clip lc" data-start="223.7" data-duration="1.8" data-track-index="2"><div class="ln k-gold" style="font-size:150px"><span class="w">Beautiful</span> <span class="w">words</span> <span class="w">indeed.</span> </div></div>
+<div id="l82" class="clip lc" data-start="225.5" data-duration="4.0" data-track-index="2"><div class="ln k-gold" style="font-size:92px"><span class="w">But</span> <span class="w">where</span> <span class="w">was</span> <span class="w">all</span> <span class="w">that</span> <span class="w">liberty</span> <span class="w">when</span> <span class="w">Algeria</span> <span class="w">was</span> <span class="w">in</span> <span class="w">need?</span> </div></div>
+<div id="l83" class="clip lc" data-start="229.5" data-duration="1.3" data-track-index="2"><div class="ln k-gold" style="font-size:210px"><span class="w">Oh</span> <span class="w">my</span> <span class="w">God.</span> </div></div>
+<div id="l84" class="clip lc" data-start="230.8" data-duration="2.6" data-track-index="2"><div class="ln k-recess" style="font-size:112px"><span class="w">How</span> <span class="w">many</span> <span class="w">countries</span> <span class="w">are</span> <span class="w">left?</span> </div></div>
+<div id="l85" class="clip lc" data-start="233.4" data-duration="0.5" data-track-index="2"><div class="ln k-recess" style="font-size:210px"><span class="w">China?</span> </div></div>
+<div id="l86" class="clip lc" data-start="233.9" data-duration="1.1" data-track-index="2"><div class="ln k-recess" style="font-size:210px"><span class="w">Canada?</span> </div></div>
+<div id="l87" class="clip lc" data-start="235.0" data-duration="1.0" data-track-index="2"><div class="ln k-recess" style="font-size:210px"><span class="w">South</span> <span class="w">Africa?</span> </div></div>
+<div id="l88" class="clip lc" data-start="236.0" data-duration="0.9" data-track-index="2"><div class="ln k-recess" style="font-size:210px"><span class="w">No,</span> <span class="w">no,</span> <span class="w">no.</span> </div></div>
+<div id="l89" class="clip lc" data-start="236.9" data-duration="1.8" data-track-index="2"><div class="ln k-recess" style="font-size:112px"><span class="w">I&#x27;ve</span> <span class="w">only</span> <span class="w">got</span> <span class="w">six</span> <span class="w">minutes.</span> </div></div>
+<div id="l90" class="clip lc" data-start="238.7" data-duration="1.8" data-track-index="2"><div class="ln k-recess" style="font-size:112px"><span class="w">Can</span> <span class="w">somebody</span> <span class="w">bring</span> <span class="w">me</span> <span class="w">a</span> <span class="w">chair?</span> </div></div>
+<div id="l91" class="clip lc" data-start="240.5" data-duration="1.1" data-track-index="2"><div class="ln k-recess" style="font-size:210px"><span class="w">And</span> <span class="w">a</span> <span class="w">coffee.</span> </div></div>
+<div id="l92" class="clip lc" data-start="241.6" data-duration="2.1" data-track-index="2"><div class="ln k-recess" style="font-size:112px"><span class="w">Actually,</span> <span class="w">make</span> <span class="w">it</span> <span class="w">a</span> <span class="w">double.</span> </div></div>
+<div id="l93" class="clip lc" data-start="243.7" data-duration="8.3" data-track-index="2"><div class="ln k-chorus" style="font-size:76px"><span class="w">Tell</span> <span class="w">me</span> <span class="w">what</span> <span class="w">you</span> <span class="w">accuse</span> <span class="w">the</span> <span class="w">Jews</span> <span class="w">of,</span> <span class="w">and</span> <span class="w">I&#x27;ll</span> <span class="w">tell</span> <span class="w">you</span> <span class="w">what</span> <span class="w">you&#x27;re</span> <span class="w hl">guilty</span> <span class="w">of.</span> </div></div>
+<div id="l94" class="clip lc" data-start="252.0" data-duration="1.2" data-track-index="2"><div class="ln k-chorus" style="font-size:150px"><span class="w">You</span> <span class="w">can</span> <span class="w">shout.</span> </div></div>
+<div id="l95" class="clip lc" data-start="253.2" data-duration="2.3" data-track-index="2"><div class="ln k-chorus" style="font-size:150px"><span class="w">And</span> <span class="w">you</span> <span class="w">can</span> <span class="w">blame.</span> </div></div>
+<div id="l96" class="clip lc" data-start="255.5" data-duration="3.8" data-track-index="2"><div class="ln k-chorus" style="font-size:112px"><span class="w">But</span> <span class="w">your</span> <span class="w hl">history</span> <span class="w">remains</span> <span class="w">the</span> <span class="w">same.</span> </div></div>
+<div id="l97" class="clip lc" data-start="259.3" data-duration="1.0" data-track-index="2"><div class="ln k-chorus" style="font-size:210px"><span class="w">Colonizers.</span> </div></div>
+<div id="l98" class="clip lc" data-start="260.3" data-duration="0.8" data-track-index="2"><div class="ln k-chorus" style="font-size:210px"><span class="w">Occupiers.</span> </div></div>
+<div id="l99" class="clip lc" data-start="261.1" data-duration="1.9" data-track-index="2"><div class="ln k-chorus" style="font-size:112px"><span class="w">Land</span> <span class="w">grabbers.</span> <span class="w">Empire</span> <span class="w">builders.</span> </div></div>
+<div id="l100" class="clip lc" data-start="263.0" data-duration="6.4" data-track-index="2"><div class="ln k-chorus" style="font-size:92px"><span class="w">Funny</span> <span class="w">how</span> <span class="w">you</span> <span class="w">turn</span> <span class="w">away</span> <span class="w">when</span> <span class="w">the</span> <span class="w hl">mirror</span> <span class="w">faces</span> <span class="w">you</span> <span class="w">today.</span> </div></div>
+<div id="l101" class="clip lc" data-start="269.4" data-duration="10.0" data-track-index="2"><div class="ln k-verdict" style="font-size:76px"><span class="w">Ladies</span> <span class="w">and</span> <span class="w">gentlemen,</span> <span class="w">the</span> <span class="w">prosecution</span> <span class="w">has</span> <span class="w">rested,</span> <span class="w">not</span> <span class="w">because</span> <span class="w">they&#x27;ve</span> <span class="w">finished,</span> <span class="w">because</span> <span class="w">they&#x27;ve</span> <span class="w">run</span> <span class="w">out</span> <span class="w">of</span> <span class="w hl">mirrors.</span> </div></div>
+<div id="l102" class="clip lc" data-start="279.4" data-duration="7.5" data-track-index="2"><div class="ln k-verdict" style="font-size:76px"><span class="w">And</span> <span class="w">remember,</span> <span class="w">before</span> <span class="w">you</span> <span class="w">point</span> <span class="w">your</span> <span class="w">finger</span> <span class="w">at</span> <span class="w">the</span> <span class="w">Jews,</span> <span class="w">wash</span> <span class="w">your</span> <span class="w">hands.</span> </div></div>
+<div id="l103" class="clip lc" data-start="286.9" data-duration="11.9" data-track-index="2"><div class="ln k-chorus" style="font-size:76px"><span class="w">Tell</span> <span class="w">me</span> <span class="w">what</span> <span class="w">you</span> <span class="w">accuse</span> <span class="w">the</span> <span class="w">Jews</span> <span class="w">of,</span> <span class="w">and</span> <span class="w">I&#x27;ll</span> <span class="w">tell</span> <span class="w">you</span> <span class="w">what</span> <span class="w">you&#x27;re</span> <span class="w hl">guilty</span> <span class="w">of</span> </div></div>
+<div id="bar"></div><div id="fill"></div>
+<audio id="song" src="assets/song.m4a" data-start="0" data-duration="298.8" data-volume="1"></audio>
+</div>
+<script>
+const tl=gsap.timeline({paused:true});
+const ENV=[0.0, 0.27, 0.23, 0.34, 0.32, 0.2, 0.07, 0.0, 0.02, 0.05, 0.16, 0.36, 0.03, 0.23, 0.05, 0.0, 0.21, 0.26, 0.18, 0.11, 0.17, 0.19, 0.3, 0.15, 0.13, 0.06, 0.37, 0.33, 0.3, 0.32, 0.28, 0.28, 0.26, 0.26, 0.44, 0.23, 0.38, 0.16, 0.22, 0.35, 0.2, 0.25, 0.25, 0.14, 0.43, 0.0, 0.15, 0.0, 0.42, 0.0, 0.21, 0.33, 0.23, 0.0, 0.0, 0.19, 0.08, 0.1, 0.12, 0.2, 0.24, 0.22, 0.23, 0.03, 0.38, 0.31, 0.06, 0.23, 0.21, 0.0, 0.46, 0.24, 0.0, 0.14, 0.33, 0.31, 0.0, 0.1, 0.66, 0.57, 0.33, 0.33, 0.0, 0.35, 0.04, 0.31, 0.27, 0.12, 0.01, 0.42, 0.25, 0.0, 0.0, 0.24, 0.4, 0.24, 0.33, 0.07, 0.0, 0.0, 0.06, 0.19, 0.0, 0.0, 0.22, 0.12, 0.31, 0.05, 0.35, 0.22, 0.2, 0.05, 0.5, 0.56, 0.31, 0.13, 0.44, 0.62, 0.56, 0.43, 0.5, 0.38, 0.55, 0.45, 0.58, 0.27, 0.08, 0.38, 0.59, 0.63, 0.43, 0.63, 0.46, 0.54, 0.51, 0.6, 0.48, 0.5, 0.36, 0.56, 0.59, 0.4, 0.24, 0.31, 0.16, 0.51, 0.35, 0.36, 0.24, 0.66, 0.46, 0.3, 0.19, 0.27, 0.51, 0.47, 0.21, 0.35, 0.67, 0.45, 0.4, 0.41, 0.38, 0.46, 0.3, 0.5, 0.48, 0.63, 0.15, 0.44, 0.41, 0.23, 0.66, 0.42, 0.73, 0.43, 0.62, 0.59, 0.71, 0.64, 0.63, 0.75, 0.64, 0.75, 0.56, 0.69, 0.56, 0.44, 0.38, 0.63, 0.63, 0.32, 0.42, 0.52, 0.67, 0.51, 0.44, 0.43, 0.68, 0.67, 0.55, 0.47, 0.51, 0.5, 0.59, 0.47, 0.53, 0.61, 0.58, 0.54, 0.59, 0.49, 0.58, 0.58, 0.45, 0.5, 0.63, 0.73, 0.64, 0.65, 0.6, 0.57, 0.55, 0.55, 0.45, 0.54, 0.64, 0.48, 0.54, 0.54, 0.55, 0.71, 0.55, 0.54, 0.55, 0.57, 0.57, 0.38, 0.5, 0.47, 0.65, 0.38, 0.47, 0.4, 0.18, 0.45, 0.39, 0.36, 0.07, 0.44, 0.3, 0.28, 0.28, 0.3, 0.43, 0.4, 0.52, 0.41, 0.57, 0.48, 0.6, 0.55, 0.6, 0.61, 0.3, 0.44, 0.46, 0.7, 0.63, 0.49, 0.61, 0.55, 0.71, 0.42, 0.45, 0.44, 0.64, 0.56, 0.46, 0.43, 0.7, 0.72, 0.52, 0.55, 0.47, 0.58, 0.6, 0.53, 0.36, 0.7, 0.69, 0.34, 0.36, 0.5, 0.4, 0.57, 0.51, 0.49, 0.71, 0.69, 0.52, 0.39, 0.39, 0.45, 0.61, 0.46, 0.49, 0.67, 0.68, 0.53, 0.44, 0.29, 0.53, 0.68, 0.51, 0.39, 0.68, 0.69, 0.45, 0.47, 0.53, 0.38, 0.66, 0.39, 0.47, 0.69, 0.65, 0.56, 0.62, 0.6, 0.58, 0.76, 0.57, 0.59, 0.68, 0.71, 0.66, 0.44, 0.57, 0.47, 0.47, 0.24, 0.47, 0.59, 0.47, 0.41, 0.49, 0.56, 0.7, 0.76, 0.55, 0.53, 0.63, 0.67, 0.62, 0.45, 0.49, 0.55, 0.42, 0.53, 0.56, 0.46, 0.41, 0.62, 0.56, 0.58, 0.56, 0.51, 0.63, 0.62, 0.64, 0.62, 0.66, 0.69, 0.72, 0.66, 0.68, 0.71, 0.73, 0.72, 0.7, 0.72, 0.73, 0.71, 0.7, 0.77, 0.62, 0.54, 0.59, 0.6, 0.78, 0.6, 0.67, 0.51, 0.66, 0.64, 0.59, 0.76, 0.7, 0.72, 0.67, 0.69, 0.68, 0.63, 0.75, 0.59, 0.71, 0.68, 0.78, 0.6, 0.62, 0.46, 0.61, 0.75, 0.66, 0.69, 0.52, 0.74, 0.65, 0.61, 0.56, 0.5, 0.73, 0.7, 0.67, 0.51, 0.62, 0.69, 0.68, 0.65, 0.63, 0.79, 0.68, 0.75, 0.62, 0.67, 0.72, 0.52, 0.71, 0.63, 0.74, 0.52, 0.73, 0.59, 0.64, 0.73, 0.51, 0.75, 0.55, 0.74, 0.69, 0.76, 0.72, 0.77, 0.73, 0.7, 0.72, 0.62, 0.71, 0.48, 0.41, 0.59, 0.59, 0.53, 0.22, 0.42, 0.47, 0.55, 0.3, 0.27, 0.29, 0.5, 0.46, 0.13, 0.31, 0.32, 0.61, 0.49, 0.52, 0.4, 0.57, 0.66, 0.57, 0.44, 0.46, 0.68, 0.55, 0.36, 0.54, 0.69, 0.73, 0.59, 0.48, 0.36, 0.62, 0.6, 0.43, 0.32, 0.71, 0.67, 0.49, 0.54, 0.56, 0.66, 0.43, 0.29, 0.5, 0.65, 0.72, 0.59, 0.44, 0.44, 0.56, 0.76, 0.44, 0.61, 0.55, 0.68, 0.58, 0.57, 0.3, 0.3, 0.52, 0.37, 0.49, 0.68, 0.67, 0.46, 0.5, 0.45, 0.42, 0.73, 0.58, 0.36, 0.49, 0.54, 0.44, 0.52, 0.32, 0.55, 0.62, 0.42, 0.45, 0.46, 0.62, 0.51, 0.38, 0.72, 0.56, 0.72, 0.67, 0.64, 0.77, 0.71, 0.6, 0.38, 0.69, 0.5, 0.76, 0.64, 0.59, 0.39, 0.7, 0.63, 0.46, 0.71, 0.55, 0.73, 0.61, 0.64, 0.48, 0.62, 0.74, 0.44, 0.64, 0.52, 0.68, 0.56, 0.35, 0.62, 0.68, 0.76, 0.54, 0.55, 0.61, 0.62, 0.66, 0.67, 0.45, 0.76, 0.82, 0.64, 0.73, 0.58, 0.7, 0.66, 0.66, 0.69, 0.77, 0.77, 0.62, 0.69, 0.52, 0.66, 0.69, 0.59, 0.62, 0.74, 0.79, 0.64, 0.78, 0.71, 0.69, 0.71, 0.76, 0.69, 0.55, 0.56, 0.55, 0.5, 0.38, 0.41, 0.48, 0.45, 0.09, 0.2, 0.31, 0.46, 0.08, 0.34, 0.28, 0.54, 0.47, 0.32, 0.25, 0.0, 0.0, 0.52, 0.53, 0.27, 0.57, 0.63, 0.38, 0.51, 0.51, 0.26, 0.41, 0.35, 0.37, 0.5, 0.41, 0.17, 0.0, 0.0, 0.25, 0.31, 0.36, 0.42, 0.58, 0.55, 0.63, 0.43, 0.49, 0.6, 0.59, 0.53, 0.51, 0.66, 0.62, 0.65, 0.55, 0.49, 0.78, 0.47, 0.66, 0.65, 0.74, 0.43, 0.63, 0.66, 0.3, 0.78, 0.5, 0.7, 0.51, 0.56, 0.62, 0.66, 0.71, 0.63, 0.82, 0.72, 0.82, 0.67, 0.66, 0.75, 0.6, 0.67, 0.77, 0.54, 0.45, 0.4, 0.61, 0.66, 0.72, 0.63, 0.71, 0.77, 0.73, 0.62, 0.77, 0.63, 0.62, 0.73, 0.48, 0.77, 0.71, 0.81, 0.7, 0.63, 0.37, 0.55, 0.68, 0.62, 0.65, 0.6, 0.72, 0.64, 0.66, 0.63, 0.58, 0.82, 0.59, 0.75, 0.57, 0.75, 0.73, 0.58, 0.69, 0.61, 0.79, 0.67, 0.75, 0.53, 0.8, 0.74, 0.58, 0.76, 0.55, 0.81, 0.6, 0.76, 0.49, 0.69, 0.7, 0.58, 0.63, 0.67, 0.8, 0.63, 0.66, 0.68, 0.66, 0.75, 0.63, 0.81, 0.62, 0.74, 0.46, 0.55, 0.55, 0.51, 0.71, 0.4, 0.42, 0.44, 0.71, 0.37, 0.5, 0.61, 0.69, 0.72, 0.54, 0.57, 0.53, 0.54, 0.71, 0.56, 0.66, 0.43, 0.41, 0.16, 0.14, 0.55, 0.74, 0.68, 0.51, 0.43, 0.75, 0.58, 0.45, 0.68, 0.61, 0.67, 0.66, 0.58, 0.62, 0.65, 0.72, 0.7, 0.47, 0.72, 0.77, 0.73, 0.69, 0.65, 0.74, 0.7, 0.59, 0.67, 0.59, 0.62, 0.76, 0.54, 0.8, 0.74, 0.77, 0.67, 0.7, 0.65, 0.76, 0.85, 0.78, 0.8, 0.72, 0.78, 0.74, 0.76, 0.71, 0.58, 0.83, 0.69, 0.81, 0.73, 0.81, 0.73, 0.7, 0.7, 0.78, 0.84, 0.72, 0.74, 0.74, 0.77, 0.83, 0.64, 0.79, 0.67, 0.81, 0.49, 0.6, 0.63, 0.39, 0.72, 0.72, 0.6, 0.76, 0.63, 0.48, 0.74, 0.46, 0.74, 0.76, 0.78, 0.81, 0.59, 0.55, 0.61, 0.51, 0.64, 0.59, 0.62, 0.64, 0.76, 0.59, 0.64, 0.62, 0.54, 0.76, 0.74, 0.77, 0.66, 0.74, 0.66, 0.61, 0.61, 0.57, 0.49, 0.77, 0.82, 0.57, 0.67, 0.53, 0.77, 0.56, 0.58, 0.76, 0.77, 0.84, 0.69, 0.7, 0.6, 0.67, 0.68, 0.67, 0.62, 0.8, 0.76, 0.51, 0.68, 0.68, 0.5, 0.89, 0.66, 0.65, 0.71, 0.67, 0.85, 0.62, 0.62, 0.56, 0.92, 0.68, 0.69, 0.56, 0.7, 0.55, 0.67, 0.52, 0.59, 0.29, 0.77, 0.3, 0.59, 0.47, 0.78, 0.71, 0.4, 0.41, 0.83, 0.88, 0.75, 0.56, 0.49, 0.58, 0.5, 0.72, 0.73, 0.84, 0.75, 0.76, 0.56, 0.68, 0.93, 0.77, 0.52, 0.48, 0.73, 0.58, 0.42, 0.26, 0.36, 0.77, 0.39, 0.54, 0.4, 0.52, 0.63, 0.47, 0.45, 0.03, 0.57, 0.68, 0.67, 0.74, 0.58, 0.8, 0.61, 0.67, 0.67, 0.75, 0.71, 0.62, 0.49, 0.76, 0.83, 0.6, 0.19, 0.21, 0.48, 0.26, 0.49, 0.7, 0.75, 0.76, 0.74, 0.83, 0.62, 0.77, 0.82, 0.85, 0.77, 0.7, 0.78, 0.79, 0.9, 0.76, 0.78, 0.78, 0.82, 0.72, 0.63, 0.83, 0.71, 0.8, 0.74, 0.73, 0.78, 0.62, 0.89, 0.75, 0.81, 0.85, 0.86, 0.84, 0.81, 0.9, 0.86, 0.82, 0.86, 0.92, 0.64, 0.46, 0.66, 0.71, 0.88, 0.76, 0.65, 0.63, 0.6, 0.44, 0.7, 0.36, 0.61, 0.74, 0.82, 0.9, 0.89, 0.89, 0.82, 0.73, 0.64, 0.64, 0.65, 0.59, 0.58, 0.61, 0.74, 0.64, 0.58, 0.64, 0.26, 0.82, 0.57, 0.57, 0.66, 0.82, 0.78, 0.87, 0.8, 0.81, 0.88, 0.85, 0.78, 0.72, 0.67, 0.77, 0.8, 0.71, 0.95, 0.9, 0.76, 0.88, 0.74, 0.75, 0.85, 0.76, 0.92, 0.85, 0.87, 0.8, 0.83, 0.71, 0.73, 0.82, 0.75, 0.74, 0.85, 0.87, 0.8, 0.86, 0.79, 0.5, 0.86, 0.73, 0.85, 0.81, 0.87, 0.83, 0.7, 0.62, 0.72, 0.77, 0.54, 0.57, 0.62, 0.86, 0.85, 0.72, 0.83, 0.87, 0.97, 0.81, 0.72, 0.89, 0.94, 0.84, 0.65, 0.56, 0.65, 0.64, 0.69, 0.66, 0.54, 0.56, 0.51, 0.36, 0.36, 0.57, 0.37, 0.0, 0.32, 0.37, 0.14, 0.18, 0.29, 0.46, 0.38, 0.4, 0.27, 0.62, 0.3, 0.36, 0.39, 0.55, 0.0, 0.0, 0.37, 0.57, 0.4, 0.2, 0.25, 0.49, 0.54, 0.67, 0.68, 0.63, 0.48, 0.55, 0.72, 0.63, 0.77, 0.69, 0.72, 0.77, 0.76, 0.67, 0.49, 0.4, 0.48, 0.54, 0.63, 0.64, 0.43, 0.57, 0.68, 0.56, 0.59, 0.57, 0.49, 0.62, 0.64, 0.19, 0.19, 0.28, 0.75, 0.35, 0.0, 0.26, 0.39, 0.0, 0.0, 0.45, 0.54, 0.65, 0.04, 0.71, 0.84, 0.96, 0.97, 0.94, 0.93, 0.94, 0.96, 0.95, 0.95, 0.96, 0.78, 0.64, 0.46, 0.61, 0.73, 0.76, 0.69, 0.61, 0.57, 0.74, 0.63, 0.84, 0.66, 0.17, 0.68, 0.82, 0.78, 0.65, 0.81, 0.68, 0.74, 0.79, 0.55, 0.73, 0.69, 0.57, 0.7, 0.81, 0.73, 0.73, 0.66, 0.62, 0.68, 0.81, 0.75, 0.67, 0.9, 0.9, 0.92, 0.72, 0.8, 0.9, 0.76, 0.69, 0.74, 0.92, 0.91, 0.94, 0.91, 0.87, 0.92, 0.86, 0.63, 0.84, 0.89, 0.77, 0.94, 0.86, 0.8, 0.94, 0.83, 0.86, 0.68, 0.95, 0.97, 0.97, 0.97, 0.98, 0.96, 0.93, 0.96, 0.94, 0.94, 0.87, 0.92, 0.86, 0.89, 0.9, 0.89, 0.91, 0.84, 0.93, 0.85, 0.91, 0.81, 0.86, 0.86, 0.88, 0.88, 0.85, 0.94, 0.87, 0.81, 0.85, 0.94, 0.93, 0.88, 0.92, 0.87, 0.93, 0.89, 0.92, 0.89, 0.92, 0.96, 0.92, 0.89, 0.85, 0.87, 0.86, 0.63, 0.64, 0.62, 0.67, 0.74, 0.5, 0.67, 0.76, 0.87, 0.81, 0.8, 0.83, 0.82, 0.79, 0.82, 0.8, 0.77, 0.82, 0.85, 0.77, 0.79, 0.8, 0.81, 0.8, 0.72, 0.63, 0.89, 0.76, 0.76, 0.73, 0.85, 0.83, 0.83, 0.78, 0.84, 0.84, 0.77, 0.69, 0.72, 0.88, 0.81, 0.8, 0.7, 0.64, 0.89, 0.86, 0.77, 0.67, 0.8, 0.9, 0.78, 0.81, 0.91, 0.96, 0.93, 0.79, 0.9, 0.96, 0.92, 0.71, 0.84, 0.81, 0.91, 0.91, 0.96, 0.91, 0.72, 0.91, 0.82, 0.97, 0.82, 0.88, 0.94, 0.95, 0.85, 0.92, 0.94, 0.91, 0.91, 0.9, 0.91, 1.0, 0.97, 0.96, 0.91, 0.9, 0.8, 0.63, 0.64, 0.78, 0.79, 0.83, 0.8, 0.74, 0.7, 0.49, 0.42, 0.26, 0.57, 0.95, 0.84, 0.88, 0.9, 0.96, 0.91, 0.89, 0.82, 0.88, 0.95, 0.88, 0.99, 0.95, 0.91, 0.87, 0.91, 0.88, 0.84, 0.96, 0.95, 0.98, 0.91, 0.93, 0.9, 0.93, 0.89, 0.95, 0.95, 0.92, 0.98, 0.89, 0.97, 0.88, 0.98, 0.9, 0.92, 0.95, 0.86, 0.86, 0.87, 0.73, 0.81, 0.57, 0.68, 0.68, 0.95, 0.94, 0.92, 0.95, 0.95, 0.97, 0.95, 0.91, 0.94, 0.97, 0.97, 0.96];
+function ln(k,a,spread,n,kind){
+  const ws=document.querySelectorAll("#l"+k+" .w");
+  const per=n>1?spread/(n-1):0;
+  const y=kind==="grey"?10:34;
+  tl.fromTo(ws,{opacity:0,y:y},{opacity:1,y:0,duration:kind==="grey"?0.6:0.32,ease:"power3.out",stagger:per},a);
+}
+function sec(k,a,d){
+  const t=document.querySelector("#tag"+k+" .tag");
+  tl.fromTo(t,{opacity:0,y:-18},{opacity:1,y:0,duration:0.5,ease:"power2.out"},a);
+  const b=document.querySelector("#bg"+k);
+}
+ln(0,0.1,2.40,8,"intro");
+ln(1,4.1,3.30,11,"intro");
+ln(2,10.8,1.20,4,"intro");
+ln(3,15.5,0.60,2,"intro");
+ln(4,17.7,2.10,10,"intro");
+ln(5,20.5,4.80,16,"chorus");
+ln(6,28.4,1.20,4,"chorus");
+ln(7,30.2,0.90,3,"chorus");
+ln(8,32.7,2.10,7,"chorus");
+ln(9,37.0,0.01,1,"chorus");
+ln(10,38.0,0.01,1,"chorus");
+ln(11,38.8,1.20,4,"chorus");
+ln(12,40.7,2.25,11,"chorus");
+ln(13,43.7,1.80,6,"gold");
+ln(14,46.4,1.20,4,"gold");
+ln(15,49.0,1.27,5,"gold");
+ln(16,50.7,0.60,2,"gold");
+ln(17,53.2,0.90,3,"gold");
+ln(18,54.8,2.62,9,"gold");
+ln(19,58.3,2.78,11,"gold");
+ln(20,62.0,3.97,17,"gold");
+ln(21,67.3,1.20,4,"gold");
+ln(22,69.1,3.30,11,"gold");
+ln(23,73.5,2.62,9,"gold");
+ln(24,77.0,4.57,16,"chorus");
+ln(25,83.1,1.80,7,"chorus");
+ln(26,85.5,1.35,6,"chorus");
+ln(27,87.3,2.10,7,"chorus");
+ln(28,91.4,0.60,2,"gold");
+ln(29,92.4,0.60,2,"gold");
+ln(30,93.2,0.90,3,"gold");
+ln(31,95.0,1.35,5,"gold");
+ln(32,96.8,1.20,6,"gold");
+ln(33,98.4,2.78,10,"gold");
+ln(34,102.1,2.70,10,"gold");
+ln(35,105.7,1.35,6,"gold");
+ln(36,107.5,1.35,6,"gold");
+ln(37,109.3,0.90,3,"gold");
+ln(38,110.9,1.35,6,"grey");
+ln(39,112.7,2.92,10,"grey");
+ln(40,116.6,2.70,10,"grey");
+ln(41,120.2,2.85,10,"grey");
+ln(42,124.0,4.80,16,"chorus");
+ln(43,130.6,3.00,13,"chorus");
+ln(44,134.6,2.10,7,"chorus");
+ln(45,138.7,1.50,7,"gold");
+ln(46,140.7,1.20,7,"gold");
+ln(47,142.3,2.40,8,"gold");
+ln(48,145.7,1.35,5,"gold");
+ln(49,147.5,1.20,6,"gold");
+ln(50,149.1,1.50,5,"gold");
+ln(51,151.2,1.50,6,"gold");
+ln(52,153.2,2.55,13,"gold");
+ln(53,156.6,2.62,9,"gold");
+ln(54,160.1,1.65,6,"gold");
+ln(55,162.3,1.12,5,"gold");
+ln(56,163.8,1.42,5,"gold");
+ln(57,165.7,1.20,4,"gold");
+ln(58,167.4,2.40,8,"gold");
+ln(59,171.2,1.35,6,"gold");
+ln(60,173.0,1.20,4,"gold");
+ln(61,174.6,1.50,6,"gold");
+ln(62,176.6,1.27,5,"gold");
+ln(63,178.3,2.85,12,"gold");
+ln(64,182.1,2.55,12,"gold");
+ln(65,185.5,1.50,7,"gold");
+ln(66,187.5,1.20,4,"gold");
+ln(67,189.1,2.92,11,"gold");
+ln(68,193.0,4.80,16,"chorus");
+ln(69,199.5,0.01,1,"chorus");
+ln(70,201.2,0.01,1,"chorus");
+ln(71,202.0,1.20,4,"chorus");
+ln(72,203.8,3.07,14,"chorus");
+ln(73,207.9,0.01,1,"gold");
+ln(74,208.5,0.01,1,"gold");
+ln(75,209.4,1.20,4,"gold");
+ln(76,211.0,3.38,12,"gold");
+ln(77,215.5,0.83,4,"gold");
+ln(78,216.6,1.20,5,"gold");
+ln(79,218.2,2.85,12,"gold");
+ln(80,222.0,0.60,2,"gold");
+ln(81,223.7,0.90,3,"gold");
+ln(82,225.5,3.00,11,"gold");
+ln(83,229.5,0.90,3,"gold");
+ln(84,230.8,1.50,5,"recess");
+ln(85,233.4,0.01,1,"recess");
+ln(86,233.9,0.01,1,"recess");
+ln(87,235.0,0.60,2,"recess");
+ln(88,236.0,0.68,3,"recess");
+ln(89,236.9,1.35,5,"recess");
+ln(90,238.7,1.35,6,"recess");
+ln(91,240.5,0.83,3,"recess");
+ln(92,241.6,1.50,5,"recess");
+ln(93,243.7,4.80,16,"chorus");
+ln(94,252.0,0.90,3,"chorus");
+ln(95,253.2,1.20,4,"chorus");
+ln(96,255.5,1.80,6,"chorus");
+ln(97,259.3,0.01,1,"chorus");
+ln(98,260.3,0.01,1,"chorus");
+ln(99,261.1,1.20,4,"chorus");
+ln(100,263.0,3.30,11,"chorus");
+ln(101,269.4,5.10,17,"verdict");
+ln(102,279.4,3.90,13,"verdict");
+ln(103,286.9,4.80,16,"chorus");
+sec(0,0,20.5);
+sec(1,20.5,23.2);
+sec(2,43.7,33.3);
+sec(3,77.0,14.4);
+sec(4,91.4,18.5);
+sec(5,109.9,14.1);
+sec(6,124.0,14.7);
+sec(7,138.7,17.9);
+sec(8,156.6,21.7);
+sec(9,178.3,14.7);
+sec(10,193.0,14.9);
+sec(11,207.9,22.9);
+sec(12,230.8,12.9);
+sec(13,243.7,25.7);
+sec(14,269.4,17.5);
+sec(15,286.9,11.9);
+tl.fromTo("#fill",{scaleX:0},{scaleX:1,duration:298.8,ease:"none"},0);
+for(let i=0;i<ENV.length;i++){
+  tl.to("#glow",{opacity:0.08+ENV[i]*0.55,scale:0.85+ENV[i]*0.4,duration:0.2,ease:"none"},i*0.2);
+}
+window.__timelines["court"]=tl;
+</script>
+</body>
+</html>
