@@ -17,7 +17,8 @@ function doPost(e) {
   lock.waitLock(10000);
   try {
     const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
-    if (sheet.getLastRow() === 0) setupSheet(sheet);
+    // בונים את הטבלה בפעם הראשונה, או אם נשארו כותרות מגרסה ישנה
+    if (sheet.getLastRow() === 0 || sheet.getRange(1, 1).getValue() !== HEADERS[0]) setupSheet(sheet);
 
     const row = sheet.getLastRow() + 1;
     sheet.getRange(row, 1, 1, ARRIVED_COL - 1).setValues([[
@@ -58,7 +59,7 @@ function setupSheet(sheet) {
   if (sheet.getBandings().length === 0) {
     body.applyRowBanding(SpreadsheetApp.BandingTheme.LIGHT_GREY, false, false);
   }
-  sheet.getRange(2, 1, 999, 1).setHorizontalAlignment("center");
+  sheet.getRange(2, 1, 999, 1).setNumberFormat("0").setHorizontalAlignment("center"); // מספר רגיל ולא תאריך
   sheet.getRange(2, ARRIVED_COL, 999, 1).setHorizontalAlignment("center");
   sheet.getRange(2, PHONE_COL, 999, 2).setHorizontalAlignment("left"); // טלפון ומייל מוצגים משמאל לימין
   sheet.getRange(1, 1, 1000, n).setBorder(true, true, true, true, true, true, "#d3e0ea", SpreadsheetApp.BorderStyle.SOLID);
