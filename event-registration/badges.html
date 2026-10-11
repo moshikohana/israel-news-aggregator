@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>הדפסת תגים – נקודת מפנה</title>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root { --navy:#0b2a55; --navy-deep:#071c3b; --blue:#1d5fa8; --turq:#1ea5b8; --gold:#b8923f; --ice:#f2f8fb; --muted:#5a6b80; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family:"Heebo","Segoe UI",Arial,sans-serif; background:var(--ice); color:#1b2b40; }
+
+  /* ---------- מסך הבקרה (לא מודפס) ---------- */
+  .panel { max-width:980px; margin:0 auto; padding:28px 20px 40px; }
+  .panel h1 { margin:0 0 4px; color:var(--navy); }
+  .panel p.hint { margin:0 0 20px; color:var(--muted); }
+  .box { background:#fff; border:1px solid #dfeaf0; border-radius:16px; padding:20px; margin-bottom:16px; box-shadow:0 8px 24px rgba(11,42,85,.06); }
+  .box h2 { margin:0 0 10px; font-size:1.1rem; color:var(--navy); }
+  .steps { margin:0; padding-inline-start:20px; color:var(--muted); }
+  input[type=file] { font:inherit; }
+  .bar { display:flex; flex-wrap:wrap; gap:12px; align-items:center; }
+  .bar input[type=search], .bar input[type=number] { font:inherit; padding:9px 12px; border:1.5px solid #cfdde6; border-radius:10px; }
+  .bar input[type=number] { width:90px; }
+  button { font:inherit; font-weight:700; border:0; border-radius:10px; padding:10px 18px; cursor:pointer; color:#fff; background:linear-gradient(135deg,var(--navy),var(--turq)); }
+  button.ghost { background:#fff; color:var(--navy); border:1.5px solid #cfdde6; }
+  .list { max-height:320px; overflow:auto; margin-top:12px; border:1px solid #e3edf2; border-radius:12px; }
+  .list table { width:100%; border-collapse:collapse; font-size:.95rem; }
+  .list th { position:sticky; top:0; background:#eef6f9; text-align:right; padding:8px 10px; color:var(--navy); }
+  .list td { padding:7px 10px; border-top:1px solid #eef3f6; }
+  #status { color:var(--muted); font-weight:500; }
+  #err { color:#b3261e; font-weight:600; margin-top:8px; }
+
+  /* ---------- התגים ---------- */
+  .sheet { display:none; }
+  .page { width:210mm; height:297mm; display:grid; grid-template-columns:105mm 105mm; grid-template-rows:148.5mm 148.5mm; page-break-after:always; break-after:page; background:#fff; margin:0 auto 12px; box-shadow:0 4px 18px rgba(0,0,0,.12); }
+  .slot { position:relative; padding:5mm; outline:.2mm dashed #c9d4dc; outline-offset:-.2mm; }
+  .badge {
+    position:relative; width:100%; height:100%; overflow:hidden; border-radius:4mm;
+    display:flex; flex-direction:column; align-items:center; text-align:center;
+    background:
+      radial-gradient(60mm 40mm at 85% 0%, rgba(30,165,184,.22), rgba(30,165,184,0) 70%),
+      radial-gradient(50mm 40mm at 0% 100%, rgba(29,95,168,.18), rgba(29,95,168,0) 70%),
+      #fff;
+    border:.4mm solid #d3e3ea;
+  }
+  .badge .top { width:100%; padding:5mm 6mm 3mm; display:flex; justify-content:space-between; align-items:center; }
+  .badge .top img { height:15mm; mix-blend-mode:multiply; }
+  .badge .ev { text-align:left; direction:rtl; }
+  .badge .ev b { display:block; font-size:5mm; font-weight:900; color:var(--navy); line-height:1; }
+  .badge .ev span { font-size:2.8mm; color:var(--turq); font-weight:700; }
+  .badge .gold { width:70%; height:.5mm; background:linear-gradient(90deg,rgba(184,146,63,.1),var(--gold),rgba(184,146,63,.1)); margin:1mm 0 0; }
+  .badge .who { flex:1; display:flex; flex-direction:column; justify-content:center; width:100%; padding:0 6mm; }
+  .badge .nm { font-weight:900; color:var(--navy-deep); line-height:1.05; font-size:11mm; overflow-wrap:anywhere; }
+  .badge .nm.long { font-size:8.5mm; }
+  .badge .co { margin-top:4mm; font-size:5.5mm; font-weight:700; color:var(--blue); }
+  .badge .rl { margin-top:1mm; font-size:4.5mm; color:var(--muted); font-weight:500; }
+  .badge .foot { width:100%; padding:3mm; background:linear-gradient(90deg,var(--navy),var(--turq)); color:#fff; font-size:3.2mm; font-weight:500; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+
+  @page { size:A4 portrait; margin:0; }
+  @media print {
+    body { background:#fff; }
+    .panel { display:none; }
+    .sheet { display:block; }
+    .page { margin:0; box-shadow:none; }
+    * { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  }
+  @media screen { .sheet.preview { display:block; padding:0 0 40px; background:#e8eef2; } }
+</style>
+</head>
+<body>
+
+<div class="panel">
+  <h1>הדפסת תגים</h1>
+  <p class="hint">מייצר תגי A6 מוכנים להדפסה (4 בעמוד A4) מתוך טבלת הנרשמים.</p>
+
+  <div class="box">
+    <h2>1. טעינת הנרשמים</h2>
+    <ol class="steps">
+      <li>בגיליון Google: <b>File ← Download ← Comma Separated Values (.csv)</b></li>
+      <li>בחרו את הקובץ כאן:</li>
+    </ol>
+    <p><input type="file" id="file" accept=".csv,text/csv"></p>
+    <div id="err"></div>
+  </div>
+
+  <div class="box" id="step2" style="display:none">
+    <h2>2. בחירה והדפסה</h2>
+    <div class="bar">
+      <input type="search" id="q" placeholder="חיפוש לפי שם / חברה">
+      <button class="ghost" id="all">סמן הכל</button>
+      <button class="ghost" id="none">נקה בחירה</button>
+      <label>תגים ריקים (למי שמגיע בלי הרשמה): <input type="number" id="blank" min="0" max="100" value="4"></label>
+      <button id="print">הדפסה</button>
+      <span id="status"></span>
+    </div>
+    <div class="list"><table><thead><tr><th></th><th>שם</th><th>חברה / ארגון</th><th>תפקיד</th></tr></thead><tbody id="rows"></tbody></table></div>
+    <p class="hint" style="margin-top:10px">בחלון ההדפסה: גודל נייר A4, שוליים "None/ללא", ו"Background graphics" דלוק. התגים ממוינים לפי שם.</p>
+  </div>
+</div>
+
+<div class="sheet" id="sheet"></div>
+
+<script>
+  let people = [];
+
+  // פענוח CSV (תומך במירכאות ובשורות מרובות)
+  function parseCSV(text) {
+    text = text.replace(/^﻿/, "");
+    const rows = []; let row = [], cur = "", q = false;
+    for (let i = 0; i < text.length; i++) {
+      const c = text[i];
+      if (q) {
+        if (c === '"' && text[i + 1] === '"') { cur += '"'; i++; }
+        else if (c === '"') q = false;
+        else cur += c;
+      } else if (c === '"') q = true;
+      else if (c === ",") { row.push(cur); cur = ""; }
+      else if (c === "\n" || c === "\r") {
+        if (c === "\r" && text[i + 1] === "\n") i++;
+        row.push(cur); rows.push(row); row = []; cur = "";
+      } else cur += c;
+    }
+    if (cur || row.length) { row.push(cur); rows.push(row); }
+    return rows.filter(r => r.some(x => x.trim()));
+  }
+
+  function load(text) {
+    const rows = parseCSV(text);
+    const head = rows.shift() || [];
+    const col = (...keys) => head.findIndex(h => keys.some(k => h.includes(k)));
+    const iN = col("שם"), iC = col("חברה", "ארגון"), iR = col("תפקיד");
+    if (iN < 0) throw new Error("לא נמצאה עמודת 'שם מלא'. ודאו שזה קובץ הנרשמים.");
+    people = rows.map(r => ({
+      name: (r[iN] || "").trim(), company: (r[iC] || "").trim(), role: (r[iR] || "").trim(), on: true
+    })).filter(p => p.name).sort((a, b) => a.name.localeCompare(b.name, "he"));
+    renderList();
+    document.getElementById("step2").style.display = "block";
+  }
+
+  const rowsEl = document.getElementById("rows");
+  const q = document.getElementById("q");
+  const esc = s => s.replace(/[&<>"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c]));
+
+  function renderList() {
+    const term = q.value.trim();
+    rowsEl.innerHTML = "";
+    people.forEach((p, i) => {
+      if (term && !(p.name + p.company).includes(term)) return;
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td><input type="checkbox" ${p.on ? "checked" : ""}></td><td>${esc(p.name)}</td><td>${esc(p.company)}</td><td>${esc(p.role)}</td>`;
+      tr.firstChild.firstChild.addEventListener("change", e => { p.on = e.target.checked; status(); });
+      rowsEl.appendChild(tr);
+    });
+    status();
+  }
+  function status() {
+    const n = people.filter(p => p.on).length + (+document.getElementById("blank").value || 0);
+    document.getElementById("status").textContent = `${n} תגים (${Math.ceil(n / 4)} עמודים)`;
+  }
+
+  function badge(p) {
+    const long = p.name.length > 16 ? " long" : "";
+    return `<div class="badge">
+      <div class="top"><img src="assets/logo.png" alt=""><div class="ev"><b>נקודת מפנה</b><span>הרגולציה החדשה לתמרוקים</span></div></div>
+      <div class="gold"></div>
+      <div class="who"><div class="nm${long}">${esc(p.name) || "&nbsp;"}</div>
+        <div class="co">${esc(p.company) || "&nbsp;"}</div><div class="rl">${esc(p.role) || "&nbsp;"}</div></div>
+      <div class="foot">16.12.2026 · משרד הבריאות</div></div>`;
+  }
+
+  function build() {
+    const list = people.filter(p => p.on);
+    for (let i = 0; i < (+document.getElementById("blank").value || 0); i++) list.push({ name: "", company: "", role: "" });
+    let html = "";
+    for (let i = 0; i < list.length; i += 4) {
+      html += '<div class="page">' + list.slice(i, i + 4).map(p => `<div class="slot">${badge(p)}</div>`).join("") + "</div>";
+    }
+    document.getElementById("sheet").innerHTML = html;
+  }
+
+  document.getElementById("file").addEventListener("change", e => {
+    const f = e.target.files[0]; if (!f) return;
+    const err = document.getElementById("err"); err.textContent = "";
+    const r = new FileReader();
+    r.onload = () => { try { load(r.result); } catch (x) { err.textContent = x.message; } };
+    r.readAsText(f, "utf-8");
+  });
+  q.addEventListener("input", renderList);
+  document.getElementById("blank").addEventListener("input", status);
+  document.getElementById("all").onclick = () => { people.forEach(p => p.on = true); renderList(); };
+  document.getElementById("none").onclick = () => { people.forEach(p => p.on = false); renderList(); };
+  document.getElementById("print").onclick = () => { build(); window.print(); };
+</script>
+</body>
+</html>

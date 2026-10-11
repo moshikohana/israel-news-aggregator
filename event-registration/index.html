@@ -3,139 +3,310 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>הרשמה לכנס – נקודת מפנה: הרגולציה החדשה לתמרוקים</title>
+<title>נקודת מפנה – הרגולציה החדשה לתמרוקים | הרשמה לכנס</title>
+<meta name="description" content="כנס משרד הבריאות: הרגולציה החדשה לתמרוקים. מדע, שקיפות וחדשנות בעולם התמרוקים. הרשמה מקוונת.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
 <style>
   :root {
-    --navy: #0f2a55;
-    --teal: #1b8fa6;
+    --navy: #0b2a55;
+    --navy-deep: #071c3b;
+    --blue: #1d5fa8;
+    --turq: #1ea5b8;
+    --turq-soft: #d9f0f4;
+    --ice: #f2f8fb;
     --gold: #b8923f;
-    --bg: #f3f8fb;
-    --card: #ffffff;
-    --text: #1d2a3a;
-    --error: #c0392b;
+    --text: #1b2b40;
+    --muted: #5a6b80;
+    --error: #b3261e;
+    --ok: #0e6b4a;
+    --glass: rgba(255, 255, 255, .72);
+    --radius: 20px;
   }
   * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
   body {
     margin: 0;
     font-family: "Heebo", "Assistant", "Segoe UI", Arial, sans-serif;
-    background: var(--bg);
     color: var(--text);
-    line-height: 1.6;
+    background: var(--ice);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
   }
-  .banner img { display: block; width: 100%; height: auto; }
-  .datebar {
-    background: var(--navy);
-    color: #fff;
-    text-align: center;
-    padding: 14px 16px;
-    font-size: 1.15rem;
-    font-weight: 600;
-    letter-spacing: .3px;
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+
+  /* ---------- HERO ---------- */
+  .hero {
+    position: relative;
+    overflow: hidden;
+    min-height: 640px;
+    background:
+      radial-gradient(900px 500px at 85% 10%, #ffffff 0%, rgba(255,255,255,0) 60%),
+      linear-gradient(180deg, #ffffff 0%, #eaf5f9 100%);
   }
-  .datebar span { margin: 0 10px; white-space: nowrap; }
-  main { max-width: 680px; margin: 0 auto; padding: 28px 16px 48px; }
-  .intro h1 { color: var(--navy); margin: 0 0 8px; font-size: 1.7rem; }
-  .intro p { margin: 0 0 12px; font-size: 1.05rem; }
-  .card {
-    background: var(--card);
-    border-radius: 14px;
-    box-shadow: 0 6px 24px rgba(15, 42, 85, .1);
-    padding: 24px 22px;
-    margin-top: 22px;
-    border-top: 4px solid var(--gold);
+  .hero-art {
+    position: absolute; inset: 0 auto 0 0;      /* צד שמאל */
+    width: 52%;
+    background: url("assets/hero-art.jpg") left center / cover no-repeat;
+    -webkit-mask-image: linear-gradient(to left, transparent 0%, #000 38%), linear-gradient(to top, transparent 0%, #000 22%);
+            mask-image: linear-gradient(to left, transparent 0%, #000 38%), linear-gradient(to top, transparent 0%, #000 22%);
+    -webkit-mask-composite: source-in; mask-composite: intersect;
   }
-  .card h2 { margin: 0 0 16px; color: var(--navy); font-size: 1.3rem; }
-  label { display: block; font-weight: 600; margin-bottom: 4px; }
+  .bubbles span {
+    position: absolute; border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.95), rgba(160,220,232,.35) 55%, rgba(30,165,184,.22));
+    border: 1px solid rgba(255,255,255,.8);
+    box-shadow: inset 0 0 8px rgba(30,165,184,.25), 0 6px 16px rgba(11,42,85,.08);
+    animation: float 9s ease-in-out infinite;
+  }
+  .bubbles span:nth-child(1) { width: 38px; height: 38px; right: 8%;  top: 62%; animation-delay: -1s; }
+  .bubbles span:nth-child(2) { width: 18px; height: 18px; right: 42%; top: 14%; animation-delay: -4s; }
+  .bubbles span:nth-child(3) { width: 64px; height: 64px; right: 3%;  top: 20%; animation-delay: -6s; opacity: .7; }
+  .bubbles span:nth-child(4) { width: 26px; height: 26px; right: 36%; top: 78%; animation-delay: -2s; }
+  @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-18px); } }
+
+  .hero-inner {
+    position: relative; z-index: 1;
+    max-width: 1120px; margin: 0 auto; padding: 32px 24px 64px;
+    display: flex; flex-direction: column; align-items: flex-start;
+  }
+  .brand { display: block; width: 210px; margin-bottom: 36px; mix-blend-mode: multiply; }
+  .eyebrow {
+    display: inline-block; font-weight: 500; letter-spacing: .4px;
+    color: var(--turq); font-size: 1.05rem; margin-bottom: 4px;
+  }
+  h1 {
+    margin: 0; line-height: .98; font-weight: 900;
+    font-size: clamp(3.6rem, 9vw, 7.2rem);
+    background: linear-gradient(120deg, var(--navy-deep) 15%, var(--blue) 55%, var(--turq) 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    padding-bottom: .08em;
+  }
+  .rule { height: 2px; width: min(520px, 100%); background: linear-gradient(90deg, var(--gold), rgba(184,146,63,.15)); margin: 18px 0; }
+  .sub { margin: 0; font-size: clamp(1.4rem, 3vw, 2.1rem); font-weight: 700; color: var(--navy); }
+  .pillars { margin: 16px 0 0; display: flex; gap: 0; font-weight: 500; color: var(--muted); font-size: 1.1rem; }
+  .pillars span + span { border-inline-start: 1.5px solid var(--gold); margin-inline-start: 18px; padding-inline-start: 18px; }
+  .tagline { margin: 22px 0 28px; max-width: 520px; color: var(--text); font-size: 1.1rem; }
+  .cta {
+    display: inline-block; text-decoration: none; font-weight: 700; color: #fff;
+    padding: 14px 34px; border-radius: 999px;
+    background: linear-gradient(135deg, var(--navy), var(--turq));
+    box-shadow: 0 10px 26px rgba(11,42,85,.28);
+    transition: transform .2s, box-shadow .2s;
+  }
+  .cta:hover { transform: translateY(-2px); box-shadow: 0 14px 30px rgba(11,42,85,.34); }
+
+  /* ---------- DETAILS STRIP ---------- */
+  .strip { margin-top: -44px; position: relative; z-index: 2; }
+  .strip-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 0;
+    background: var(--glass); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255,255,255,.9); border-radius: var(--radius);
+    box-shadow: 0 18px 50px rgba(11,42,85,.14);
+    overflow: hidden; border-top: 3px solid var(--gold);
+  }
+  .strip-item { padding: 22px 26px; display: flex; align-items: center; gap: 16px; }
+  .strip-item + .strip-item { border-inline-start: 1px solid rgba(11,42,85,.1); }
+  .strip-ico {
+    flex: none; width: 48px; height: 48px; border-radius: 14px; display: grid; place-items: center;
+    background: linear-gradient(135deg, var(--turq-soft), #fff); color: var(--navy);
+    border: 1px solid rgba(30,165,184,.25);
+  }
+  .strip-ico svg { width: 24px; height: 24px; }
+  .strip small { display: block; color: var(--muted); font-size: .85rem; }
+  .strip b { font-size: 1.15rem; color: var(--navy); }
+
+  /* ---------- ABOUT ---------- */
+  section.block { padding: 72px 0 8px; }
+  .kicker { color: var(--turq); font-weight: 700; letter-spacing: .5px; }
+  h2 { margin: 4px 0 12px; font-size: clamp(1.7rem, 3.5vw, 2.4rem); color: var(--navy); font-weight: 800; line-height: 1.2; }
+  .lead { max-width: 720px; font-size: 1.12rem; color: var(--text); }
+  .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 32px; }
+  .card-i {
+    background: #fff; border-radius: var(--radius); padding: 26px 24px;
+    border: 1px solid #dfeaf0; box-shadow: 0 8px 28px rgba(11,42,85,.06);
+    position: relative; overflow: hidden;
+  }
+  .card-i::after {
+    content: ""; position: absolute; width: 120px; height: 120px; border-radius: 50%;
+    inset-inline-start: -40px; bottom: -50px;
+    background: radial-gradient(circle at 35% 35%, rgba(255,255,255,.9), rgba(30,165,184,.18));
+  }
+  .card-i h3 { margin: 0 0 6px; color: var(--navy); font-size: 1.25rem; }
+  .card-i p { margin: 0; color: var(--muted); }
+  .num { font-weight: 900; font-size: 2rem; color: var(--turq); line-height: 1; margin-bottom: 8px; display: block; }
+
+  /* ---------- FORM ---------- */
+  section.reg { padding: 72px 0 80px; }
+  .reg-grid { display: grid; grid-template-columns: 1fr 1.15fr; gap: 40px; align-items: stretch; }
+  .reg-art {
+    border-radius: var(--radius); min-height: 360px; position: relative; overflow: hidden;
+    background: url("assets/hero-art.jpg") 30% center / cover no-repeat;
+    box-shadow: 0 18px 50px rgba(11,42,85,.16);
+  }
+  .reg-art::after { content: ""; position: absolute; inset: 0; background: linear-gradient(0deg, rgba(7,28,59,.55), rgba(7,28,59,0) 55%); }
+  .reg-art p { position: absolute; z-index: 1; margin: 0; inset-inline: 24px; bottom: 22px; color: #fff; font-weight: 700; font-size: 1.3rem; line-height: 1.35; }
+  .form-card {
+    background: #fff; border-radius: var(--radius); padding: 34px 32px;
+    border: 1px solid #dfeaf0; border-top: 3px solid var(--gold);
+    box-shadow: 0 18px 50px rgba(11,42,85,.1);
+  }
+  .form-card h2 { font-size: 1.7rem; margin-top: 0; }
+  .form-card .note { margin: 0 0 22px; color: var(--muted); }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; }
   .field { margin-bottom: 16px; }
+  label { display: block; font-weight: 600; margin-bottom: 6px; color: var(--navy); font-size: .95rem; }
   input[type=text], input[type=email], input[type=tel] {
-    width: 100%;
-    padding: 11px 12px;
-    font: inherit;
-    border: 1.5px solid #c5d3df;
-    border-radius: 8px;
-    background: #fff;
+    width: 100%; padding: 13px 14px; font: inherit; color: var(--text);
+    border: 1.5px solid #cfdde6; border-radius: 12px; background: #fbfdfe;
+    transition: border-color .15s, box-shadow .15s, background .15s;
   }
-  input:focus { outline: 3px solid rgba(27, 143, 166, .3); border-color: var(--teal); }
+  input:focus { outline: 0; border-color: var(--turq); background: #fff; box-shadow: 0 0 0 4px rgba(30,165,184,.18); }
+  input.bad { border-color: var(--error); background: #fff8f7; }
   input[type=email], input[type=tel] { direction: ltr; text-align: right; }
   .hp { position: absolute; left: -9999px; height: 0; overflow: hidden; }
-  button {
-    width: 100%;
-    padding: 13px;
-    font: inherit;
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: #fff;
-    background: linear-gradient(135deg, var(--navy), var(--teal));
-    border: 0;
-    border-radius: 10px;
-    cursor: pointer;
+  button.submit {
+    width: 100%; margin-top: 6px; padding: 15px; font: inherit; font-size: 1.1rem; font-weight: 800; color: #fff;
+    border: 0; border-radius: 14px; cursor: pointer;
+    background: linear-gradient(135deg, var(--navy) 0%, var(--blue) 55%, var(--turq) 100%);
+    box-shadow: 0 10px 24px rgba(11,42,85,.25); transition: transform .15s, box-shadow .15s, opacity .15s;
   }
-  button:disabled { opacity: .6; cursor: wait; }
-  .msg { margin-top: 14px; padding: 12px 14px; border-radius: 8px; display: none; }
-  .msg.ok { display: block; background: #e6f6ee; color: #146c43; }
-  .msg.err { display: block; background: #fdecea; color: var(--error); }
-  footer { text-align: center; font-size: .95rem; color: #55667a; margin-top: 28px; }
-  @media (max-width: 480px) {
-    .intro h1 { font-size: 1.4rem; }
-    .datebar span { display: block; margin: 2px 0; }
+  button.submit:hover { transform: translateY(-1px); box-shadow: 0 14px 28px rgba(11,42,85,.3); }
+  button.submit:disabled { opacity: .65; cursor: wait; transform: none; }
+  .msg { margin-top: 14px; padding: 12px 14px; border-radius: 12px; display: none; font-weight: 500; }
+  #msg { background: #fdecea; color: var(--error); }
+  .thanks { display: none; text-align: center; padding: 30px 6px; }
+  .thanks.show { display: block; }
+  .check {
+    width: 76px; height: 76px; border-radius: 50%; margin: 0 auto 14px; display: grid; place-items: center; color: #fff;
+    background: linear-gradient(135deg, var(--turq), var(--blue)); box-shadow: 0 10px 26px rgba(30,165,184,.4);
+  }
+  .check svg { width: 38px; height: 38px; }
+  .thanks h3 { margin: 0 0 6px; font-size: 1.6rem; color: var(--navy); }
+  .thanks p { margin: 0; color: var(--muted); }
+  .thanks a { color: var(--blue); font-weight: 600; cursor: pointer; text-decoration: underline; }
+
+  /* ---------- FOOTER ---------- */
+  footer { background: linear-gradient(180deg, var(--navy), var(--navy-deep)); color: #dbe6f3; padding: 36px 0; }
+  footer .wrap { display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap; }
+  footer .logo-chip { background: #fff; border-radius: 14px; padding: 8px 16px; }
+  footer .logo-chip img { height: 56px; display: block; mix-blend-mode: multiply; }
+  footer p { margin: 0; }
+  footer b { color: #fff; }
+
+  /* ---------- RESPONSIVE ---------- */
+  @media (max-width: 900px) {
+    .hero { min-height: 0; }
+    .hero-art { position: relative; width: 100%; height: 280px; order: -1; display: block;
+      -webkit-mask-image: linear-gradient(to top, transparent 0%, #000 45%); mask-image: linear-gradient(to top, transparent 0%, #000 45%); }
+    .hero { display: flex; flex-direction: column; }
+    .hero-inner { padding-top: 0; margin-top: -30px; }
+    .bubbles { display: none; }
+    .strip-grid, .cards, .reg-grid { grid-template-columns: 1fr; }
+    .strip-item + .strip-item { border-inline-start: 0; border-top: 1px solid rgba(11,42,85,.1); }
+    .reg-art { min-height: 220px; }
+    .row { grid-template-columns: 1fr; }
+    .form-card { padding: 26px 20px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .bubbles span { animation: none; } html { scroll-behavior: auto; }
   }
 </style>
 </head>
 <body>
 
-<div class="banner">
-  <img src="banner.png" alt="משרד הבריאות – נקודת מפנה: הרגולציה החדשה לתמרוקים">
+<header class="hero">
+  <div class="hero-art" role="img" aria-label="פרופיל פנים נשי שנוצר מזרימת מים, לצד בקבוק סרום וקרם"></div>
+  <div class="bubbles" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+
+  <div class="hero-inner">
+    <img class="brand" src="assets/logo.png" alt="משרד הבריאות – לחיים בריאים יותר">
+    <span class="eyebrow">כנס משרד הבריאות</span>
+    <h1>נקודת מפנה</h1>
+    <div class="rule"></div>
+    <p class="sub">הרגולציה החדשה לתמרוקים</p>
+    <div class="pillars"><span>רגולציה</span><span>חדשנות</span><span>יישום מעשי</span></div>
+    <p class="tagline">מדע, שקיפות וחדשנות בעולם התמרוקים. מפגש מקצועי שיציג את הרגולציה החדשה ואת הדרך ליישם אותה.</p>
+    <a class="cta" href="#register">להרשמה לכנס</a>
+  </div>
+</header>
+
+<div class="strip">
+  <div class="wrap">
+    <div class="strip-grid">
+      <div class="strip-item">
+        <div class="strip-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></div>
+        <div><small>תאריך</small><b>יום רביעי, 16.12.2026</b></div>
+      </div>
+      <div class="strip-item">
+        <div class="strip-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
+        <div><small>שעה</small><b>[שעה]</b></div>
+      </div>
+      <div class="strip-item">
+        <div class="strip-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg></div>
+        <div><small>מיקום</small><b>[מיקום הכנס]</b></div>
+      </div>
+    </div>
+  </div>
 </div>
 
-<div class="datebar">
-  <span>📅 יום רביעי, 16.12.2026</span>
-  <span>🕘 [שעה]</span>
-  <span>📍 [מיקום הכנס]</span>
-</div>
+<section class="block">
+  <div class="wrap">
+    <div class="kicker">על הכנס</div>
+    <h2>רגולציה חדשה. שפה מקצועית אחת.</h2>
+    <p class="lead">משרד הבריאות מזמין יצרנים, יבואנים ואנשי מקצוע בענף התמרוקים לכנס שבו תוצג הרגולציה החדשה: מה משתנה, מה חדש, ואיך מיישמים בפועל. ההשתתפות ללא עלות, ומספר המקומות מוגבל.</p>
+    <div class="cards">
+      <div class="card-i"><span class="num">01</span><h3>רגולציה</h3><p>עיקרי הרגולציה החדשה והשינויים המרכזיים בתחום התמרוקים.</p></div>
+      <div class="card-i"><span class="num">02</span><h3>חדשנות</h3><p>חידושים מדעיים ומקצועיים בעולם התמרוקים, בשקיפות מלאה.</p></div>
+      <div class="card-i"><span class="num">03</span><h3>יישום מעשי</h3><p>כלים וקווים מנחים להטמעת הדרישות החדשות בעבודה היומיומית.</p></div>
+    </div>
+  </div>
+</section>
 
-<main>
-  <section class="intro">
-    <h1>נקודת מפנה – הרגולציה החדשה לתמרוקים</h1>
-    <p>משרד הבריאות מזמין אתכם לכנס שיציג את הרגולציה החדשה בתחום התמרוקים: עיקרי השינויים, החידושים והיישום המעשי עבור יצרנים, יבואנים ובעלי עניין בענף.</p>
-    <p>ההשתתפות ללא עלות. מספר המקומות מוגבל, ולכן מומלץ להירשם מראש.</p>
-  </section>
+<section class="reg" id="register">
+  <div class="wrap">
+    <div class="reg-grid">
+      <div class="reg-art"><p>נקודת מפנה.<br>הרגולציה החדשה לתמרוקים.</p></div>
 
-  <section class="card">
-    <h2>טופס הרשמה</h2>
-    <form id="form" novalidate>
-      <div class="field">
-        <label for="name">שם מלא *</label>
-        <input type="text" id="name" name="name" required autocomplete="name">
-      </div>
-      <div class="field">
-        <label for="company">שם החברה / הארגון *</label>
-        <input type="text" id="company" name="company" required autocomplete="organization">
-      </div>
-      <div class="field">
-        <label for="role">תפקיד *</label>
-        <input type="text" id="role" name="role" required autocomplete="organization-title">
-      </div>
-      <div class="field">
-        <label for="phone">טלפון נייד *</label>
-        <input type="tel" id="phone" name="phone" required autocomplete="tel" inputmode="tel" placeholder="050-0000000">
-      </div>
-      <div class="field">
-        <label for="email">דוא"ל *</label>
-        <input type="email" id="email" name="email" required autocomplete="email">
-      </div>
-      <div class="hp" aria-hidden="true">
-        <label>אל תמלאו שדה זה <input type="text" name="website" tabindex="-1" autocomplete="off"></label>
-      </div>
-      <button type="submit" id="submit">שליחת הרשמה</button>
-      <div id="msg" class="msg" role="status"></div>
-    </form>
-  </section>
+      <div class="form-card">
+        <div id="formView">
+          <div class="kicker">הרשמה</div>
+          <h2>שריינו את מקומכם</h2>
+          <p class="note">כל השדות חובה. ההרשמה לוקחת פחות מדקה.</p>
+          <form id="form" novalidate>
+            <div class="row">
+              <div class="field"><label for="name">שם מלא</label><input type="text" id="name" name="name" autocomplete="name"></div>
+              <div class="field"><label for="role">תפקיד</label><input type="text" id="role" name="role" autocomplete="organization-title"></div>
+            </div>
+            <div class="field"><label for="company">שם החברה / הארגון</label><input type="text" id="company" name="company" autocomplete="organization"></div>
+            <div class="row">
+              <div class="field"><label for="phone">טלפון נייד</label><input type="tel" id="phone" name="phone" autocomplete="tel" inputmode="tel" placeholder="050-0000000"></div>
+              <div class="field"><label for="email">דוא"ל</label><input type="email" id="email" name="email" autocomplete="email" placeholder="name@company.co.il"></div>
+            </div>
+            <div class="hp" aria-hidden="true"><label>אל תמלאו <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
+            <button class="submit" id="submit" type="submit">שליחת הרשמה</button>
+            <div id="msg" class="msg" role="alert"></div>
+          </form>
+        </div>
 
-  <footer>
-    לבירורים: [טלפון / דוא"ל]<br>
-    משרד הבריאות – לחיים בריאים יותר
-  </footer>
-</main>
+        <div class="thanks" id="thanks" role="status">
+          <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+          <h3>תודה, ההרשמה התקבלה!</h3>
+          <p>נשמח לראות אתכם ביום רביעי, 16.12.2026.</p>
+          <p style="margin-top:14px"><a id="again">רישום משתתף נוסף</a></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="logo-chip"><img src="assets/logo.png" alt="משרד הבריאות"></div>
+    <p>לבירורים: <b>[טלפון / דוא"ל]</b></p>
+  </div>
+</footer>
 
 <script>
   // הדביקו כאן את כתובת ה-Web App שקיבלתם מ-Google Apps Script
@@ -144,42 +315,43 @@
   const form = document.getElementById("form");
   const btn = document.getElementById("submit");
   const msg = document.getElementById("msg");
+  const formView = document.getElementById("formView");
+  const thanks = document.getElementById("thanks");
 
-  function show(text, ok) {
-    msg.className = "msg " + (ok ? "ok" : "err");
-    msg.textContent = text;
+  function fail(text, ids) {
+    msg.textContent = text; msg.style.display = "block";
+    ids.forEach(id => document.getElementById(id).classList.add("bad"));
+    if (ids[0]) document.getElementById(ids[0]).focus();
   }
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    msg.className = "msg";
+    msg.style.display = "none";
+    form.querySelectorAll(".bad").forEach(el => el.classList.remove("bad"));
 
     const data = new FormData(form);
-    const required = ["name", "company", "role", "phone", "email"];
-    if (required.some((k) => !String(data.get(k) || "").trim())) {
-      return show("נא למלא את כל השדות.", false);
-    }
-    if (!/^\S+@\S+\.\S+$/.test(data.get("email"))) {
-      return show("כתובת הדוא\"ל אינה תקינה.", false);
-    }
-    if (!/^[0-9+\-\s()]{7,}$/.test(data.get("phone"))) {
-      return show("מספר הטלפון אינו תקין.", false);
-    }
-    if (SCRIPT_URL.startsWith("PASTE_")) {
-      return show("הטופס עדיין לא חובר לגיליון (חסרה כתובת הסקריפט).", false);
-    }
+    const empty = ["name", "company", "role", "phone", "email"].filter(k => !String(data.get(k) || "").trim());
+    if (empty.length) return fail("נא למלא את כל השדות.", empty);
+    if (!/^\S+@\S+\.\S+$/.test(data.get("email"))) return fail("כתובת הדוא\"ל אינה תקינה.", ["email"]);
+    if (!/^[0-9+\-\s()]{7,}$/.test(data.get("phone"))) return fail("מספר הטלפון אינו תקין.", ["phone"]);
+    if (SCRIPT_URL.startsWith("PASTE_")) return fail("הטופס עדיין לא חובר לגיליון (חסרה כתובת הסקריפט).", []);
 
-    btn.disabled = true;
+    btn.disabled = true; btn.textContent = "שולח…";
     try {
       // no-cors: התשובה אטומה, אבל הנתונים נשמרים בגיליון
       await fetch(SCRIPT_URL, { method: "POST", mode: "no-cors", body: new URLSearchParams(data) });
       form.reset();
-      show("תודה! ההרשמה התקבלה בהצלחה. נתראה בכנס.", true);
+      formView.style.display = "none";
+      thanks.classList.add("show");
     } catch (err) {
-      show("אירעה שגיאה בשליחה. נסו שוב או פנו אלינו.", false);
+      fail("אירעה שגיאה בשליחה. נסו שוב או פנו אלינו.", []);
     } finally {
-      btn.disabled = false;
+      btn.disabled = false; btn.textContent = "שליחת הרשמה";
     }
+  });
+
+  document.getElementById("again").addEventListener("click", () => {
+    thanks.classList.remove("show"); formView.style.display = "";
   });
 </script>
 </body>
