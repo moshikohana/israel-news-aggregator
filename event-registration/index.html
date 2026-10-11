@@ -65,6 +65,13 @@
     border: 1px solid rgba(30,165,184,.25);
   }
   .strip-ico svg { width: 24px; height: 24px; }
+  .nav { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+  .nav a {
+    font-size: .85rem; font-weight: 600; text-decoration: none; color: var(--navy);
+    padding: 4px 12px; border-radius: 999px; border: 1.5px solid rgba(30,165,184,.45); background: #fff;
+    transition: background .15s, color .15s;
+  }
+  .nav a:hover, .nav a:focus-visible { background: var(--navy); color: #fff; outline: 0; }
   .strip small { display: block; color: var(--muted); font-size: .85rem; }
   .strip b { font-size: 1.15rem; color: var(--navy); }
 
@@ -176,7 +183,12 @@
       </div>
       <div class="strip-item">
         <div class="strip-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg></div>
-        <div><small>מיקום</small><b>אולמי אחוזה, מודיעין</b></div>
+        <div><small>מיקום</small><b>אולמי אחוזה, מודיעין</b>
+          <div class="nav">
+            <a href="https://waze.com/ul?q=%D7%90%D7%95%D7%9C%D7%9E%D7%99%20%D7%90%D7%97%D7%95%D7%96%D7%94%20%D7%9E%D7%95%D7%93%D7%99%D7%A2%D7%99%D7%9F&navigate=yes" target="_blank" rel="noopener">ניווט ב-Waze</a>
+            <a href="https://www.google.com/maps/search/?api=1&query=%D7%90%D7%95%D7%9C%D7%9E%D7%99%20%D7%90%D7%97%D7%95%D7%96%D7%94%20%D7%9E%D7%95%D7%93%D7%99%D7%A2%D7%99%D7%9F" target="_blank" rel="noopener">Google Maps</a>
+          </div>
+        </div>
       </div>
     </div>
   </div>
