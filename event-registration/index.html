@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>הרשמה לכנס – נקודת מפנה: הרגולציה החדשה לתמרוקים</title>
+<style>
+  :root {
+    --navy: #0f2a55;
+    --teal: #1b8fa6;
+    --gold: #b8923f;
+    --bg: #f3f8fb;
+    --card: #ffffff;
+    --text: #1d2a3a;
+    --error: #c0392b;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Heebo", "Assistant", "Segoe UI", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+  .banner img { display: block; width: 100%; height: auto; }
+  .datebar {
+    background: var(--navy);
+    color: #fff;
+    text-align: center;
+    padding: 14px 16px;
+    font-size: 1.15rem;
+    font-weight: 600;
+    letter-spacing: .3px;
+  }
+  .datebar span { margin: 0 10px; white-space: nowrap; }
+  main { max-width: 680px; margin: 0 auto; padding: 28px 16px 48px; }
+  .intro h1 { color: var(--navy); margin: 0 0 8px; font-size: 1.7rem; }
+  .intro p { margin: 0 0 12px; font-size: 1.05rem; }
+  .card {
+    background: var(--card);
+    border-radius: 14px;
+    box-shadow: 0 6px 24px rgba(15, 42, 85, .1);
+    padding: 24px 22px;
+    margin-top: 22px;
+    border-top: 4px solid var(--gold);
+  }
+  .card h2 { margin: 0 0 16px; color: var(--navy); font-size: 1.3rem; }
+  label { display: block; font-weight: 600; margin-bottom: 4px; }
+  .field { margin-bottom: 16px; }
+  input[type=text], input[type=email], input[type=tel] {
+    width: 100%;
+    padding: 11px 12px;
+    font: inherit;
+    border: 1.5px solid #c5d3df;
+    border-radius: 8px;
+    background: #fff;
+  }
+  input:focus { outline: 3px solid rgba(27, 143, 166, .3); border-color: var(--teal); }
+  input[type=email], input[type=tel] { direction: ltr; text-align: right; }
+  .hp { position: absolute; left: -9999px; height: 0; overflow: hidden; }
+  button {
+    width: 100%;
+    padding: 13px;
+    font: inherit;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #fff;
+    background: linear-gradient(135deg, var(--navy), var(--teal));
+    border: 0;
+    border-radius: 10px;
+    cursor: pointer;
+  }
+  button:disabled { opacity: .6; cursor: wait; }
+  .msg { margin-top: 14px; padding: 12px 14px; border-radius: 8px; display: none; }
+  .msg.ok { display: block; background: #e6f6ee; color: #146c43; }
+  .msg.err { display: block; background: #fdecea; color: var(--error); }
+  footer { text-align: center; font-size: .95rem; color: #55667a; margin-top: 28px; }
+  @media (max-width: 480px) {
+    .intro h1 { font-size: 1.4rem; }
+    .datebar span { display: block; margin: 2px 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="banner">
+  <img src="banner.png" alt="משרד הבריאות – נקודת מפנה: הרגולציה החדשה לתמרוקים">
+</div>
+
+<div class="datebar">
+  <span>📅 יום רביעי, 16.12.2026</span>
+  <span>🕘 [שעה]</span>
+  <span>📍 [מיקום הכנס]</span>
+</div>
+
+<main>
+  <section class="intro">
+    <h1>נקודת מפנה – הרגולציה החדשה לתמרוקים</h1>
+    <p>משרד הבריאות מזמין אתכם לכנס שיציג את הרגולציה החדשה בתחום התמרוקים: עיקרי השינויים, החידושים והיישום המעשי עבור יצרנים, יבואנים ובעלי עניין בענף.</p>
+    <p>ההשתתפות ללא עלות. מספר המקומות מוגבל, ולכן מומלץ להירשם מראש.</p>
+  </section>
+
+  <section class="card">
+    <h2>טופס הרשמה</h2>
+    <form id="form" novalidate>
+      <div class="field">
+        <label for="name">שם מלא *</label>
+        <input type="text" id="name" name="name" required autocomplete="name">
+      </div>
+      <div class="field">
+        <label for="company">שם החברה / הארגון *</label>
+        <input type="text" id="company" name="company" required autocomplete="organization">
+      </div>
+      <div class="field">
+        <label for="role">תפקיד *</label>
+        <input type="text" id="role" name="role" required autocomplete="organization-title">
+      </div>
+      <div class="field">
+        <label for="phone">טלפון נייד *</label>
+        <input type="tel" id="phone" name="phone" required autocomplete="tel" inputmode="tel" placeholder="050-0000000">
+      </div>
+      <div class="field">
+        <label for="email">דוא"ל *</label>
+        <input type="email" id="email" name="email" required autocomplete="email">
+      </div>
+      <div class="hp" aria-hidden="true">
+        <label>אל תמלאו שדה זה <input type="text" name="website" tabindex="-1" autocomplete="off"></label>
+      </div>
+      <button type="submit" id="submit">שליחת הרשמה</button>
+      <div id="msg" class="msg" role="status"></div>
+    </form>
+  </section>
+
+  <footer>
+    לבירורים: [טלפון / דוא"ל]<br>
+    משרד הבריאות – לחיים בריאים יותר
+  </footer>
+</main>
+
+<script>
+  // הדביקו כאן את כתובת ה-Web App שקיבלתם מ-Google Apps Script
+  const SCRIPT_URL = "PASTE_YOUR_GOOGLE_SCRIPT_URL_HERE";
+
+  const form = document.getElementById("form");
+  const btn = document.getElementById("submit");
+  const msg = document.getElementById("msg");
+
+  function show(text, ok) {
+    msg.className = "msg " + (ok ? "ok" : "err");
+    msg.textContent = text;
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    msg.className = "msg";
+
+    const data = new FormData(form);
+    const required = ["name", "company", "role", "phone", "email"];
+    if (required.some((k) => !String(data.get(k) || "").trim())) {
+      return show("נא למלא את כל השדות.", false);
+    }
+    if (!/^\S+@\S+\.\S+$/.test(data.get("email"))) {
+      return show("כתובת הדוא\"ל אינה תקינה.", false);
+    }
+    if (!/^[0-9+\-\s()]{7,}$/.test(data.get("phone"))) {
+      return show("מספר הטלפון אינו תקין.", false);
+    }
+    if (SCRIPT_URL.startsWith("PASTE_")) {
+      return show("הטופס עדיין לא חובר לגיליון (חסרה כתובת הסקריפט).", false);
+    }
+
+    btn.disabled = true;
+    try {
+      // no-cors: התשובה אטומה, אבל הנתונים נשמרים בגיליון
+      await fetch(SCRIPT_URL, { method: "POST", mode: "no-cors", body: new URLSearchParams(data) });
+      form.reset();
+      show("תודה! ההרשמה התקבלה בהצלחה. נתראה בכנס.", true);
+    } catch (err) {
+      show("אירעה שגיאה בשליחה. נסו שוב או פנו אלינו.", false);
+    } finally {
+      btn.disabled = false;
+    }
+  });
+</script>
+</body>
+</html>
