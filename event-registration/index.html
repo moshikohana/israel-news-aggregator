@@ -120,6 +120,13 @@
     border: 1.5px solid #e6cfd8; border-radius: 12px; background: #fffafb;
     transition: border-color .15s, box-shadow .15s, background .15s;
   }
+  textarea {
+    width: 100%; padding: 13px 14px; font: inherit; color: var(--text); resize: vertical; min-height: 110px;
+    border: 1.5px solid #e6cfd8; border-radius: 12px; background: #fffafb;
+    transition: border-color .15s, box-shadow .15s, background .15s;
+  }
+  textarea:focus { outline: 0; border-color: var(--turq); background: #fff; box-shadow: 0 0 0 4px rgba(224,112,127,.18); }
+  .hint { margin: 0 0 6px; color: var(--muted); font-size: .88rem; }
   input:focus { outline: 0; border-color: var(--turq); background: #fff; box-shadow: 0 0 0 4px rgba(224,112,127,.18); }
   input.bad { border-color: var(--error); background: #fff8f7; }
   input[type=email], input[type=tel] { direction: ltr; text-align: right; }
@@ -200,7 +207,7 @@
   <div class="wrap">
     <div class="kicker">על הכנס</div>
     <h2>רגולציה בתנועה.</h2>
-    <p class="lead">המחלקה לתמרוקים במשרד הבריאות מזמינה יצרנים, יבואנים ואנשי מקצוע בענף התמרוקים לכנס השנתי: מה משתנה ברגולציה, מה חדש בתחום, ואיך מיישמים בפועל. ההשתתפות ללא עלות, ומספר המקומות מוגבל.</p>
+    <p class="lead">המחלקה לתמרוקים במשרד הבריאות מזמינה יצרנים, יבואנים ואנשי מקצוע בענף התמרוקים לכנס השנתי: מה משתנה ברגולציה, מה חדש בתחום, ואיך מיישמים בפועל. ההשתתפות ללא עלות, ומספר המקומות מוגבל. אפשר לשלוח מראש שאלות לפאנלים בטופס ההרשמה.</p>
     <div class="cards">
       <div class="card-i"><span class="num">01</span><h3>רגולציה</h3><p>עיקרי הרגולציה החדשה והשינויים המרכזיים בתחום התמרוקים.</p></div>
       <div class="card-i"><span class="num">02</span><h3>חדשנות</h3><p>חידושים מדעיים ומקצועיים בעולם התמרוקים, בשקיפות מלאה.</p></div>
@@ -218,7 +225,7 @@
         <div id="formView">
           <div class="kicker">הרשמה</div>
           <h2>שריינו את מקומכם</h2>
-          <p class="note">כל השדות חובה. ההרשמה לוקחת פחות מדקה.</p>
+          <p class="note">כל השדות חובה, מלבד השאלות. ההרשמה לוקחת פחות מדקה.</p>
           <form id="form" novalidate>
             <div class="row">
               <div class="field"><label for="name">שם מלא</label><input type="text" id="name" name="name" autocomplete="name"></div>
@@ -228,6 +235,11 @@
             <div class="row">
               <div class="field"><label for="phone">טלפון נייד</label><input type="tel" id="phone" name="phone" autocomplete="tel" inputmode="tel" placeholder="050-0000000"></div>
               <div class="field"><label for="email">דוא"ל</label><input type="email" id="email" name="email" autocomplete="email" placeholder="name@company.co.il"></div>
+            </div>
+            <div class="field">
+              <label for="questions">שאלות ונושאים לכנס <span style="font-weight:400;color:var(--muted)">(לא חובה)</span></label>
+              <p class="hint">יש שאלה מקצועית לפאנלים, או נושא שחשוב לכם שיעלה? כתבו כאן והשאלות יועברו לצוות הכנס מראש.</p>
+              <textarea id="questions" name="questions" rows="4" maxlength="1500"></textarea>
             </div>
             <div class="hp" aria-hidden="true"><label>אל תמלאו <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
             <button class="submit" id="submit" type="submit">שליחת הרשמה</button>
