@@ -8,6 +8,11 @@ const QUESTIONS_COL = 8;
 const ARRIVED_COL = 9;
 const PLUM = "#4a2468";
 
+// בדיקת תקינות: פתיחת כתובת הסקריפט בדפדפן מציגה את הטקסט הזה רק בגרסה העדכנית
+function doGet() {
+  return ContentService.createTextOutput("גרסה 3 פעילה: 9 עמודות, שאלות נשמרות");
+}
+
 function doPost(e) {
   const p = (e && e.parameter) || {};
 
