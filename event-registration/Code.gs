@@ -22,6 +22,7 @@ function doPost(e) {
     if (sheet.getLastRow() === 0 || sheet.getRange(1, HEADERS.length).getValue() !== HEADERS[HEADERS.length - 1]) setupSheet(sheet);
 
     const row = sheet.getLastRow() + 1;
+    sheet.getRange(row, 1, 1, ARRIVED_COL).clearDataValidations(); // מסיר תיבות סימון שנשארו מפריסה ישנה
     sheet.getRange(row, 1, 1, ARRIVED_COL - 1).setValues([[
       "",
       Utilities.formatDate(new Date(), "Asia/Jerusalem", "dd/MM/yyyy HH:mm:ss"),
@@ -57,6 +58,7 @@ function setupSheet(sheet) {
 
   // שורות לסירוגין וגבולות עד שורה 1000
   const body = sheet.getRange(2, 1, 999, n);
+  body.clearDataValidations(); // תיבות סימון ישנות שנשארו בעמודה הלא נכונה
   body.setVerticalAlignment("middle").setHorizontalAlignment("right");
   sheet.getBandings().forEach(b => b.remove());
   body.applyRowBanding(SpreadsheetApp.BandingTheme.PINK, false, false);

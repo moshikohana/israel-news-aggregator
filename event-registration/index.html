@@ -145,7 +145,22 @@
   .check svg { width: 38px; height: 38px; }
   .thanks h3 { margin: 0 0 6px; font-size: 1.6rem; color: var(--navy); }
   .thanks p { margin: 0; color: var(--muted); }
-  .thanks a { color: var(--blue); font-weight: 600; cursor: pointer; text-decoration: underline; }
+  .thanks a#again { color: var(--blue); font-weight: 600; cursor: pointer; text-decoration: underline; }
+  .actions { margin-top: 22px; padding-top: 20px; border-top: 1px solid #f1dfe5; }
+  .actions h4 { margin: 0 0 10px; font-size: .95rem; color: var(--navy); }
+  .actions + .actions { margin-top: 16px; padding-top: 0; border-top: 0; }
+  .act-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+  .thanks .act {
+    display: inline-flex; align-items: center; gap: 8px; cursor: pointer; text-decoration: none;
+    font: inherit; font-size: .92rem; font-weight: 600; color: var(--navy);
+    padding: 9px 16px; border-radius: 999px; background: #fff;
+    border: 1.5px solid rgba(224,112,127,.5);
+    transition: background .15s, color .15s, border-color .15s;
+  }
+  .thanks .act[hidden] { display: none; }
+  .thanks .act svg { width: 18px; height: 18px; flex: none; }
+  .thanks .act:hover, .thanks .act:focus-visible { background: var(--navy); color: #fff; border-color: var(--navy); outline: 0; }
+
 
   /* ---------- FOOTER ---------- */
   footer { background: linear-gradient(180deg, var(--navy), var(--navy-deep)); color: #efdff3; padding: 36px 0; }
@@ -246,6 +261,21 @@
           <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
           <h3>תודה, ההרשמה התקבלה!</h3>
           <p>נשמח לראות אתכם ביום רביעי, 16.12.2026.</p>
+          <div class="actions">
+            <h4>הוסיפו ליומן</h4>
+            <div class="act-row">
+              <a class="act" id="gcal" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4M12 13v5M9.5 15.5h5"/></svg>Google Calendar</a>
+              <button class="act" id="ics" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4M12 13v5M9.5 15.5h5"/></svg>Apple / Outlook</button>
+            </div>
+          </div>
+          <div class="actions">
+            <h4>ספרו שנרשמתם</h4>
+            <div class="act-row">
+              <a class="act" id="wa" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l1.4-4.2A8 8 0 1 1 8.2 18.7L4 20z"/><path d="M9 10c.4 2.2 2.3 4.1 4.6 4.6l1.1-1.2-1.6-.9-.7.5c-.8-.3-1.6-1.1-1.9-1.9l.5-.7-.9-1.6L9 10z"/></svg>וואטסאפ</a>
+              <button class="act" id="share" type="button" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M8.2 10.8l7.6-3.6M8.2 13.2l7.6 3.6"/></svg>שיתוף</button>
+              <button class="act" id="copy" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg><span>העתקת קישור</span></button>
+            </div>
+          </div>
           <p style="margin-top:14px"><a id="again">רישום משתתף נוסף</a></p>
         </div>
       </div>
@@ -304,6 +334,61 @@
 
   document.getElementById("again").addEventListener("click", () => {
     thanks.classList.remove("show"); formView.style.display = "";
+  });
+
+  // ---------- הוספה ליומן ושיתוף ----------
+  const EV = {
+    title: "הכנס השנתי של המחלקה לתמרוקים – רגולציה בתנועה",
+    place: "אולמי אחוזה, מודיעין",
+    startUtc: "20261216T070000Z",   // 09:00 שעון ישראל
+    endUtc: "20261216T110000Z",     // 13:00 שעון ישראל
+    startLocal: "20261216T090000",
+    endLocal: "20261216T130000"
+  };
+  const pageUrl = location.href.split("#")[0];
+  const details = "כנס משרד הבריאות, המחלקה לתמרוקים. להרשמה ופרטים: " + pageUrl;
+  const shareText = "נרשמתי לכנס השנתי של המחלקה לתמרוקים במשרד הבריאות: רגולציה בתנועה. 16.12.2026, אולמי אחוזה, מודיעין. אפשר להירשם כאן:";
+  const q = encodeURIComponent;
+
+  document.getElementById("gcal").href = "https://calendar.google.com/calendar/render?action=TEMPLATE" +
+    "&text=" + q(EV.title) + "&dates=" + EV.startLocal + "/" + EV.endLocal + "&ctz=Asia/Jerusalem" +
+    "&location=" + q(EV.place) + "&details=" + q(details);
+
+  document.getElementById("ics").addEventListener("click", () => {
+    const esc = t => t.replace(/[,;]/g, m => "\\" + m);
+    const ics = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//MOH Cosmetics Conference//HE", "CALSCALE:GREGORIAN",
+      "BEGIN:VEVENT", "UID:cosmetics-conference-2026-12-16@moh",
+      "DTSTAMP:" + new Date().toISOString().replace(/[-:]/g, "").slice(0, 15) + "Z",
+      "DTSTART:" + EV.startUtc, "DTEND:" + EV.endUtc,
+      "SUMMARY:" + esc(EV.title), "LOCATION:" + esc(EV.place), "DESCRIPTION:" + esc(details),
+      "BEGIN:VALARM", "TRIGGER:-P1D", "ACTION:DISPLAY", "DESCRIPTION:" + esc(EV.title), "END:VALARM",
+      "END:VEVENT", "END:VCALENDAR"].join("\r\n");
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([ics], { type: "text/calendar;charset=utf-8" }));
+    a.download = "cosmetics-conference.ics";
+    document.body.appendChild(a); a.click(); a.remove();
+  });
+
+  document.getElementById("wa").href = "https://wa.me/?text=" + q(shareText + " " + pageUrl);
+
+  const shareBtn = document.getElementById("share");
+  if (navigator.share) {
+    shareBtn.hidden = false;
+    shareBtn.addEventListener("click", () => {
+      navigator.share({ title: EV.title, text: shareText, url: pageUrl }).catch(() => {});
+    });
+  }
+
+  const copyBtn = document.getElementById("copy");
+  copyBtn.addEventListener("click", async () => {
+    const label = copyBtn.querySelector("span");
+    try { await navigator.clipboard.writeText(pageUrl); }
+    catch (e) {
+      const t = document.createElement("input"); t.value = pageUrl; document.body.appendChild(t); t.select();
+      try { document.execCommand("copy"); } catch (e2) {} t.remove();
+    }
+    label.textContent = "הקישור הועתק";
+    setTimeout(() => { label.textContent = "העתקת קישור"; }, 2000);
   });
 </script>
 </body>
